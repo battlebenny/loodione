@@ -1,0 +1,58 @@
+# ─── Secrets / signing material ───────────────────────────────
+# Never commit. These are local-only.
+.certs/
+*.pem
+*.p8
+*.p12
+*.cer
+*.keystore
+.env
+.env.*
+!.env.example
+
+# ─── Dependencies ─────────────────────────────────────────────
+node_modules/
+
+# ─── Build output ─────────────────────────────────────────────
+# Vite / packages
+dist/
+build/
+*.tsbuildinfo
+
+# ─── Machine-local symlink (Obsidian vault) ───────────────────
+# docs/ resolves to a user-specific Synology/Obsidian path. Kept
+# locally for convenience, never tracked.
+/docs
+
+# ─── Capacitor / native ───────────────────────────────────────
+# Android
+android/app/build/
+android/app/release/
+android/.gradle/
+android/build/
+android/local.properties
+android/captures/
+*.apk
+*.aab
+*.ap_
+
+# iOS
+ios/App/App/build/
+ios/App/build/
+ios/App/Pods/
+ios/DerivedData/
+ios/capacitor-cordova-ios-files/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcscmblueprint
+*.moved-aside
+
+# ─── OS / editor ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/*
+!.vscode/extensions.json

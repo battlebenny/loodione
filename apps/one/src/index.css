@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-brand-primary: #ca4a16;
+  --color-brand-primary-hover: #b33d0f;
+  --color-brand-link: #1b2a4a;
+  --font-family-brand: "DM Sans", sans-serif;
+  --font-family-display: "Playfair Display", serif;
+  --font-family-mono: "JetBrains Mono", monospace;
+}

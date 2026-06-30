@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "paths": {
+      "@loodi/ui": ["../../packages/@loodi/ui/src"],
+      "@loodi/ui/*": ["../../packages/@loodi/ui/src/*"],
+      "@loodi/bridge": ["../../packages/@loodi/bridge/src"],
+      "@loodi/bridge/*": ["../../packages/@loodi/bridge/src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [
+    { "path": "../../packages/@loodi/ui" },
+    { "path": "../../packages/@loodi/bridge" }
+  ]
+}

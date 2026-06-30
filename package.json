@@ -1,0 +1,26 @@
+{
+  "name": "loodi-one",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shell Capacitor pour l'écosystème Loodi — conteneur unifié de modules PWA",
+  "workspaces": [
+    "apps/*",
+    "packages/@loodi/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @loodi/one",
+    "build": "npm run build -w @loodi/one",
+    "build:packages": "npm run build -w @loodi/ui -w @loodi/bridge",
+    "cap:sync": "npx cap sync",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/core": "^8.4.1"
+  },
+  "devDependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/ios": "^8.4.1"
+  }
+}
