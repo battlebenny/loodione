@@ -1,2 +1,2 @@
-export { BridgeClient } from './BridgeClient'
-export type { BridgeMethods, BridgeEvents, Tab, BridgeResponse, BridgeCall } from './types'
+export { BridgeClient } from './BridgeClient.js'
+export type { BridgeMethods, BridgeEvents, BridgeEventType, Tab, HeaderAction, HeaderOptions, BridgeResponse, BridgeCall } from './types.js'

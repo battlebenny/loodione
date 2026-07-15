@@ -1,7 +1,9 @@
-import type { Tab } from '@loodi/bridge'
+import type { HeaderAction, HeaderOptions, Tab } from '@loodi/bridge'
 
 export interface ModuleInfo {
   tabs: Tab[]
+  headerActions: HeaderAction[]
+  headerOptions: HeaderOptions
   badgeCount: number
 }
 
@@ -10,7 +12,11 @@ export interface BridgeServerCallbacks {
   onBadgeCount(appId: string, count: number): void
   onError(appId: string, code: string, recoverable: boolean): void
   onTabsChange(appId: string, tabs: Tab[]): void
+  onHeaderActionsChange(appId: string, actions: HeaderAction[]): void
+  onHeaderOptionsChange(appId: string, options: HeaderOptions): void
   onNavigate(appId: string, path: string): void
+  onOverlayChange(appId: string, visible: boolean): void
+  onScroll(appId: string, scrollY: number): void
   onRequestOpenApp(callerId: string, appId: string, path?: string): void
   onRequestCloseApp(callerId: string): void
   onRequestShowSwitcher(callerId: string): void
@@ -45,7 +51,7 @@ export class BridgeServer {
 
   registerModule(appId: string, iframe: HTMLIFrameElement): void {
     this.modules.set(appId, iframe)
-    this.moduleInfos.set(appId, { tabs: [], badgeCount: 0 })
+    this.moduleInfos.set(appId, { tabs: [], headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 })
     this.getHistory(appId)
   }
 
@@ -59,6 +65,14 @@ export class BridgeServer {
     const iframe = this.modules.get(appId)
     if (!iframe?.contentWindow) return
     iframe.contentWindow.postMessage(msg, '*')
+  }
+
+  sendHeaderAction(appId: string, id: string): void {
+    this.postMessage(appId, { type: 'loodi:event', event: 'loodi:headeraction', detail: { id } })
+  }
+
+  sendBack(appId: string): void {
+    this.postMessage(appId, { type: 'loodi:event', event: 'loodi:back', detail: undefined })
   }
 
   broadcast(type: string, payload: Record<string, unknown>): void {
@@ -87,6 +101,15 @@ export class BridgeServer {
         break
       case 'loodi:event':
         this.handleEvent(appId, msg)
+        break
+      case 'loodi:overlaychange':
+        this.handleEvent(appId, {
+          event: 'loodi:overlaychange',
+          detail: { visible: msg.visible },
+        })
+        break
+      case 'loodi:ready':
+        this.callbacks.onReady(appId)
         break
       case 'loodi:navigate':
         this.callbacks.onNavigate(appId, msg.path || '/')
@@ -133,6 +156,34 @@ export class BridgeServer {
           respond(undefined)
           break
         }
+        case 'setHeaderActions': {
+          const [actions] = msg.args as [HeaderAction[]]
+          if (!Array.isArray(actions)) throw new Error('Header actions must be an array')
+          this.moduleInfos.set(appId, {
+            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
+            headerActions: actions,
+          })
+          this.callbacks.onHeaderActionsChange(appId, actions)
+          respond(undefined)
+          break
+        }
+        case 'setHeaderOptions': {
+          const [options] = msg.args as [HeaderOptions]
+          if (!options || typeof options !== 'object' || Array.isArray(options)) {
+            throw new Error('Header options must be an object')
+          }
+          const headerOptions = {
+            hideActions: options.hideActions === true,
+            canGoBack: options.canGoBack === true,
+          }
+          this.moduleInfos.set(appId, {
+            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerActions: [], badgeCount: 0 }),
+            headerOptions,
+          })
+          this.callbacks.onHeaderOptionsChange(appId, headerOptions)
+          respond(undefined)
+          break
+        }
         case 'queueAction':
           console.log('[Loodi] Queue action', msg.args[0])
           respond(undefined)
@@ -148,14 +199,17 @@ export class BridgeServer {
   private handleEvent(appId: string, msg: { event: string; detail?: Record<string, unknown> }) {
     const d = msg.detail
     switch (msg.event) {
-      case 'loodi:ready':
-        this.callbacks.onReady(appId)
-        break
       case 'loodi:badgecount':
         if (typeof d?.count === 'number') this.callbacks.onBadgeCount(appId, d.count)
         break
       case 'loodi:error':
         this.callbacks.onError(appId, (d?.code as string) || 'ERR_UNKNOWN', (d?.recoverable as boolean) ?? true)
+        break
+      case 'loodi:overlaychange':
+        if (typeof d?.visible === 'boolean') this.callbacks.onOverlayChange(appId, d.visible)
+        break
+      case 'loodi:scroll':
+        if (typeof d?.scrollY === 'number') this.callbacks.onScroll(appId, d.scrollY)
         break
     }
   }

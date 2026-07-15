@@ -9,8 +9,15 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @loodi/one",
-    "build": "npm run build -w @loodi/one",
-    "build:packages": "npm run build -w @loodi/ui -w @loodi/bridge",
+    "dev:dummy": "npm run dev -w @loodi/dummy",
+    "build": "npm run build:packages && npm run build -w @loodi/one",
+    "build:local": "npm run build:local -w @loodi/one",
+    "build:android-emulator": "npm run build:android-emulator -w @loodi/one",
+    "build:ios-simulator": "npm run build:ios-simulator -w @loodi/one",
+    "build:recette": "npm run build:recette -w @loodi/one",
+    "build:packages": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui",
+    "watch:packages": "npm run watch -w @loodi/bridge & npm run watch -w @loodi/ui",
+    "build:packages:watch": "npm run watch:packages",
     "cap:sync": "npx cap sync",
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android"
@@ -22,5 +29,10 @@
     "@capacitor/android": "^8.4.1",
     "@capacitor/cli": "^8.4.1",
     "@capacitor/ios": "^8.4.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "fsevents@2.3.3": true,
+    "puppeteer@25.3.0": true
   }
 }

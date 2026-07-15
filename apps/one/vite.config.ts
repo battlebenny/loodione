@@ -8,7 +8,10 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: 5173,
+    host: 'one.loodi.test',
+    port: 4001,
+    strictPort: true,
+    open: true,
     https: {
       cert: fs.readFileSync(path.resolve(__dirname, '../../.certs/cert.pem')),
       key: fs.readFileSync(path.resolve(__dirname, '../../.certs/key.pem')),

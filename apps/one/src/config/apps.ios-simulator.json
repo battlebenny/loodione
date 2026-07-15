@@ -1,0 +1,4 @@
+[
+  { "id": "loodi", "name": "collec", "icon": "📚", "url": "https://localhost:4002", "color": "#ca4a16" },
+  { "id": "loodi-dev", "name": "Dev", "icon": "🚧", "url": "https://localhost:4000", "color": "#6B7280" }
+]

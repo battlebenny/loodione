@@ -13,6 +13,12 @@
 # ─── Dependencies ─────────────────────────────────────────────
 node_modules/
 
+# ─── AI tools work ────────────────────────────────────────────
+.impeccable/
+.opencode/
+.serena/
+.tokensave/
+
 # ─── Build output ─────────────────────────────────────────────
 # Vite / packages
 dist/

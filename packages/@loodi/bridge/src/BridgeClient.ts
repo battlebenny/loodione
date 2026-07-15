@@ -1,4 +1,4 @@
-import type { BridgeMethods, BridgeEvents, BridgeEventType } from './types'
+import type { BridgeMethods, BridgeEvents, BridgeEventType, HeaderAction, HeaderOptions } from './types.js'
 
 interface PendingCall {
   resolve: (value: unknown) => void
@@ -76,6 +76,14 @@ export class BridgeClient {
         this.shellOrigin,
       )
     })
+  }
+
+  setHeaderActions(actions: HeaderAction[]): Promise<void> {
+    return this.call('setHeaderActions', actions)
+  }
+
+  setHeaderOptions(options: HeaderOptions): Promise<void> {
+    return this.call('setHeaderOptions', options)
   }
 
   private handleStandalone(_method: string, _args: unknown[]): unknown {

@@ -12,8 +12,6 @@
     "skipLibCheck": true,
     "noEmit": true,
     "paths": {
-      "@loodi/ui": ["../../packages/@loodi/ui/src"],
-      "@loodi/ui/*": ["../../packages/@loodi/ui/src/*"],
       "@loodi/bridge": ["../../packages/@loodi/bridge/src"],
       "@loodi/bridge/*": ["../../packages/@loodi/bridge/src/*"]
     }

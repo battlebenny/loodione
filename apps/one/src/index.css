@@ -1,12 +1,46 @@
+@import '@loodi/ui/tokens.css';
+@import '@loodi/ui/mini-header.css';
+@import '@loodi/ui/bottom-nav.css';
+@import '@loodi/ui/launcher.css';
 @import "tailwindcss";
-
 @custom-variant dark (&:where(.dark, .dark *));
 
-@theme {
-  --color-brand-primary: #ca4a16;
-  --color-brand-primary-hover: #b33d0f;
-  --color-brand-link: #1b2a4a;
-  --font-family-brand: "DM Sans", sans-serif;
-  --font-family-display: "Playfair Display", serif;
-  --font-family-mono: "JetBrains Mono", monospace;
+:root {
+  /* Capacitor replaces these fallbacks with the native window insets on Android.
+     Safari resolves the env() values on devices with a notch or Dynamic Island. */
+  --safe-area-inset-top: env(safe-area-inset-top, 0px);
+  --safe-area-inset-right: env(safe-area-inset-right, 0px);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-inset-left: env(safe-area-inset-left, 0px);
+}
+
+@keyframes loodi-exit-fwd {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-24px); }
+}
+@keyframes loodi-enter-fwd {
+  from { opacity: 0; transform: translateX(24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes loodi-exit-back {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(24px); }
+}
+@keyframes loodi-enter-back {
+  from { opacity: 0; transform: translateX(-24px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-exit-fwd  { animation: loodi-exit-fwd  200ms ease-out both; }
+.animate-enter-fwd { animation: loodi-enter-fwd 220ms ease-out both; }
+.animate-exit-back  { animation: loodi-exit-back  200ms ease-out both; }
+.animate-enter-back { animation: loodi-enter-back 220ms ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-exit-fwd,
+  .animate-enter-fwd,
+  .animate-exit-back,
+  .animate-enter-back {
+    animation: none;
+  }
 }

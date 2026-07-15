@@ -1,5 +1,5 @@
-export type { MiniHeaderProps, BottomNavProps, LauncherProps, Tab, LauncherApp } from './types'
+export type { MiniHeaderProps, MiniHeaderMenuItem, BottomNavProps, LauncherProps, Tab, LauncherApp } from './types.js'
 
-export { MiniHeader } from './MiniHeader'
-export { BottomNav } from './BottomNav'
-export { Launcher } from './Launcher'
+export { MiniHeader } from './MiniHeader.js'
+export { BottomNav } from './BottomNav.js'
+export { Launcher } from './Launcher.js'

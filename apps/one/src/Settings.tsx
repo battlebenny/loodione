@@ -1,70 +1,339 @@
+import { type ReactNode, useEffect, useState } from 'react'
 import type { ThemeMode } from './theme'
+import type { AppEntry, LocalModuleUrls } from './apps'
+import { BottomSheet } from './BottomSheet'
 
 interface SettingsProps {
   themeMode: ThemeMode
   onThemeChange: (mode: ThemeMode) => void
   onClose: () => void
+  apps: AppEntry[]
+  favoriteAppId: string | null
+  onFavoriteChange: (id: string | null) => void
+  developmentApps?: AppEntry[]
+  localModuleUrls?: LocalModuleUrls
+  onLocalModuleUrlsChange?: (urls: LocalModuleUrls) => void
 }
 
-const modes: { value: ThemeMode; label: string; desc: string }[] = [
-  { value: 'system', label: 'Auto', desc: 'Suit les préférences de votre appareil' },
-  { value: 'light', label: 'Clair', desc: 'Fond clair permanent' },
-  { value: 'dark', label: 'Sombre', desc: 'Fond sombre permanent' },
-]
-
-export function Settings({ themeMode, onThemeChange, onClose }: SettingsProps) {
+function CheckIcon() {
   return (
-    <div className="fixed inset-0 z-40 bg-[#f5f5f0] dark:bg-[#161615] text-[#353533] dark:text-[#e8e7e4] flex flex-col">
-      {/* Header */}
-      <div className="flex items-center gap-3 px-4 pt-14 pb-3">
-        <button
-          onClick={onClose}
-          className="w-8 h-8 flex items-center justify-center rounded-lg
-            hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
-          aria-label="Retour"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-            strokeLinecap="round" strokeLinejoin="round">
-            <path d="M19 12H5" />
-            <polyline points="12 19 5 12 12 5" />
-          </svg>
-        </button>
-        <h1 className="text-lg font-semibold">Paramètres</h1>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ca4a16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 6 9 17l-5-5" />
+    </svg>
+  )
+}
+
+function ChevronRight() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/20 dark:text-white/20 shrink-0">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  )
+}
+
+function PaletteIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
+      <circle cx="13.5" cy="6.5" r=".5" />
+      <circle cx="17.5" cy="10.5" r=".5" />
+      <circle cx="8.5" cy="7.5" r=".5" />
+      <circle cx="6.5" cy="12.5" r=".5" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.37-.15-.72-.4-1-.27-.3-.44-.7-.44-1.1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-5.52-4.5-10-10-10" />
+    </svg>
+  )
+}
+
+function GridIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
+      <rect width="7" height="7" x="3" y="3" rx="1" />
+      <rect width="7" height="7" x="14" y="3" rx="1" />
+      <rect width="7" height="7" x="3" y="14" rx="1" />
+      <rect width="7" height="7" x="14" y="14" rx="1" />
+    </svg>
+  )
+}
+
+function ServerIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
+      <rect width="20" height="8" x="2" y="2" rx="2" />
+      <rect width="20" height="8" x="2" y="14" rx="2" />
+      <path d="M6 6h.01M6 18h.01" />
+    </svg>
+  )
+}
+
+function SunIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
+      <circle cx="12" cy="12" r="4" />
+      <path d="M12 2v2" /><path d="m4.93 4.93 1.41 1.41" />
+      <path d="M2 12h2" /><path d="m4.93 19.07 1.41-1.41" />
+      <path d="M12 20v2" /><path d="m19.07 4.93-1.41 1.41" />
+      <path d="M20 12h2" /><path d="m17.66 17.66 1.41 1.41" />
+    </svg>
+  )
+}
+
+function MoonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+    </svg>
+  )
+}
+
+function MonitorIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
+      <rect width="20" height="14" x="2" y="3" rx="2" />
+      <path d="M8 21h8" /><path d="M12 17v4" />
+    </svg>
+  )
+}
+
+function SectionCard({ children }: { children: ReactNode }) {
+  return (
+    <div className="rounded-xl bg-white/70 dark:bg-white/5 border border-black/5 dark:border-white/10 overflow-hidden">
+      {children}
+    </div>
+  )
+}
+
+function SectionHeader({ label }: { label: string }) {
+  return (
+    <div className="px-4 py-3 text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider border-b border-black/5 dark:border-white/5">
+      {label}
+    </div>
+  )
+}
+
+function SettingsRowIcon({ children }: { children: ReactNode }) {
+  return (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
+      {children}
+    </div>
+  )
+}
+
+interface RowProps {
+  icon: ReactNode
+  label: string
+  secondary: string
+  onClick?: () => void
+  last?: boolean
+}
+
+function Row({ icon, label, secondary, onClick, last }: RowProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-black/5 dark:hover:bg-white/5 transition-colors ${last ? '' : 'border-b border-black/5 dark:border-white/5'}`}
+    >
+      <SettingsRowIcon>{icon}</SettingsRowIcon>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium">{label}</div>
+        <div className="text-xs text-black/40 dark:text-white/40 mt-0.5 truncate">{secondary}</div>
+      </div>
+      <ChevronRight />
+    </button>
+  )
+}
+
+function PickerOption({ children, active, onClick }: { children: ReactNode; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left transition-colors active:bg-black/5 dark:active:bg-white/10"
+    >
+      {children}
+      {active && <CheckIcon />}
+    </button>
+  )
+}
+
+const themeLabel: Record<ThemeMode, string> = {
+  system: 'Auto',
+  light: 'Clair',
+  dark: 'Sombre',
+}
+
+const themeIcon: Record<ThemeMode, () => ReactNode> = {
+  system: MonitorIcon,
+  light: SunIcon,
+  dark: MoonIcon,
+}
+
+export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppId, onFavoriteChange, developmentApps, localModuleUrls = {}, onLocalModuleUrlsChange }: SettingsProps) {
+  const [themeSheetOpen, setThemeSheetOpen] = useState(false)
+  const [appSheetOpen, setAppSheetOpen] = useState(false)
+  const [moduleSheetOpen, setModuleSheetOpen] = useState(false)
+  const [localModuleUrlDrafts, setLocalModuleUrlDrafts] = useState<LocalModuleUrls>(localModuleUrls)
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
+  useEffect(() => {
+    if (moduleSheetOpen) setLocalModuleUrlDrafts(localModuleUrls)
+  }, [moduleSheetOpen, localModuleUrls])
+
+  const favAppName = favoriteAppId
+    ? apps.find((a) => a.id === favoriteAppId)?.name ?? favoriteAppId
+    : 'Aucune'
+
+  const themeEntries: { value: ThemeMode; label: string }[] = [
+    { value: 'system', label: 'Système' },
+    { value: 'light', label: 'Clair' },
+    { value: 'dark', label: 'Sombre' },
+  ]
+
+  const configuredLocalModuleCount = Object.values(localModuleUrls).filter(Boolean).length
+
+  const saveLocalModuleUrls = () => {
+    onLocalModuleUrlsChange?.(localModuleUrlDrafts)
+    setModuleSheetOpen(false)
+  }
+
+  return (
+    <div className="fixed inset-0 z-20 bg-[var(--color-settings-bg)] dark:bg-[var(--color-settings-bg-dark)] text-[var(--color-text-light)] dark:text-[var(--color-text-dark)] flex flex-col">
+      <div
+        className="flex items-center gap-3 px-4 pt-14 pb-3"
+        style={{
+          paddingTop: 'calc(3.5rem + var(--safe-area-inset-top))',
+          paddingLeft: 'calc(1rem + var(--safe-area-inset-left))',
+          paddingRight: 'calc(1rem + var(--safe-area-inset-right))',
+        }}
+      >
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', textWrap: 'balance' }}>Paramètres</h1>
       </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-8">
-        <div className="rounded-xl bg-white/70 dark:bg-white/5 border border-black/5 dark:border-white/10 overflow-hidden">
-          <div className="px-4 py-3 text-xs font-semibold text-black/40 dark:text-white/40 uppercase tracking-wider">
-            Affichage
+      <div
+        className="flex-1 overflow-y-auto px-4 pb-8"
+        style={{
+          paddingLeft: 'calc(1rem + var(--safe-area-inset-left))',
+          paddingRight: 'calc(1rem + var(--safe-area-inset-right))',
+          paddingBottom: 'calc(2rem + var(--safe-area-inset-bottom))',
+        }}
+      >
+        <SectionCard>
+          <SectionHeader label="Préférences" />
+          <Row
+            icon={<PaletteIcon />}
+            label="Thème"
+            secondary={themeLabel[themeMode]}
+            onClick={() => setThemeSheetOpen(true)}
+          />
+          <Row
+            icon={<GridIcon />}
+            label="Application préférée"
+            secondary={favAppName}
+            onClick={() => setAppSheetOpen(true)}
+            last
+          />
+        </SectionCard>
+
+        {developmentApps && (
+          <div className="mt-5">
+            <SectionCard>
+              <SectionHeader label="Développement" />
+              <Row
+                icon={<ServerIcon />}
+                label="Modules locaux"
+                secondary={configuredLocalModuleCount ? `${configuredLocalModuleCount} URL${configuredLocalModuleCount > 1 ? 's' : ''} configurée${configuredLocalModuleCount > 1 ? 's' : ''}` : 'Configurer les URL de test'}
+                onClick={() => setModuleSheetOpen(true)}
+                last
+              />
+            </SectionCard>
           </div>
-          {modes.map((m, i) => (
-            <button
-              key={m.value}
-              onClick={() => onThemeChange(m.value)}
-              className={`w-full flex items-center justify-between px-4 py-3.5
-                hover:bg-black/5 dark:hover:bg-white/5 transition-colors
-                ${i < modes.length - 1 ? 'border-b border-black/5 dark:border-white/5' : ''}`}
-            >
-              <div className="text-left">
-                <div className="text-sm font-medium">{m.label}</div>
-                <div className="text-xs text-black/40 dark:text-white/40 mt-0.5">{m.desc}</div>
-              </div>
-              <div
-                className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0
-                  ${themeMode === m.value
-                    ? 'border-[#ca4a16]'
-                    : 'border-black/20 dark:border-white/20'
-                  }`}
+        )}
+      </div>
+
+      <BottomSheet open={themeSheetOpen} onClose={() => setThemeSheetOpen(false)} title="Thème">
+        <div className="space-y-1 pb-2">
+          {themeEntries.map(({ value, label }) => {
+            const Icon = themeIcon[value]
+            return (
+              <PickerOption
+                key={value}
+                active={themeMode === value}
+                onClick={() => { onThemeChange(value); setThemeSheetOpen(false) }}
               >
-                {themeMode === m.value && (
-                  <div className="w-2.5 h-2.5 rounded-full bg-[#ca4a16]" />
-                )}
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
+                  <Icon />
+                </div>
+                <div className="flex-1">
+                  <p className="text-[15px] font-medium text-black/80 dark:text-white/80">{label}</p>
+                </div>
+              </PickerOption>
+            )
+          })}
+        </div>
+      </BottomSheet>
+
+      <BottomSheet open={appSheetOpen} onClose={() => setAppSheetOpen(false)} title="Application préférée">
+        <div className="space-y-1 pb-2">
+          <PickerOption
+            active={favoriteAppId === null}
+            onClick={() => { onFavoriteChange(null); setAppSheetOpen(false) }}
+          >
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/40 dark:text-white/40">
+                <path d="M18 6 6 18" /><path d="m6 6 12 12" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-[15px] font-medium text-black/80 dark:text-white/80">Aucune</p>
+            </div>
+          </PickerOption>
+          {apps.map((app) => (
+            <PickerOption
+              key={app.id}
+              active={favoriteAppId === app.id}
+              onClick={() => { onFavoriteChange(app.id); setAppSheetOpen(false) }}
+            >
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
+                <span className="text-lg">{app.icon}</span>
               </div>
-            </button>
+              <div className="flex-1">
+                <p className="text-[15px] font-medium text-black/80 dark:text-white/80">{app.name}</p>
+              </div>
+            </PickerOption>
           ))}
         </div>
-      </div>
+      </BottomSheet>
+
+      <BottomSheet open={moduleSheetOpen} onClose={() => setModuleSheetOpen(false)} title="Modules locaux">
+        <div className="space-y-4 pb-2">
+          <p className="text-sm leading-5 text-black/55 dark:text-white/55">
+            Saisis l’URL complète de chaque PWA. Utilise l’IP de ton Mac sur appareil physique, ou 10.0.2.2 dans l’émulateur Android.
+          </p>
+          {developmentApps?.map((app) => (
+            <label key={app.id} className="block">
+              <span className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-black/45 dark:text-white/45">{app.name}</span>
+              <input
+                aria-label={app.name}
+                type="url"
+                inputMode="url"
+                placeholder="https://…"
+                value={localModuleUrlDrafts[app.id] ?? ''}
+                onChange={(event) => setLocalModuleUrlDrafts((urls) => ({ ...urls, [app.id]: event.target.value }))}
+                className="w-full rounded-lg border border-black/10 bg-white/60 px-3 py-2.5 font-mono text-sm text-black/80 outline-none placeholder:text-black/25 focus:border-[#ca4a16] dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:placeholder:text-white/25"
+              />
+            </label>
+          ))}
+          <button
+            type="button"
+            onClick={saveLocalModuleUrls}
+            className="w-full rounded-xl bg-[#ca4a16] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#b33d0f]"
+          >
+            Enregistrer les URL
+          </button>
+        </div>
+      </BottomSheet>
     </div>
   )
 }

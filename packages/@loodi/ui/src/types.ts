@@ -16,13 +16,23 @@ export interface LauncherApp {
 export interface MiniHeaderProps {
   onSettings: () => void
   onUser: () => void
+  appName?: string
+  scrollProgress?: number
+  showBack?: boolean
+  onBack?: () => void
+  menuItems?: MiniHeaderMenuItem[]
+  onMenuItemSelect?: (id: string) => void
+  hideActions?: boolean
 }
+export interface MiniHeaderMenuItem { id: string; label: string; tone?: 'default' | 'danger' }
 
 export interface BottomNavProps {
   tabs: Tab[]
   activeTab?: string
+  hidden?: boolean
   onTabTap: (tabId: string) => void
   onAppsTap: () => void
+  onAppsLongPress?: () => void
 }
 
 export interface LauncherProps {

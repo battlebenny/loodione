@@ -1,21 +1,69 @@
 {
   "name": "@loodi/ui",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.3.0",
+  "description": "Presentation-only React design system for the Loodi ecosystem.",
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./mini-header": {
+      "types": "./dist/mini-header.d.ts",
+      "import": "./dist/mini-header.js"
+    },
+    "./bottom-nav": {
+      "types": "./dist/bottom-nav.d.ts",
+      "import": "./dist/bottom-nav.js"
+    },
+    "./launcher": {
+      "types": "./dist/launcher.d.ts",
+      "import": "./dist/launcher.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./tokens.css": "./dist/tokens.css",
+    "./tokens.dtcg.json": "./dist/tokens.dtcg.json",
+    "./mini-header.css": "./dist/mini-header.css",
+    "./bottom-nav.css": "./dist/bottom-nav.css",
+    "./launcher.css": "./dist/launcher.css",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": [
+    "./dist/styles.css",
+    "./dist/tokens.css",
+    "./dist/mini-header.css",
+    "./dist/bottom-nav.css",
+    "./dist/launcher.css"
+  ],
   "scripts": {
-    "build": "tsc -b",
-    "typecheck": "tsc --noEmit"
+    "generate:tokens": "node scripts/generate-tokens.mjs",
+    "build:css": "node scripts/build-css.mjs",
+    "build": "npm run generate:tokens && vite build && tsc -b --force && npm run build:css",
+    "watch": "npm run build && vite build --watch",
+    "watch:types": "tsc -b --watch",
+    "typecheck": "tsc --noEmit",
+    "prepack": "npm run build"
   },
   "peerDependencies": {
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react": ">=18.0.0 <20.0.0",
+    "react-dom": ">=18.0.0 <20.0.0",
+    "lucide-react": ">=1.0.0 <2.0.0"
   },
   "devDependencies": {
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.7.0"
+    "@tailwindcss/vite": "^4.0.0",
+    "lucide-react": "^1.24.0",
+    "typescript": "^5.7.0",
+    "vite": "^7.0.0"
   }
 }

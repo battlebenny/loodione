@@ -1,0 +1,256 @@
+{
+  "$description": "Loodi · Core design tokens. Generated from tokens.source.json.",
+  "color": {
+    "brand-primary": {
+      "$type": "color",
+      "$value": "#ca4a16"
+    },
+    "brand-primary-hover": {
+      "$type": "color",
+      "$value": "#b33d0f"
+    },
+    "brand-link": {
+      "$type": "color",
+      "$value": "#1b2a4a"
+    },
+    "bg-light": {
+      "$type": "color",
+      "$value": "#f1f1ef"
+    },
+    "bg-dark": {
+      "$type": "color",
+      "$value": "#1a1a18"
+    },
+    "text-light": {
+      "$type": "color",
+      "$value": "#353533"
+    },
+    "text-dark": {
+      "$type": "color",
+      "$value": "#e8e7e4"
+    },
+    "text-primary": {
+      "$type": "color",
+      "$value": "#1A1A18"
+    },
+    "text-primary-dark": {
+      "$type": "color",
+      "$value": "{color.text-dark}"
+    },
+    "text-secondary": {
+      "$type": "color",
+      "$value": "#6B6B60"
+    },
+    "text-secondary-dark": {
+      "$type": "color",
+      "$value": "#A3A39A"
+    },
+    "surface-glass": {
+      "$type": "color",
+      "$value": "rgba(255,255,255,0.7)"
+    },
+    "surface-glass-dark": {
+      "$type": "color",
+      "$value": "rgba(17,24,39,0.7)"
+    },
+    "surface-subtle": {
+      "$type": "color",
+      "$value": "#F2F0EC"
+    },
+    "surface-subtle-dark": {
+      "$type": "color",
+      "$value": "#3A3A35"
+    },
+    "border-subtle": {
+      "$type": "color",
+      "$value": "rgba(0,0,0,0.05)"
+    },
+    "border-subtle-dark": {
+      "$type": "color",
+      "$value": "rgba(255,255,255,0.1)"
+    },
+    "settings-bg": {
+      "$type": "color",
+      "$value": "#f5f5f0"
+    },
+    "settings-bg-dark": {
+      "$type": "color",
+      "$value": "#161615"
+    },
+    "module-loodi": {
+      "$type": "color",
+      "$value": "#ca4a16"
+    },
+    "module-mate": {
+      "$type": "color",
+      "$value": "#2e8b57"
+    },
+    "module-mag": {
+      "$type": "color",
+      "$value": "#4a90d9"
+    },
+    "module-places": {
+      "$type": "color",
+      "$value": "#9b59b6"
+    },
+    "module-fest": {
+      "$type": "color",
+      "$value": "#e67e22"
+    },
+    "module-sessions": {
+      "$type": "color",
+      "$value": "#1abc9c"
+    },
+    "module-dev": {
+      "$type": "color",
+      "$value": "#6b7280"
+    }
+  },
+  "spacing": {
+    "xs": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": "20px"
+    }
+  },
+  "radius": {
+    "pill": {
+      "$type": "dimension",
+      "$value": "9999px"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "0.75rem"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": "1rem"
+    },
+    "2xl": {
+      "$type": "dimension",
+      "$value": "1.25rem"
+    }
+  },
+  "font": {
+    "brand": {
+      "$type": "fontFamily",
+      "$value": [
+        "DM Sans",
+        "Inter",
+        "system-ui",
+        "sans-serif"
+      ]
+    },
+    "display": {
+      "$type": "fontFamily",
+      "$value": [
+        "Playfair Display",
+        "Georgia",
+        "serif"
+      ]
+    },
+    "mono": {
+      "$type": "fontFamily",
+      "$value": [
+        "JetBrains Mono",
+        "monospace"
+      ]
+    }
+  },
+  "typography": {
+    "display": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.display}",
+        "fontSize": "clamp(1.25rem, 4vw, 1.75rem)",
+        "fontWeight": 400,
+        "lineHeight": 1.2
+      }
+    },
+    "body": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.brand}",
+        "fontSize": "0.9375rem",
+        "fontWeight": 400,
+        "lineHeight": 1.5
+      }
+    },
+    "label": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.brand}",
+        "fontSize": "0.75rem",
+        "fontWeight": 500,
+        "lineHeight": 1.3,
+        "letterSpacing": "0.05em",
+        "textTransform": "uppercase"
+      }
+    },
+    "caption": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.brand}",
+        "fontSize": "0.6875rem",
+        "fontWeight": 500,
+        "lineHeight": 1.2
+      }
+    },
+    "mono": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "{font.mono}",
+        "fontSize": "0.875rem",
+        "fontWeight": 400,
+        "lineHeight": 1.5
+      }
+    }
+  },
+  "shadow": {
+    "ambient-low": {
+      "$type": "shadow",
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "1px",
+        "blur": "2px",
+        "spread": "0",
+        "color": "rgba(0,0,0,0.05)"
+      }
+    },
+    "ambient-mid": {
+      "$type": "shadow",
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "10px",
+        "blur": "15px",
+        "spread": "-3px",
+        "color": "rgba(0,0,0,0.05)"
+      }
+    },
+    "elevated": {
+      "$type": "shadow",
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "20px",
+        "blur": "25px",
+        "spread": "-5px",
+        "color": "rgba(0,0,0,0.05)"
+      }
+    }
+  }
+}

@@ -1,3 +1,9 @@
+import localApps from './config/apps.local.json'
+import emulatorApps from './config/apps.emulator.json'
+import iosSimulatorApps from './config/apps.ios-simulator.json'
+import recetteApps from './config/apps.recette.json'
+import productionApps from './config/apps.production.json'
+
 export interface AppEntry {
   id: string
   name: string
@@ -6,32 +12,70 @@ export interface AppEntry {
   color: string
 }
 
-export const APPS: AppEntry[] = [
-  { id: 'loodi', name: 'Loodi', icon: '🎲', url: 'https://loodi.vercel.app', color: '#ca4a16' },
-  { id: 'loodi-mate', name: 'Mate', icon: '🃏', url: null, color: '#2E8B57' },
-  { id: 'loodi-mag', name: 'Mag', icon: '📰', url: null, color: '#4A90D9' },
-  { id: 'loodi-places', name: 'Places', icon: '📍', url: null, color: '#9B59B6' },
-  { id: 'loodi-fest', name: 'Fest', icon: '🎪', url: null, color: '#E67E22' },
-  { id: 'loodi-sessions', name: 'Sessions', icon: '👥', url: null, color: '#1ABC9C' },
-  { id: 'loodi-dev', name: 'Dev', icon: '⚙️', url: 'http://localhost:8080/dev/dummy.html', color: '#6B7280' },
-]
+export type ConfigEnvironment = 'local' | 'emulator' | 'ios-simulator' | 'recette' | 'production'
+export type LocalModuleUrls = Record<string, string>
 
-// ponytail: URL à remplacer par l'URL réelle du fichier de config
-export const APPS_CONFIG_URL = 'https://apps.loodi.app/config.json'
+const LOCAL_MODULE_URLS_KEY = 'loodi:localModuleUrls'
 
-export async function fetchAppsFromConfig(): Promise<AppEntry[]> {
+const appsByEnvironment: Record<ConfigEnvironment, AppEntry[]> = {
+  local: localApps,
+  emulator: emulatorApps,
+  'ios-simulator': iosSimulatorApps,
+  recette: recetteApps,
+  production: productionApps,
+}
+
+export function getConfigEnvironment(mode: string): ConfigEnvironment {
+  if (mode === 'development' || mode === 'local') return 'local'
+  if (mode === 'android-emulator') return 'emulator'
+  if (mode === 'ios-simulator') return 'ios-simulator'
+  if (mode === 'recette') return 'recette'
+  return 'production'
+}
+
+export const configEnvironment = getConfigEnvironment(import.meta.env.MODE)
+export const isLocalBuild = configEnvironment === 'local' || configEnvironment === 'emulator' || configEnvironment === 'ios-simulator'
+
+export function getAppsForEnvironment(mode: string): AppEntry[] {
+  return appsByEnvironment[getConfigEnvironment(mode)].map((app) => ({ ...app }))
+}
+
+function isModuleUrl(value: unknown): value is string {
+  if (typeof value !== 'string') return false
   try {
-    const res = await fetch(APPS_CONFIG_URL)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const remote: AppEntry[] = await res.json()
-    if (!Array.isArray(remote)) throw new Error('invalid config')
-    // Merge: remote entries override locals by id, locals fill gaps
-    const map = new Map(APPS.map((a) => [a.id, a]))
-    for (const app of remote) {
-      if (app.id && app.url) map.set(app.id, app)
-    }
-    return Array.from(map.values())
+    const url = new URL(value)
+    return url.protocol === 'https:' || url.protocol === 'http:'
   } catch {
-    return APPS
+    return false
   }
 }
+
+export function applyLocalUrlOverrides(apps: AppEntry[], overrides: LocalModuleUrls): AppEntry[] {
+  return apps.map((app) => ({
+    ...app,
+    url: isModuleUrl(overrides[app.id]) ? overrides[app.id] : app.url,
+  }))
+}
+
+export function loadLocalModuleUrls(): LocalModuleUrls {
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(LOCAL_MODULE_URLS_KEY) ?? '{}')
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
+    return Object.fromEntries(Object.entries(value).filter(([, url]) => isModuleUrl(url)))
+  } catch {
+    return {}
+  }
+}
+
+export function saveLocalModuleUrls(urls: LocalModuleUrls) {
+  const validUrls = Object.fromEntries(Object.entries(urls).filter(([, url]) => isModuleUrl(url)))
+  try { localStorage.setItem(LOCAL_MODULE_URLS_KEY, JSON.stringify(validUrls)) } catch { /* noop */ }
+  return validUrls
+}
+
+export function getRuntimeApps(overrides = loadLocalModuleUrls()): AppEntry[] {
+  const apps = getAppsForEnvironment(import.meta.env.MODE)
+  return isLocalBuild ? applyLocalUrlOverrides(apps, overrides) : apps
+}
+
+export const APPS = getRuntimeApps()

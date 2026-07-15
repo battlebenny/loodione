@@ -1,74 +1,93 @@
-import { useState, useEffect, useRef } from 'react'
-import type { MiniHeaderProps } from './types'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowLeft, EllipsisVertical, Pencil, Plus, Settings, Trash2, User, type LucideIcon } from 'lucide-react'
+import type { MiniHeaderProps } from './types.js'
 
-export function MiniHeader({ onSettings, onUser }: MiniHeaderProps) {
+const HEADER_H = 52
+const MENU_ICONS: Record<string, LucideIcon> = {
+  'new-game': Plus,
+  'new-loan': Plus,
+  'edit-game': Pencil,
+  'delete-game': Trash2,
+  settings: Settings,
+}
+
+export function MiniHeader({ onSettings, onUser, appName, scrollProgress = 0, showBack = false, onBack, menuItems, onMenuItemSelect, hideActions = false }: MiniHeaderProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    const handler = (event: MouseEvent) => {
+      if (ref.current && !ref.current.contains(event.target as Node)) setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  return (
-    <div ref={ref} className="fixed top-0 right-0 z-50 flex items-start gap-2 p-3">
-      <button
-        onClick={onUser}
-        className="w-9 h-9 rounded-full flex items-center justify-center text-base
-          bg-white/60 dark:bg-white/10 backdrop-blur-md
-          border border-black/5 dark:border-white/10
-          shadow-sm hover:bg-white/80 dark:hover:bg-white/20 transition-colors"
-        aria-label="Profil"
-      >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-          strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-          <circle cx="12" cy="7" r="4" />
-        </svg>
-      </button>
+  const items = menuItems ?? [{ id: 'settings', label: 'Paramètres' }]
 
-      <div className="relative">
+  return (
+    <header
+      ref={ref}
+      className="loodi-mini-header"
+      style={{
+        height: `calc(${HEADER_H}px + var(--safe-area-inset-top))`,
+        paddingTop: 'var(--safe-area-inset-top)',
+        paddingLeft: 'calc(1rem + var(--safe-area-inset-left))',
+        paddingRight: 'calc(1rem + var(--safe-area-inset-right))',
+      }}
+    >
+      <div className="loodi-mini-header__glass" style={{ opacity: scrollProgress }} />
+
+      <div className="loodi-mini-header__left">
         <button
-          onClick={() => setOpen(!open)}
-          className="w-9 h-9 rounded-full flex items-center justify-center
-            bg-white/60 dark:bg-white/10 backdrop-blur-md
-            border border-black/5 dark:border-white/10
-            shadow-sm hover:bg-white/80 dark:hover:bg-white/20 transition-colors"
-          aria-label="Plus"
+          onClick={onBack}
+          className={`loodi-mini-header__back ${showBack ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+          aria-label="Retour"
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-            strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="5" r="1" />
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="12" cy="19" r="1" />
-          </svg>
+          <ArrowLeft size={18} aria-hidden="true" />
         </button>
 
-        {open && (
-          <div
-            className="absolute right-0 top-11 min-w-44 py-1 rounded-xl
-              bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl
-              border border-black/5 dark:border-white/10
-              shadow-lg"
-          >
-            <button
-              onClick={() => { onSettings(); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-sm flex items-center gap-2.5
-                text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
-                strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-              Paramètres
-            </button>
-          </div>
-        )}
+        <img src="/loodi-monogram.svg" alt="Loodi" className="loodi-mini-header__logo loodi-mini-header__logo--light" />
+        <img src="/loodi-monogram-dark.svg" alt="Loodi" className="loodi-mini-header__logo loodi-mini-header__logo--dark" />
+        {appName && <span className="loodi-mini-header__app-name">{appName}</span>}
       </div>
-    </div>
+
+      {!hideActions && (
+        <div className="loodi-mini-header__actions">
+          <button onClick={onUser} className="loodi-mini-header__icon-button" aria-label="Profil">
+            <User size={18} aria-hidden="true" />
+          </button>
+
+          <div className="loodi-mini-header__menu-container">
+            <button onClick={() => setOpen((value) => !value)} className="loodi-mini-header__icon-button" aria-label="Plus">
+              <EllipsisVertical size={18} aria-hidden="true" />
+            </button>
+
+            {open && (
+              <div className="loodi-mini-header__menu">
+                {items.map((item) => {
+                  const Icon = MENU_ICONS[item.id]
+
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        if (item.id === 'settings') onSettings()
+                        else onMenuItemSelect?.(item.id)
+                        setOpen(false)
+                      }}
+                      className={`loodi-mini-header__menu-item ${item.tone === 'danger' ? 'loodi-mini-header__menu-item--danger' : ''}`}
+                    >
+                      <span className="loodi-mini-header__menu-icon">{Icon && <Icon size={16} aria-hidden="true" />}</span>
+                      {item.label}
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </header>
   )
 }
