@@ -28,4 +28,30 @@ Les bundles ESM externalisent `react`, `react-dom` et `lucide-react`.
 
 `MiniHeader` attend les assets `/loodi-monogram.svg` et `/loodi-monogram-dark.svg` dans l'application hôte.
 
+## BottomNav
+
+Par défaut, `BottomNav` conserve le modèle historique : quatre `tabs` au maximum et le bouton Applications/Loodi. `onAppsTap` reste alors requis.
+
+```tsx
+<BottomNav
+  tabs={tabs}
+  activeTab={activeTab}
+  onTabTap={setActiveTab}
+  onAppsTap={openLauncher}
+/>
+```
+
+Pour une PWA sans launcher, `showApps={false}` affiche jusqu’à cinq onglets fournis et rend `onAppsTap` optionnel. Les icônes Lucide `settings`, `square-library`, `user` et `users`, ainsi que les icônes de navigation Loodi, sont reconnues.
+
+```tsx
+<BottomNav
+  showApps={false}
+  tabs={[{ id: 'settings', icon: 'settings', label: 'Paramètres', badgeCount: 3 }]}
+  onTabTap={setActiveTab}
+  onSwipeUp={openSheet}
+/>
+```
+
+`badgeCount` s’affiche seulement au-dessus de zéro et est plafonné visuellement à `99+` ; le libellé accessible conserve le compte exact. `onSwipeUp` est un callback générique optionnel, déclenché par un glissement vertical vers le haut d’au moins 40px. Tous les styles de la navigation, y compris le badge (`status-danger` / `status-on-solid`), sont fournis par `@loodi/ui/bottom-nav.css` : aucune classe Tailwind hôte n’est requise.
+
 La version publiée suit semver. Les changements incompatibles de props, de comportement ou de tokens imposent une version majeure.

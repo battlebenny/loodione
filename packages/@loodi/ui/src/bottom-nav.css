@@ -39,7 +39,7 @@
   border: 0;
   border-radius: var(--radius-lg);
   background: transparent;
-  color: color-mix(in srgb, var(--color-text-light) 40%, transparent);
+  color: color-mix(in srgb, var(--color-text-light) 50%, transparent);
   font: inherit;
   cursor: pointer;
   transition: color 150ms ease-out, transform 150ms ease-out;
@@ -48,26 +48,44 @@
 .loodi-bottom-nav__tab:hover { color: var(--color-text-light); }
 .loodi-bottom-nav__tab:active { transform: scale(.9); }
 .loodi-bottom-nav__tab--active { color: var(--color-brand-primary); }
-.loodi-bottom-nav__icon { display: inline-flex; line-height: 1; }
+.loodi-bottom-nav__icon { position: relative; display: inline-flex; line-height: 1; }
 .loodi-bottom-nav__label { font: var(--typography-caption); line-height: 1; }
+
+.loodi-bottom-nav__badge {
+  position: absolute;
+  top: calc(var(--spacing-xs) * -1);
+  right: calc(var(--spacing-xs) * -1);
+  z-index: 1;
+  display: inline-flex;
+  min-width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+  padding-inline: calc(var(--spacing-xs) / 2);
+  border-radius: var(--radius-pill);
+  background: var(--color-theme-status-danger-solid);
+  color: var(--color-status-on-solid);
+  font: var(--typography-caption);
+  line-height: 1;
+  pointer-events: none;
+}
 
 .loodi-bottom-nav__indicator {
   position: absolute;
   top: var(--spacing-xs);
   bottom: var(--spacing-xs);
-  left: 0;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-pill);
   background: color-mix(in srgb, var(--color-text-light) 5%, transparent);
   pointer-events: none;
-  transition: transform 300ms cubic-bezier(.34, 1.56, .64, 1);
+  transition: left 300ms cubic-bezier(.34, 1.56, .64, 1);
 }
 
-:where(.dark) .loodi-bottom-nav { color: var(--color-text-dark); }
+:where(.dark) .loodi-bottom-nav { color: var(--color-text-primary-dark); }
 :where(.dark) .loodi-bottom-nav__surface { border-color: var(--color-border-subtle-dark); background: var(--color-surface-glass-dark); }
-:where(.dark) .loodi-bottom-nav__tab { color: color-mix(in srgb, var(--color-text-dark) 40%, transparent); }
-:where(.dark) .loodi-bottom-nav__tab:hover { color: var(--color-text-dark); }
+:where(.dark) .loodi-bottom-nav__tab { color: color-mix(in srgb, var(--color-text-primary-dark) 50%, transparent); }
+:where(.dark) .loodi-bottom-nav__tab:hover { color: var(--color-text-primary-dark); }
 :where(.dark) .loodi-bottom-nav__tab--active { color: var(--color-brand-primary); }
-:where(.dark) .loodi-bottom-nav__indicator { background: color-mix(in srgb, var(--color-text-dark) 10%, transparent); }
+:where(.dark) .loodi-bottom-nav__indicator { background: color-mix(in srgb, var(--color-text-primary-dark) 10%, transparent); }
 
 @media (prefers-reduced-motion: reduce) {
   .loodi-bottom-nav,

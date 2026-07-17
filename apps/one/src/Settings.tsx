@@ -17,7 +17,7 @@ interface SettingsProps {
 
 function CheckIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ca4a16" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-brand-primary)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 6 9 17l-5-5" />
     </svg>
   )
@@ -103,7 +103,7 @@ function SectionCard({ children }: { children: ReactNode }) {
 
 function SectionHeader({ label }: { label: string }) {
   return (
-    <div className="px-4 py-3 text-xs font-medium text-black/40 dark:text-white/40 uppercase tracking-wider border-b border-black/5 dark:border-white/5">
+    <div className="px-4 py-3 text-xs font-medium text-black/60 dark:text-white/60 uppercase tracking-wider border-b border-black/5 dark:border-white/5">
       {label}
     </div>
   )
@@ -134,7 +134,7 @@ function Row({ icon, label, secondary, onClick, last }: RowProps) {
       <SettingsRowIcon>{icon}</SettingsRowIcon>
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium">{label}</div>
-        <div className="text-xs text-black/40 dark:text-white/40 mt-0.5 truncate">{secondary}</div>
+        <div className="text-xs text-black/50 dark:text-white/50 mt-0.5 truncate">{secondary}</div>
       </div>
       <ChevronRight />
     </button>
@@ -199,7 +199,7 @@ export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppI
   }
 
   return (
-    <div className="fixed inset-0 z-20 bg-[var(--color-settings-bg)] dark:bg-[var(--color-settings-bg-dark)] text-[var(--color-text-light)] dark:text-[var(--color-text-dark)] flex flex-col">
+    <div className="fixed inset-0 z-20 bg-[var(--color-settings-bg)] dark:bg-[var(--color-settings-bg-dark)] text-[var(--color-text-light)] dark:text-[var(--color-text-primary-dark)] flex flex-col">
       <div
         className="flex items-center gap-3 px-4 pt-14 pb-3"
         style={{
@@ -281,7 +281,7 @@ export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppI
             onClick={() => { onFavoriteChange(null); setAppSheetOpen(false) }}
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/40 dark:text-white/40">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
                 <path d="M18 6 6 18" /><path d="m6 6 12 12" />
               </svg>
             </div>
@@ -321,14 +321,14 @@ export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppI
                 placeholder="https://…"
                 value={localModuleUrlDrafts[app.id] ?? ''}
                 onChange={(event) => setLocalModuleUrlDrafts((urls) => ({ ...urls, [app.id]: event.target.value }))}
-                className="w-full rounded-lg border border-black/10 bg-white/60 px-3 py-2.5 font-mono text-sm text-black/80 outline-none placeholder:text-black/25 focus:border-[#ca4a16] dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:placeholder:text-white/25"
+                className="w-full rounded-lg border border-black/10 bg-white/60 px-3 py-2.5 font-mono text-sm text-black/80 outline-none placeholder:text-black/25 focus:border-[var(--color-brand-primary)] dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:placeholder:text-white/25"
               />
             </label>
           ))}
           <button
             type="button"
             onClick={saveLocalModuleUrls}
-            className="w-full rounded-xl bg-[#ca4a16] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[#b33d0f]"
+            className="w-full rounded-xl bg-[var(--color-brand-primary)] px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-[var(--color-brand-primary-hover)]"
           >
             Enregistrer les URL
           </button>

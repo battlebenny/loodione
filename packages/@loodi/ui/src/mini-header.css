@@ -118,16 +118,16 @@
 .loodi-mini-header__menu-item--danger { color: var(--color-brand-primary); }
 .loodi-mini-header__menu-icon { display: inline-flex; width: 16px; height: 16px; align-items: center; justify-content: center; flex: 0 0 auto; }
 
-:where(.dark) .loodi-mini-header { color: var(--color-text-dark); }
+:where(.dark) .loodi-mini-header { color: var(--color-text-primary-dark); }
 :where(.dark) .loodi-mini-header__glass { border-color: var(--color-border-subtle-dark); background: var(--color-surface-glass-dark); }
 :where(.dark) .loodi-mini-header__icon-button { border-color: var(--color-border-subtle-dark); background: var(--color-surface-glass-dark); }
 :where(.dark) .loodi-mini-header__icon-button:hover { background: color-mix(in srgb, var(--color-surface-glass-dark) 85%, var(--color-bg-dark)); }
 :where(.dark) .loodi-mini-header__logo--light { display: none; }
 :where(.dark) .loodi-mini-header__logo--dark { display: block; }
 :where(.dark) .loodi-mini-header__app-name,
-:where(.dark) .loodi-mini-header__menu-item { color: color-mix(in srgb, var(--color-text-dark) 70%, transparent); }
+:where(.dark) .loodi-mini-header__menu-item { color: color-mix(in srgb, var(--color-text-primary-dark) 70%, transparent); }
 :where(.dark) .loodi-mini-header__menu { border-color: var(--color-border-subtle-dark); background: color-mix(in srgb, var(--color-surface-glass-dark) 90%, var(--color-bg-dark)); }
-:where(.dark) .loodi-mini-header__menu-item:hover { background: color-mix(in srgb, var(--color-text-dark) 5%, transparent); }
+:where(.dark) .loodi-mini-header__menu-item:hover { background: color-mix(in srgb, var(--color-text-primary-dark) 5%, transparent); }
 :where(.dark) .loodi-mini-header__menu-item--danger { color: var(--color-brand-primary); }
 
 @media (prefers-reduced-motion: reduce) {

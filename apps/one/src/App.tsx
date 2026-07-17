@@ -131,7 +131,7 @@ function App() {
   }
 
   return (
-    <div className="h-dvh bg-[var(--color-bg-light)] dark:bg-[var(--color-bg-dark)] text-[var(--color-text-light)] dark:text-[var(--color-text-dark)] overflow-hidden" style={{ fontFamily: 'var(--font-brand)' }}>
+    <div className="h-dvh bg-[var(--color-bg-light)] dark:bg-[var(--color-bg-dark)] text-[var(--color-text-light)] dark:text-[var(--color-text-primary-dark)] overflow-hidden" style={{ fontFamily: 'var(--font-brand)' }}>
       <MiniHeader
         onSettings={toggleSettings}
         onUser={() => {}}

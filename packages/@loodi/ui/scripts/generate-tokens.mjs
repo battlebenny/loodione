@@ -7,12 +7,13 @@ const sourcePath = resolve(root, 'src/tokens.source.json')
 const source = JSON.parse(await readFile(sourcePath, 'utf8'))
 
 const expectedCounts = {
-  color: 26,
+  color: 78,
+  theme: 30,
   spacing: 5,
   radius: 4,
   font: 3,
   typography: 5,
-  shadow: 3,
+  shadow: 4,
 }
 
 for (const [group, count] of Object.entries(expectedCounts)) {
@@ -51,6 +52,12 @@ const css = [
   ...Object.entries(source.typography)
     .filter(([, value]) => value.textTransform)
     .map(([name, value]) => `  --typography-${name}-text-transform: ${value.textTransform};`),
+  ...Object.entries(source.theme)
+    .map(([name, variants]) => `  --color-theme-${name}: ${cssColor(variants.light)};`),
+  '}',
+  '.dark {',
+  ...Object.entries(source.theme)
+    .map(([name, variants]) => `  --color-theme-${name}: ${cssColor(variants.dark)};`),
   '}',
   '',
 ].join('\n')
@@ -60,6 +67,16 @@ const dtcg = {
   color: Object.fromEntries(Object.entries(source.color).map(([name, value]) => [name, {
     '$type': 'color',
     '$value': value,
+  }])),
+  theme: Object.fromEntries(Object.entries(source.theme).map(([name, variants]) => [name, {
+    light: {
+      '$type': 'color',
+      '$value': variants.light,
+    },
+    dark: {
+      '$type': 'color',
+      '$value': variants.dark,
+    },
   }])),
   spacing: Object.fromEntries(Object.entries(source.spacing).map(([name, value]) => [name, {
     '$type': 'dimension',

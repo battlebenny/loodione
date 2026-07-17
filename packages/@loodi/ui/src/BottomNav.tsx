@@ -1,9 +1,10 @@
-import { useCallback, useRef, type ReactNode } from 'react'
-import { Grid2X2, SquareLibrary, User, Users, type LucideIcon } from 'lucide-react'
+import { useCallback, useRef, type PointerEvent, type ReactNode } from 'react'
+import { Grid2X2, Settings, SquareLibrary, User, Users, type LucideIcon } from 'lucide-react'
 import type { BottomNavProps } from './types.js'
 
 const LUCIDE: Record<string, LucideIcon> = {
   'square-library': SquareLibrary,
+  settings: Settings,
   users: Users,
   user: User,
 }
@@ -26,11 +27,12 @@ function LoodiNavigationIcon({ icon, active }: { icon: string; active: boolean }
   }
 }
 
-export function BottomNav({ tabs, activeTab, hidden, onTabTap, onAppsTap, onAppsLongPress }: BottomNavProps) {
-  const moduleTabs = tabs.slice(0, 4)
-  const total = moduleTabs.length + 1
+export function BottomNav({ tabs, activeTab, hidden, onTabTap, onAppsTap, onAppsLongPress, onSwipeUp, showApps = true }: BottomNavProps) {
+  const moduleTabs = tabs.slice(0, showApps ? 4 : 5)
+  const total = moduleTabs.length + (showApps ? 1 : 0)
   const activeIdx = moduleTabs.findIndex((tab) => tab.id === activeTab)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const swipeStartY = useRef<number | undefined>(undefined)
 
   const handlePointerDown = useCallback(() => {
     if (!onAppsLongPress) return
@@ -45,6 +47,18 @@ export function BottomNav({ tabs, activeTab, hidden, onTabTap, onAppsTap, onApps
       longPressTimer.current = undefined
     }
   }, [])
+  const handleSwipeStart = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    swipeStartY.current = event.clientY
+  }, [])
+  const handleSwipeEnd = useCallback((event: PointerEvent<HTMLDivElement>) => {
+    const startY = swipeStartY.current
+    swipeStartY.current = undefined
+
+    if (startY !== undefined && startY - event.clientY >= 40) onSwipeUp?.()
+  }, [onSwipeUp])
+  const cancelSwipe = useCallback(() => {
+    swipeStartY.current = undefined
+  }, [])
 
   return (
     <nav
@@ -55,44 +69,57 @@ export function BottomNav({ tabs, activeTab, hidden, onTabTap, onAppsTap, onApps
         width: 'calc(100% - 2rem - var(--safe-area-inset-left) - var(--safe-area-inset-right))',
       }}
     >
-      <div className="loodi-bottom-nav__surface" style={{ gridTemplateColumns: `repeat(${total}, 1fr)` }}>
+      <div
+        className="loodi-bottom-nav__surface"
+        style={{ gridTemplateColumns: `repeat(${total}, 1fr)` }}
+        onPointerDown={handleSwipeStart}
+        onPointerUp={handleSwipeEnd}
+        onPointerCancel={cancelSwipe}
+      >
         {moduleTabs.map((tab) => {
           const Icon = LUCIDE[tab.icon]
           const isActive = activeTab === tab.id
           const usesLoodiNavigationIcon = LOODI_NAVIGATION_ICONS.has(tab.icon)
+          const badgeCount = Number.isFinite(tab.badgeCount) ? Math.max(0, Math.floor(tab.badgeCount!)) : 0
+          const hasBadge = badgeCount > 0
 
           return (
             <button
               key={tab.id}
               onClick={() => onTabTap(tab.id)}
-              className={`loodi-bottom-nav__tab ${isActive ? 'loodi-bottom-nav__tab--active text-[var(--color-brand-primary)]' : ''}`}
-              aria-label={tab.label}
+              className={`loodi-bottom-nav__tab ${isActive ? 'loodi-bottom-nav__tab--active' : ''}`}
+              aria-label={hasBadge ? `${tab.label}, ${badgeCount} notifications` : tab.label}
             >
-              <span className="loodi-bottom-nav__icon">{usesLoodiNavigationIcon ? <LoodiNavigationIcon icon={tab.icon} active={isActive} /> : Icon ? <Icon size={20} strokeWidth={1.5} aria-hidden="true" /> : tab.icon}</span>
+              <span className="loodi-bottom-nav__icon">
+                {usesLoodiNavigationIcon ? <LoodiNavigationIcon icon={tab.icon} active={isActive} /> : Icon ? <Icon size={20} strokeWidth={1.5} aria-hidden="true" /> : tab.icon}
+                {hasBadge && <span className="loodi-bottom-nav__badge" aria-hidden="true">{badgeCount > 99 ? '99+' : badgeCount}</span>}
+              </span>
               <span className="loodi-bottom-nav__label">{tab.label}</span>
             </button>
           )
         })}
 
-        <button
-          onClick={onAppsTap}
-          onPointerDown={handlePointerDown}
-          onPointerUp={cancelLongPress}
-          onPointerLeave={cancelLongPress}
-          onPointerCancel={cancelLongPress}
-          className="loodi-bottom-nav__tab"
-          aria-label="Applications"
-        >
-          <Grid2X2 size={20} strokeWidth={1.5} aria-hidden="true" />
-          <span className="loodi-bottom-nav__label">Loodi</span>
-        </button>
+        {showApps && (
+          <button
+            onClick={onAppsTap}
+            onPointerDown={handlePointerDown}
+            onPointerUp={cancelLongPress}
+            onPointerLeave={cancelLongPress}
+            onPointerCancel={cancelLongPress}
+            className="loodi-bottom-nav__tab"
+            aria-label="Applications"
+          >
+            <Grid2X2 size={20} strokeWidth={1.5} aria-hidden="true" />
+            <span className="loodi-bottom-nav__label">Loodi</span>
+          </button>
+        )}
 
         {total > 1 && activeIdx >= 0 && (
           <div
             className="loodi-bottom-nav__indicator"
             style={{
-              width: `calc(100% / ${total})`,
-              transform: `translateX(${activeIdx * 100}%)`,
+              width: `calc(100% / ${total} - var(--spacing-xs) - var(--spacing-xs))`,
+              left: `calc(var(--spacing-xs) + ${activeIdx * (100 / total)}%)`,
             }}
           />
         )}

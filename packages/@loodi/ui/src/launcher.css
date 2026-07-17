@@ -77,11 +77,11 @@
 .loodi-launcher__handle-wrap { display: flex; justify-content: center; padding-bottom: var(--spacing-lg); }
 .loodi-launcher__handle { width: 36px; height: 4px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-text-light) 20%, transparent); }
 
-:where(.dark) .loodi-launcher__backdrop { background: color-mix(in srgb, var(--color-text-dark) 20%, transparent); }
+:where(.dark) .loodi-launcher__backdrop { background: color-mix(in srgb, var(--color-text-primary-dark) 20%, transparent); }
 :where(.dark) .loodi-launcher { border-color: var(--color-border-subtle-dark); background: var(--color-surface-glass-dark); }
-:where(.dark) .loodi-launcher__app { color: color-mix(in srgb, var(--color-text-dark) 70%, transparent); }
-:where(.dark) .loodi-launcher__app:hover { background: color-mix(in srgb, var(--color-text-dark) 5%, transparent); }
-:where(.dark) .loodi-launcher__handle { background: color-mix(in srgb, var(--color-text-dark) 20%, transparent); }
+:where(.dark) .loodi-launcher__app { color: color-mix(in srgb, var(--color-text-primary-dark) 70%, transparent); }
+:where(.dark) .loodi-launcher__app:hover { background: color-mix(in srgb, var(--color-text-primary-dark) 5%, transparent); }
+:where(.dark) .loodi-launcher__handle { background: color-mix(in srgb, var(--color-text-primary-dark) 20%, transparent); }
 
 @media (prefers-reduced-motion: reduce) {
   .loodi-launcher__backdrop,

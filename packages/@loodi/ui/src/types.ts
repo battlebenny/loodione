@@ -2,6 +2,7 @@ export interface Tab {
   id: string
   icon: string
   label: string
+  badgeCount?: number
 }
 
 export interface LauncherApp {
@@ -26,14 +27,19 @@ export interface MiniHeaderProps {
 }
 export interface MiniHeaderMenuItem { id: string; label: string; tone?: 'default' | 'danger' }
 
-export interface BottomNavProps {
+export interface BottomNavBaseProps {
   tabs: Tab[]
   activeTab?: string
   hidden?: boolean
   onTabTap: (tabId: string) => void
-  onAppsTap: () => void
   onAppsLongPress?: () => void
+  onSwipeUp?: () => void
 }
+
+export type BottomNavProps = BottomNavBaseProps & (
+  | { showApps?: true; onAppsTap: () => void }
+  | { showApps: false; onAppsTap?: () => void }
+)
 
 export interface LauncherProps {
   apps: LauncherApp[]

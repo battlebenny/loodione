@@ -100,7 +100,7 @@ export function BottomSheet({ open, onClose, title, children }: BottomSheetProps
         onClick={handleClose}
       />
       <div
-        className="fixed inset-x-0 bottom-0 z-[201] mx-auto flex max-h-[82vh] w-full max-w-[480px] flex-col rounded-t-[20px] bg-white/60 dark:bg-gray-900/70 backdrop-blur-xl pt-3 shadow-lg"
+        className="fixed inset-x-0 bottom-0 z-[201] mx-auto flex max-h-[82vh] w-full max-w-[480px] flex-col rounded-t-[20px] bg-white dark:bg-[var(--color-surface-glass-dark)] backdrop-blur-xl pt-3 shadow-lg"
         style={{
           transform: isOpen ? `translateY(${dragOffset}px)` : 'translateY(100%)',
           transition: dragOffset > 0 ? 'none' : 'transform 250ms ease-out',
