@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de `@loodi/bridge` sont documentées ici.
 
+## [0.2.1]
+
+### Fixed
+
+- Publication corrective de la version `0.2.0`, sans modification du contrat public du bridge.
+
 ## [0.2.0]
 
 ### Added
