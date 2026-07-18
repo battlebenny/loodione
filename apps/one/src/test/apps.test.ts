@@ -76,6 +76,7 @@ describe('module configuration', () => {
     expect(getAppsForEnvironment('android-emulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://10.0.2.2:4000')
     expect(getAppsForEnvironment('android-device')).toEqual([
       { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
+      { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
     ])
     expect(getAppsForEnvironment('ios-simulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://localhost:4000')
     expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBeNull()
@@ -88,7 +89,10 @@ describe('module configuration', () => {
       'https://10.0.2.2:4000',
       'https://10.0.2.2:4002',
     ])
-    expect(getBridgeAllowedOrigins('android-device')).toEqual(['https://192.168.0.109:4002'])
+    expect(getBridgeAllowedOrigins('android-device')).toEqual([
+      'https://192.168.0.109:4000',
+      'https://192.168.0.109:4002',
+    ])
     expect(getBridgeAllowedOrigins('ios-simulator')).toEqual([
       'https://localhost:4000',
       'https://localhost:4002',

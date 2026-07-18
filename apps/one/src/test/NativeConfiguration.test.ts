@@ -26,11 +26,12 @@ describe('native configuration', () => {
     expect(iosInfo).toContain('<key>NSCameraUsageDescription</key>')
   })
 
-  it('defines the physical Android device module registry', () => {
+  it('defines the physical Android device registry with Collec and the LAN dummy', () => {
     const apps = JSON.parse(readFileSync(resolve(process.cwd(), 'src/config/apps.android-device.json'), 'utf8'))
 
     expect(apps).toEqual([
       { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
+      { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
     ])
   })
 
