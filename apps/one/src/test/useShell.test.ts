@@ -90,6 +90,8 @@ describe('module overlays', () => {
     const inactiveWindow = { postMessage: vi.fn() } as unknown as WindowProxy
     const activeFrame = document.createElement('iframe')
     const inactiveFrame = document.createElement('iframe')
+    activeFrame.src = 'https://collec.loodi.test:4002/catalog'
+    inactiveFrame.src = 'https://dummy.loodi.test:4000/dev'
     Object.defineProperty(activeFrame, 'contentWindow', { value: activeWindow })
     Object.defineProperty(inactiveFrame, 'contentWindow', { value: inactiveWindow })
 
@@ -98,6 +100,7 @@ describe('module overlays', () => {
       result.current.registerIframe('loodi-mate', inactiveFrame)
       window.dispatchEvent(new MessageEvent('message', {
         source: inactiveWindow,
+        origin: 'https://dummy.loodi.test:4000',
         data: { type: 'loodi:event', event: 'loodi:overlaychange', detail: { visible: true } },
       }))
     })
@@ -107,6 +110,7 @@ describe('module overlays', () => {
     act(() => {
       window.dispatchEvent(new MessageEvent('message', {
         source: activeWindow,
+        origin: 'https://collec.loodi.test:4002',
         data: { type: 'loodi:event', event: 'loodi:overlaychange', detail: { visible: true } },
       }))
     })
@@ -116,10 +120,65 @@ describe('module overlays', () => {
     act(() => {
       window.dispatchEvent(new MessageEvent('message', {
         source: activeWindow,
+        origin: 'https://collec.loodi.test:4002',
         data: { type: 'loodi:event', event: 'loodi:overlaychange', detail: { visible: false } },
       }))
     })
 
     expect(result.current.overlayActive).toBe(false)
+  })
+})
+
+describe('strict bridge runtime', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+    document.querySelectorAll('iframe[data-app]').forEach((iframe) => iframe.remove())
+  })
+
+  it('uses the registered iframe origin for ready and theme messages', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    })
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    const { result } = renderHook(() => useShell())
+    const iframe = document.createElement('iframe')
+    iframe.dataset.app = 'loodi'
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    document.body.append(iframe)
+
+    act(() => {
+      result.current.registerIframe('loodi', iframe)
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://dummy.loodi.test:4000',
+        data: { type: 'loodi:ready' },
+      }))
+    })
+
+    expect(result.current.readyAppIds).not.toContain('loodi')
+
+    act(() => {
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:ready' },
+      }))
+      result.current.setThemeMode('dark')
+    })
+
+    expect(result.current.readyAppIds).toContain('loodi')
+    expect(child.postMessage).toHaveBeenLastCalledWith({
+      type: 'loodi:event',
+      event: 'loodi:themechange',
+      detail: { theme: 'dark' },
+    }, 'https://collec.loodi.test:4002')
   })
 })

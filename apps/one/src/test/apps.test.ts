@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
+  BRIDGE_ALLOWED_ORIGINS,
   applyLocalUrlOverrides,
+  getBridgeAllowedOrigins,
   getAppsForEnvironment,
   getConfigEnvironment,
   getRuntimeApps,
@@ -70,6 +72,21 @@ describe('module configuration', () => {
     expect(getAppsForEnvironment('ios-simulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://localhost:4000')
     expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBeNull()
     expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi')?.url).toBe('https://loodi.vercel.app')
+  })
+
+  it('exposes an explicit bridge origin allowlist for every environment', () => {
+    expect(getBridgeAllowedOrigins('development')).toEqual(BRIDGE_ALLOWED_ORIGINS.local)
+    expect(getBridgeAllowedOrigins('android-emulator')).toEqual([
+      'https://10.0.2.2:4000',
+      'https://10.0.2.2:4002',
+    ])
+    expect(getBridgeAllowedOrigins('ios-simulator')).toEqual([
+      'https://localhost:4000',
+      'https://localhost:4002',
+    ])
+    expect(getBridgeAllowedOrigins('recette')).toEqual([])
+    expect(getBridgeAllowedOrigins('production')).toEqual(['https://loodi.vercel.app'])
+    expect(Object.values(BRIDGE_ALLOWED_ORIGINS).flat()).not.toContain('*')
   })
 
   it('uses valid local overrides without changing the other module URLs', () => {

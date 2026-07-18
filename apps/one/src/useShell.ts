@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import {
   applyLocalUrlOverrides,
+  getBridgeAllowedOrigins,
   getAppsForEnvironment,
   getRuntimeApps,
   isLocalBuild,
@@ -115,14 +116,6 @@ export function useShell() {
     void refreshRemoteRegistry()
   }, [])
 
-  // Apply theme to shell + broadcast to modules
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', theme === 'dark')
-    document.querySelectorAll<HTMLIFrameElement>('iframe[data-app]').forEach((iframe) => {
-      iframe.contentWindow?.postMessage({ type: 'loodi:event', event: 'loodi:themechange', detail: { theme } }, '*')
-    })
-  }, [theme])
-
   const themeRef = useRef(theme)
   useEffect(() => { themeRef.current = theme }, [theme])
 
@@ -135,6 +128,7 @@ export function useShell() {
   const tabsByApp = useRef<Map<string, Tab[]>>(new Map())
   const headerActionsByApp = useRef<Map<string, HeaderAction[]>>(new Map())
   const headerOptionsByApp = useRef<Map<string, HeaderOptions>>(new Map())
+  const bridgeAllowedOrigins = getBridgeAllowedOrigins(import.meta.env.MODE)
 
   const HEADER_H = 52
   const scrollProgress = Math.min(scrollY / (HEADER_H * 1.5), 1)
@@ -147,8 +141,7 @@ export function useShell() {
           if (ids.has(appId)) return ids
           return new Set(ids).add(appId)
         })
-        const iframe = document.querySelector(`iframe[data-app="${appId}"]`) as HTMLIFrameElement
-        iframe?.contentWindow?.postMessage({ type: 'loodi:event', event: 'loodi:themechange', detail: { theme: themeRef.current } }, '*')
+        bridge.sendThemeChange(appId, themeRef.current)
       },
       onBadgeCount: (id, count) => console.log('[Loodi] badge', id, count),
       onError: (id, code, rec) => console.error('[Loodi] error', id, code, rec),
@@ -200,6 +193,11 @@ export function useShell() {
         goBack()
       },
       onRequestShowSwitcher: toggleLauncher,
+    }, {
+      security: {
+        mode: 'strict',
+        allowedOrigins: bridgeAllowedOrigins,
+      },
     })
     bridgeRef.current = bridge
     pendingIframes.current.forEach((el, appId) => bridge.registerModule(appId, el))
@@ -207,6 +205,15 @@ export function useShell() {
     registerRenderedModules(bridge)
     return () => bridge.destroy()
   }, [])
+
+  // Apply the theme to One, then notify registered modules through the strict
+  // bridge so every postMessage uses the iframe's exact configured origin.
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+    state.apps.forEach((app) => {
+      bridgeRef.current?.sendThemeChange(app.id, theme)
+    })
+  }, [state.apps, theme])
 
   // Wheel fallback for iframes without bridge scroll support
   useEffect(() => {
@@ -340,6 +347,10 @@ export function useShell() {
     bridgeRef.current?.sendBack(state.activeAppId)
   }, [state.activeAppId])
 
+  const sendTabTap = useCallback((tabId: string) => {
+    bridgeRef.current?.sendTabTap(state.activeAppId, tabId)
+  }, [state.activeAppId])
+
   const setLocalModuleUrls = useCallback((urls: LocalModuleUrls) => {
     const validUrls = saveLocalModuleUrls(urls)
     setLocalModuleUrlsState(validUrls)
@@ -373,5 +384,6 @@ export function useShell() {
     readyAppIds,
     sendHeaderAction,
     sendBack,
+    sendTabTap,
   }
 }

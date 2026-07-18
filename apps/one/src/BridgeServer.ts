@@ -43,9 +43,6 @@ export class BridgeServer {
     this.callbacks = callbacks
     this.strictValidation = opts?.security?.mode === 'strict'
     this.allowedOrigins = new Set(opts?.security?.allowedOrigins ?? [])
-    if (this.strictValidation && this.allowedOrigins.size === 0) {
-      throw new Error('Strict bridge validation requires at least one allowed origin')
-    }
     window.addEventListener('message', this.onMessage)
   }
 
@@ -94,6 +91,14 @@ export class BridgeServer {
     this.postMessage(appId, { type: 'loodi:event', event: 'loodi:back', detail: undefined })
   }
 
+  sendThemeChange(appId: string, theme: 'dark' | 'light'): void {
+    this.postMessage(appId, { type: 'loodi:event', event: 'loodi:themechange', detail: { theme } })
+  }
+
+  sendTabTap(appId: string, tabId: string): void {
+    this.postMessage(appId, { type: 'loodi:event', event: 'loodi:tabtap', detail: { tabId } })
+  }
+
   broadcast(type: string, payload: Record<string, unknown>): void {
     this.modules.forEach((_, id) => {
       this.postMessage(id, { type, ...payload })
@@ -123,7 +128,11 @@ export class BridgeServer {
 
     const appId = this.findAppId(e.source as WindowProxy | null)
     if (!appId) return
-    if (this.strictValidation && (!this.allowedOrigins.has(e.origin) || !isBridgeProtocolMessage(msg))) return
+    if (this.strictValidation) {
+      const iframe = this.modules.get(appId)
+      const expectedOrigin = iframe ? this.getTargetOrigin(iframe) : null
+      if (!expectedOrigin || e.origin !== expectedOrigin || !isBridgeProtocolMessage(msg)) return
+    }
 
     switch (msg.type) {
       case 'loodi:call':
@@ -150,6 +159,11 @@ export class BridgeServer {
   private handleCall(appId: string, msg: { method: string; args: unknown[]; id: number }) {
     const respond = (result?: unknown, error?: string) => {
       this.postMessage(appId, { type: 'loodi:response', id: msg.id, result, error })
+    }
+
+    if (!hasValidCallArguments(msg.method, msg.args)) {
+      respond(undefined, `Invalid arguments for bridge method: ${msg.method}`)
+      return
     }
 
     try {
@@ -182,7 +196,6 @@ export class BridgeServer {
           break
         case 'setBottomNav': {
           const [tabs] = msg.args as [Tab[]]
-          if (!Array.isArray(tabs) || !tabs.every(isTab)) throw new Error('Bottom navigation tabs must be an array of tabs')
           this.moduleInfos.set(appId, {
             ...(this.moduleInfos.get(appId) ?? { headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
             tabs,
@@ -193,7 +206,6 @@ export class BridgeServer {
         }
         case 'setHeaderActions': {
           const [actions] = msg.args as [HeaderAction[]]
-          if (!Array.isArray(actions)) throw new Error('Header actions must be an array')
           this.moduleInfos.set(appId, {
             ...(this.moduleInfos.get(appId) ?? { tabs: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
             headerActions: actions,
@@ -204,9 +216,6 @@ export class BridgeServer {
         }
         case 'setHeaderOptions': {
           const [options] = msg.args as [HeaderOptions]
-          if (!options || typeof options !== 'object' || Array.isArray(options)) {
-            throw new Error('Header options must be an object')
-          }
           const headerOptions = {
             hideActions: options.hideActions === true,
             canGoBack: options.canGoBack === true,
@@ -253,7 +262,55 @@ export class BridgeServer {
 function isTab(value: unknown): value is Tab {
   return typeof value === 'object'
     && value !== null
-    && typeof (value as Tab).id === 'string'
-    && typeof (value as Tab).icon === 'string'
-    && typeof (value as Tab).label === 'string'
+    && isNonEmptyString((value as Tab).id)
+    && isNonEmptyString((value as Tab).icon)
+    && isNonEmptyString((value as Tab).label)
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim() !== ''
+}
+
+function isHeaderAction(value: unknown): value is HeaderAction {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const action = value as HeaderAction
+  return isNonEmptyString(action.id)
+    && isNonEmptyString(action.label)
+    && (action.tone === undefined || action.tone === 'default' || action.tone === 'danger')
+}
+
+function isHeaderOptions(value: unknown): value is HeaderOptions {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const options = value as Record<string, unknown>
+  return Object.keys(options).every((key) => key === 'hideActions' || key === 'canGoBack')
+    && (options.hideActions === undefined || typeof options.hideActions === 'boolean')
+    && (options.canGoBack === undefined || typeof options.canGoBack === 'boolean')
+}
+
+function hasValidCallArguments(method: string, args: unknown[]): boolean {
+  switch (method) {
+    case 'getUser':
+    case 'getToken':
+    case 'getCollection':
+    case 'getNetworkStatus':
+    case 'closeApp':
+    case 'showAppSwitcher':
+      return args.length === 0
+    case 'openApp':
+      return (args.length === 1 || args.length === 2)
+        && isNonEmptyString(args[0])
+        && (args[1] === undefined || typeof args[1] === 'string')
+    case 'setBottomNav':
+      return args.length === 1 && Array.isArray(args[0]) && args[0].every(isTab)
+    case 'setHeaderActions':
+      return args.length === 1 && Array.isArray(args[0]) && args[0].every(isHeaderAction)
+    case 'setHeaderOptions':
+      return args.length === 1 && isHeaderOptions(args[0])
+    case 'queueAction':
+      return args.length === 1
+    case 'requestPermission':
+      return args.length === 1 && (args[0] === 'camera' || args[0] === 'geolocation')
+    default:
+      return true
+  }
 }

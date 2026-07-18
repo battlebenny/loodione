@@ -2,6 +2,12 @@
 
 Toutes les évolutions notables de `@loodi/bridge` sont documentées ici.
 
+## [0.2.2]
+
+### Fixed
+
+- Une navigation module non vide conserve le contrôle statique « Loodi » du shell ; `setBottomNav([])` masque toujours la navigation entière.
+
 ## [0.2.1]
 
 ### Fixed

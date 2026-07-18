@@ -17,6 +17,12 @@ npm run build          # build de production
 
 Pour un appareil physique, saisir les URLs HTTPS joignables depuis cet appareil : IP LAN du Mac ou URL de tunnel. `localhost` ne cible pas le Mac depuis un téléphone Android.
 
+## Origines du bridge strict
+
+Les URL non nulles de chaque registre compilé forment l’allowlist exacte de `BridgeServer`. Le shell ne communique jamais avec `targetOrigin: '*'` : une iframe doit avoir une origine déclarée dans le registre de son environnement. Les surcharges de développement ne peuvent pas étendre implicitement cette allowlist ; ajouter une origine de test au fichier `apps.<environnement>.json` correspondant, avec son test, avant d’activer son bridge.
+
+`apps.recette.json` ne contient actuellement aucune URL : le bridge strict y est donc deny-all. Renseigner l’origine de recette validée dans ce fichier avant tout test intégré ; ne pas substituer une valeur approchée ou un wildcard.
+
 ## Convention locale Mac
 
 Chaque serveur local utilise une URL fixe `https://<module>.loodi.test:<port>`. Le port est volontairement réservé et strict : une bascule automatique de Vite vers un autre port rendrait la configuration du shell fausse.

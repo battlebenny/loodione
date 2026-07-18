@@ -30,7 +30,7 @@ const appsByEnvironment: Record<ConfigEnvironment, AppEntry[]> = {
 }
 
 export function getConfigEnvironment(mode: string): ConfigEnvironment {
-  if (mode === 'development' || mode === 'local') return 'local'
+  if (mode === 'development' || mode === 'local' || mode === 'test') return 'local'
   if (mode === 'android-emulator') return 'emulator'
   if (mode === 'ios-simulator') return 'ios-simulator'
   if (mode === 'recette') return 'recette'
@@ -43,6 +43,38 @@ function isLocalEnvironment(environment: ConfigEnvironment): boolean {
 }
 
 export const isLocalBuild = isLocalEnvironment(configEnvironment)
+
+function moduleOrigin(value: string | null): string | null {
+  if (!value) return null
+  try {
+    return new URL(value).origin
+  } catch {
+    return null
+  }
+}
+
+function moduleOrigins(apps: readonly AppEntry[]): string[] {
+  return [...new Set(apps.flatMap((app) => {
+    const origin = moduleOrigin(app.url)
+    return origin ? [origin] : []
+  }))].sort()
+}
+
+/**
+ * Exact module origins compiled for every shell environment. An origin entered
+ * through the development override UI never expands this list implicitly.
+ */
+export const BRIDGE_ALLOWED_ORIGINS: Readonly<Record<ConfigEnvironment, readonly string[]>> = {
+  local: moduleOrigins(localApps),
+  emulator: moduleOrigins(emulatorApps),
+  'ios-simulator': moduleOrigins(iosSimulatorApps),
+  recette: moduleOrigins(recetteApps),
+  production: moduleOrigins(productionApps),
+}
+
+export function getBridgeAllowedOrigins(mode: string): readonly string[] {
+  return BRIDGE_ALLOWED_ORIGINS[getConfigEnvironment(mode)]
+}
 
 /**
  * Production origins compiled into One; development-only origins are excluded
@@ -68,15 +100,6 @@ function isModuleUrl(value: unknown): value is string {
     return url.protocol === 'https:' || url.protocol === 'http:'
   } catch {
     return false
-  }
-}
-
-function moduleOrigin(value: string | null): string | null {
-  if (!value) return null
-  try {
-    return new URL(value).origin
-  } catch {
-    return null
   }
 }
 

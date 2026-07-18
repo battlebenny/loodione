@@ -26,7 +26,7 @@ bridge.navigate('/scanner')
 
 Depuis une iframe, ils les envoient au shell. En standalone, ils sont volontairement des no-ops : l'API métier du module et ses routes ne changent pas.
 
-`setBottomNav([])` masque toute la navigation du shell. Une liste non vide affiche strictement les onglets déclarés par le module ; One n'ajoute pas d'onglet générique.
+`setBottomNav([])` masque toute la navigation du shell, y compris son contrôle « Loodi ». Une liste non vide déclare les onglets du module ; One les complète avec son contrôle statique « Loodi », qui ouvre le launcher des applications.
 
 Les événements et appels legacy restent pris en charge pendant la migration : header (`setHeaderActions`, `setHeaderOptions`, `loodi:headeraction`), retour (`loodi:back`), thème, onglets, scroll et `loodi:overlaychange`.
 

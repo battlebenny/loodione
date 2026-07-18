@@ -6,8 +6,11 @@ import App from '../App'
 
 const sendHeaderAction = vi.hoisted(() => vi.fn())
 const sendBack = vi.hoisted(() => vi.fn())
+const sendTabTap = vi.hoisted(() => vi.fn())
+const setActiveTab = vi.hoisted(() => vi.fn())
 const goBack = vi.hoisted(() => vi.fn())
 const registerIframe = vi.hoisted(() => vi.fn())
+const toggleLauncher = vi.hoisted(() => vi.fn())
 const shellSettings = vi.hoisted(() => ({ open: false }))
 const shellHeaderOptions = vi.hoisted(() => ({ hideActions: false, canGoBack: false }))
 const shellActiveApp = vi.hoisted(() => ({ id: 'loodi-dev' }))
@@ -28,7 +31,7 @@ vi.mock('../useShell', () => ({
     },
     themeMode: 'auto',
     setThemeMode: vi.fn(),
-    toggleLauncher: vi.fn(),
+    toggleLauncher,
     activateApp: vi.fn(),
     toggleSettings: vi.fn(),
     registerIframe,
@@ -42,8 +45,10 @@ vi.mock('../useShell', () => ({
     localModuleUrls: {},
     setLocalModuleUrls: vi.fn(),
     readyAppIds: new Set<string>(),
+    setActiveTab,
     sendHeaderAction,
     sendBack,
+    sendTabTap,
   }),
 }))
 
@@ -56,8 +61,11 @@ describe('module frame', () => {
     shellTabs.value = []
     sendHeaderAction.mockClear()
     sendBack.mockClear()
+    sendTabTap.mockClear()
+    setActiveTab.mockClear()
     goBack.mockClear()
     registerIframe.mockClear()
+    toggleLauncher.mockClear()
     document.documentElement.style.setProperty('--safe-area-inset-top', '24px')
     document.documentElement.style.setProperty('--safe-area-inset-bottom', '16px')
   })
@@ -119,7 +127,7 @@ describe('module frame', () => {
     expect(within(container).getByRole('navigation')).toHaveClass('loodi-bottom-nav--hidden')
   })
 
-  it('shows only the four tabs declared by a module, with no generic Loodi tab', () => {
+  it('keeps the static Loodi launcher control alongside four declared module tabs', () => {
     shellTabs.value = [
       { id: 'home', icon: 'home', label: 'Accueil' },
       { id: 'catalog', icon: 'search', label: 'Collection' },
@@ -129,9 +137,21 @@ describe('module frame', () => {
     const { container } = render(<App />)
     const navigation = within(container).getByRole('navigation')
 
-    expect(within(navigation).getAllByRole('button')).toHaveLength(4)
-    expect(within(navigation).queryByRole('button', { name: 'Applications' })).not.toBeInTheDocument()
-    expect(within(navigation).queryByRole('button', { name: 'Loodi' })).not.toBeInTheDocument()
+    const appsButton = within(navigation).getByRole('button', { name: 'Applications' })
+
+    expect(within(navigation).getAllByRole('button')).toHaveLength(5)
+    expect(within(navigation).getByText('Loodi')).toBeInTheDocument()
+    fireEvent.click(appsButton)
+    expect(toggleLauncher).toHaveBeenCalledOnce()
+  })
+
+  it('delegates a module tab tap to the strict bridge transport', () => {
+    shellTabs.value = [{ id: 'home', icon: 'home', label: 'Accueil' }]
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Accueil' }))
+
+    expect(sendTabTap).toHaveBeenCalledWith('home')
   })
 
   it('hides profile and more actions while settings are open', () => {

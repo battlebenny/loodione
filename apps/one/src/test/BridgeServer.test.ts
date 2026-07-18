@@ -134,7 +134,7 @@ describe('BridgeServer module navigation contract', () => {
     bridge.destroy()
   })
 
-  it('keeps an empty module tab list empty and forwards four declared Collec tabs without adding one', () => {
+  it('keeps an empty module tab list empty and forwards four declared Collec tabs for the shell to complement', () => {
     const cb = callbacks()
     const bridge = new BridgeServer(cb)
     const iframe = document.createElement('iframe')
@@ -209,6 +209,161 @@ describe('BridgeServer optional strict transport validation', () => {
       event: 'loodi:back',
       detail: undefined,
     }, 'https://collec.loodi.test')
+    bridge.destroy()
+  })
+
+  it('rejects an allowlisted origin when it does not match the registered iframe origin', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb, {
+      security: {
+        mode: 'strict',
+        allowedOrigins: ['https://collec.loodi.test:4002', 'https://dummy.loodi.test:4000'],
+      },
+    })
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://dummy.loodi.test:4000',
+      data: { type: 'loodi:ready' },
+    }))
+
+    expect(cb.onReady).not.toHaveBeenCalled()
+    bridge.destroy()
+  })
+
+  it('rejects invalid bridge call arguments before they reach a shell callback', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb, {
+      security: {
+        mode: 'strict',
+        allowedOrigins: ['https://collec.loodi.test:4002'],
+      },
+    })
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:call', method: 'openApp', args: [42], id: 1 },
+    }))
+
+    expect(cb.onRequestOpenApp).not.toHaveBeenCalled()
+    expect(child.postMessage).toHaveBeenCalledWith({
+      type: 'loodi:response',
+      id: 1,
+      result: undefined,
+      error: 'Invalid arguments for bridge method: openApp',
+    }, 'https://collec.loodi.test:4002')
+    bridge.destroy()
+  })
+
+  it('uses the exact iframe origin for shell events and bridge call responses', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb, {
+      security: {
+        mode: 'strict',
+        allowedOrigins: ['https://collec.loodi.test:4002'],
+      },
+    })
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi', iframe)
+
+    bridge.sendThemeChange('loodi', 'dark')
+    bridge.sendTabTap('loodi', 'catalog')
+    bridge.sendHeaderAction('loodi', 'new-game')
+    bridge.sendBack('loodi')
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:call', method: 'getNetworkStatus', args: [], id: 3 },
+    }))
+
+    expect(child.postMessage).toHaveBeenNthCalledWith(1, {
+      type: 'loodi:event',
+      event: 'loodi:themechange',
+      detail: { theme: 'dark' },
+    }, 'https://collec.loodi.test:4002')
+    expect(child.postMessage).toHaveBeenNthCalledWith(2, {
+      type: 'loodi:event',
+      event: 'loodi:tabtap',
+      detail: { tabId: 'catalog' },
+    }, 'https://collec.loodi.test:4002')
+    expect(child.postMessage).toHaveBeenNthCalledWith(3, {
+      type: 'loodi:event',
+      event: 'loodi:headeraction',
+      detail: { id: 'new-game' },
+    }, 'https://collec.loodi.test:4002')
+    expect(child.postMessage).toHaveBeenNthCalledWith(4, {
+      type: 'loodi:event',
+      event: 'loodi:back',
+      detail: undefined,
+    }, 'https://collec.loodi.test:4002')
+    expect(child.postMessage).toHaveBeenNthCalledWith(5, {
+      type: 'loodi:response',
+      id: 3,
+      result: expect.stringMatching(/^(online|offline)$/),
+      error: undefined,
+    }, 'https://collec.loodi.test:4002')
+    bridge.destroy()
+  })
+
+  it('keeps ready, navigate and empty or declared module tabs compatible in strict mode', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb, {
+      security: {
+        mode: 'strict',
+        allowedOrigins: ['https://collec.loodi.test:4002'],
+      },
+    })
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi', iframe)
+    const collecTabs = [
+      { id: 'home', icon: 'home', label: 'Accueil' },
+      { id: 'catalog', icon: 'search', label: 'Collection' },
+      { id: 'scanner', icon: 'scan', label: 'Scanner' },
+      { id: 'loans', icon: 'rss', label: 'Prêts' },
+    ]
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:ready' },
+    }))
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:navigate', path: '/scanner' },
+    }))
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:call', method: 'setBottomNav', args: [[]], id: 4 },
+    }))
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:call', method: 'setBottomNav', args: [collecTabs], id: 5 },
+    }))
+
+    expect(cb.onReady).toHaveBeenCalledExactlyOnceWith('loodi')
+    expect(cb.onNavigate).toHaveBeenCalledExactlyOnceWith('loodi', '/scanner')
+    expect(cb.onTabsChange).toHaveBeenNthCalledWith(1, 'loodi', [])
+    expect(cb.onTabsChange).toHaveBeenNthCalledWith(2, 'loodi', collecTabs)
     bridge.destroy()
   })
 })
