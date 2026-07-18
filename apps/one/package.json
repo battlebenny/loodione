@@ -9,6 +9,7 @@
     "build": "tsc -b && vite build",
     "build:local": "tsc -b && vite build --mode development",
     "build:android-emulator": "tsc -b && vite build --mode android-emulator",
+    "build:android-device": "tsc -b && vite build --mode android-device",
     "build:ios-simulator": "tsc -b && vite build --mode ios-simulator",
     "build:recette": "tsc -b && vite build --mode recette",
     "preview": "vite preview",

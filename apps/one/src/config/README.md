@@ -1,6 +1,7 @@
 # Configurations des modules
 
 - `apps.local.json` : catalogue des modules disponible dans une build locale. Les URLs sont saisies sur l'appareil via **Paramètres → Développement → Modules locaux** et ne sont jamais livrées en recette ou en production.
+- `apps.android-device.json` : configuration compilée pour un appareil Android physique. Elle contient uniquement Collec sur `https://192.168.0.109:4002`.
 - `apps.recette.json` : URLs des déploiements de recette. Renseigner ici les domaines Vercel associés à chaque branche ou à leurs aliases de recette.
 - `apps.production.json` : URLs publiques correspondant à la branche GitHub `main`.
 
@@ -10,6 +11,7 @@
 npm run dev            # navigateur, configuration locale
 npm run build:local    # build native locale
 npm run build:android-emulator # build Android Emulator
+npm run build:android-device   # build Android appareil physique
 npm run build:ios-simulator    # build Simulateur iOS
 npm run build:recette  # build de recette
 npm run build          # build de production
@@ -55,11 +57,40 @@ La build `npm run build:android-emulator` utilise `apps.emulator.json`. Le dummy
 
 ```bash
 npm run dev:dummy
-npm run build:android-emulator
-npm run cap:sync
+npm run cap:sync:android-emulator
 ```
 
 `10.0.2.2` est l’alias de l’émulateur Android vers le loopback du Mac. Installer la CA mkcert dans l’émulateur avant le premier test. La configuration Android ne fait confiance aux CA utilisateur qu’en build debug.
+
+## Appareil Android physique
+
+La build `npm run build:android-device` utilise `apps.android-device.json` et Collec sur `https://192.168.0.109:4002`. L’adresse `192.168.0.109` est l’IP LAN du Mac ; le Pixel doit être sur le même réseau. `10.0.2.2` ne doit pas être utilisée dans cette build : elle est réservée à l’émulateur Android.
+
+Les paramètres **Modules locaux** sont masqués dans cette build. Les anciennes valeurs de `loodi:localModuleUrls`, notamment une ancienne URL `10.0.2.2`, sont ignorées ; elles ne peuvent pas remplacer l’URL LAN compilée. Le bridge strict utilise exclusivement l’allowlist compilée et contient exactement `https://192.168.0.109:4002`.
+
+Le certificat partagé `.certs/cert.pem` doit contenir les noms suivants : `localhost`, `*.loodi.test`, `10.0.2.2` et `192.168.0.109`. Ne jamais committer le certificat ni la clé privée. Avant de régénérer un certificat existant, en conserver une copie de sauvegarde puis utiliser :
+
+```bash
+mkdir -p .certs
+mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem \
+  localhost '*.loodi.test' 10.0.2.2 192.168.0.109
+```
+
+Installer la CA sur le Pixel :
+
+```bash
+adb devices
+adb -s <SERIAL> push "$(mkcert -CAROOT)/rootCA.pem" /sdcard/Download/loodi-rootCA.crt
+```
+
+Puis ouvrir **Paramètres → Sécurité et confidentialité → Plus de paramètres de sécurité → Chiffrement et identifiants → Installer un certificat** et sélectionner le fichier copié.
+
+Commandes complètes :
+
+```bash
+npm run build:android-device
+npm run cap:sync:android-device
+```
 
 ## Simulateur iOS
 
@@ -67,7 +98,13 @@ La build `npm run build:ios-simulator` utilise `apps.ios-simulator.json`. Le sim
 
 ```bash
 npm run dev:dummy
-npm run build:ios-simulator
-npm run cap:sync
+npm run cap:sync:ios-simulator
 npm run cap:open:ios
 ```
+
+## Caméra dans les builds natives
+
+Les modules doivent demander la caméra avec `navigator.mediaDevices.getUserMedia({ video: true })`.
+One conserve `allow="camera"` sur chaque iframe ; Capacitor relaie ensuite la demande au système.
+Les builds Android et iOS déclarent respectivement `android.permission.CAMERA` et `NSCameraUsageDescription`.
+Les URLs de modules doivent rester en HTTPS, notamment pour les tests locaux avec le certificat mkcert.

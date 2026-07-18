@@ -1,5 +1,6 @@
 import localApps from './config/apps.local.json'
 import emulatorApps from './config/apps.emulator.json'
+import androidDeviceApps from './config/apps.android-device.json'
 import iosSimulatorApps from './config/apps.ios-simulator.json'
 import recetteApps from './config/apps.recette.json'
 import productionApps from './config/apps.production.json'
@@ -12,7 +13,7 @@ export interface AppEntry {
   color: string
 }
 
-export type ConfigEnvironment = 'local' | 'emulator' | 'ios-simulator' | 'recette' | 'production'
+export type ConfigEnvironment = 'local' | 'emulator' | 'android-device' | 'ios-simulator' | 'recette' | 'production'
 export type LocalModuleUrls = Record<string, string>
 export type RegistryFetcher = (url: string) => Promise<{ ok: boolean; json(): Promise<unknown> }>
 
@@ -24,6 +25,7 @@ export const REMOTE_REGISTRY_URL = 'https://battlebenny.github.io/loodione/confi
 const appsByEnvironment: Record<ConfigEnvironment, AppEntry[]> = {
   local: localApps,
   emulator: emulatorApps,
+  'android-device': androidDeviceApps,
   'ios-simulator': iosSimulatorApps,
   recette: recetteApps,
   production: productionApps,
@@ -32,6 +34,7 @@ const appsByEnvironment: Record<ConfigEnvironment, AppEntry[]> = {
 export function getConfigEnvironment(mode: string): ConfigEnvironment {
   if (mode === 'development' || mode === 'local' || mode === 'test') return 'local'
   if (mode === 'android-emulator') return 'emulator'
+  if (mode === 'android-device') return 'android-device'
   if (mode === 'ios-simulator') return 'ios-simulator'
   if (mode === 'recette') return 'recette'
   return 'production'
@@ -42,7 +45,11 @@ function isLocalEnvironment(environment: ConfigEnvironment): boolean {
   return environment === 'local' || environment === 'emulator' || environment === 'ios-simulator'
 }
 
-export const isLocalBuild = isLocalEnvironment(configEnvironment)
+export function isLocalBuildForMode(mode: string): boolean {
+  return isLocalEnvironment(getConfigEnvironment(mode))
+}
+
+export const isLocalBuild = isLocalBuildForMode(import.meta.env.MODE)
 
 function moduleOrigin(value: string | null): string | null {
   if (!value) return null
@@ -67,6 +74,7 @@ function moduleOrigins(apps: readonly AppEntry[]): string[] {
 export const BRIDGE_ALLOWED_ORIGINS: Readonly<Record<ConfigEnvironment, readonly string[]>> = {
   local: moduleOrigins(localApps),
   emulator: moduleOrigins(emulatorApps),
+  'android-device': moduleOrigins(androidDeviceApps),
   'ios-simulator': moduleOrigins(iosSimulatorApps),
   recette: moduleOrigins(recetteApps),
   production: moduleOrigins(productionApps),
@@ -191,7 +199,8 @@ export async function refreshRemoteRegistry(
 }
 
 export function isRemoteRegistryEnabled(mode: string): boolean {
-  return mode !== 'test' && !isLocalEnvironment(getConfigEnvironment(mode))
+  const environment = getConfigEnvironment(mode)
+  return mode !== 'test' && !isLocalEnvironment(environment) && environment !== 'android-device'
 }
 
 export function applyLocalUrlOverrides(apps: AppEntry[], overrides: LocalModuleUrls): AppEntry[] {
@@ -201,7 +210,9 @@ export function applyLocalUrlOverrides(apps: AppEntry[], overrides: LocalModuleU
   }))
 }
 
-export function loadLocalModuleUrls(): LocalModuleUrls {
+export function loadLocalModuleUrls(mode = import.meta.env.MODE): LocalModuleUrls {
+  if (getConfigEnvironment(mode) === 'android-device') return {}
+
   try {
     const value: unknown = JSON.parse(localStorage.getItem(LOCAL_MODULE_URLS_KEY) ?? '{}')
     if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
@@ -211,7 +222,9 @@ export function loadLocalModuleUrls(): LocalModuleUrls {
   }
 }
 
-export function saveLocalModuleUrls(urls: LocalModuleUrls) {
+export function saveLocalModuleUrls(urls: LocalModuleUrls, mode = import.meta.env.MODE) {
+  if (getConfigEnvironment(mode) === 'android-device') return {}
+
   const validUrls = Object.fromEntries(Object.entries(urls).filter(([, url]) => isModuleUrl(url)))
   try { localStorage.setItem(LOCAL_MODULE_URLS_KEY, JSON.stringify(validUrls)) } catch { /* noop */ }
   return validUrls
@@ -227,6 +240,7 @@ export function getRuntimeApps(
   if (isLocalEnvironment(environment)) {
     return applyLocalUrlOverrides(apps, overrides)
   }
+  if (environment === 'android-device') return apps
   return isRemoteRegistryEnabled(mode) ? loadRemoteRegistryCache(now) ?? apps : apps
 }
 

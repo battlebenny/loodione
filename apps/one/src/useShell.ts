@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import {
   applyLocalUrlOverrides,
   getBridgeAllowedOrigins,
@@ -11,7 +11,7 @@ import {
   saveLocalModuleUrls,
   type LocalModuleUrls,
 } from './apps'
-import { resolveTheme } from './theme'
+import { normalizeThemeMode, resolveTheme } from './theme'
 import { BridgeServer } from './BridgeServer'
 import type { ThemeMode } from './theme'
 import type { HeaderAction, HeaderOptions } from '@loodi/bridge'
@@ -38,6 +38,10 @@ function saveAppId(key: string, id: string) {
   try { localStorage.setItem(key, id) } catch { /* noop */ }
 }
 
+function loadThemeMode(): ThemeMode {
+  try { return normalizeThemeMode(localStorage.getItem('loodi:theme')) } catch { return 'system' }
+}
+
 const LS_LAST = 'loodi:lastApp'
 const LS_FAV = 'loodi:favApp'
 
@@ -57,6 +61,17 @@ export function shouldRetryModule(
   retriedAppIds: ReadonlySet<string>,
 ): boolean {
   return !readyAppIds.has(appId) && !retriedAppIds.has(appId)
+}
+
+export function getInitialAppId(
+  apps: readonly AppEntry[],
+  favoriteAppId: string | null | undefined,
+  lastAppId: string | null | undefined,
+): string {
+  const availableIds = new Set(apps.filter((app) => app.url).map((app) => app.id))
+  return [favoriteAppId, lastAppId, 'loodi'].find((id): id is string => Boolean(id && availableIds.has(id)))
+    ?? apps.find((app) => app.url)?.id
+    ?? 'loodi'
 }
 
 export function getModuleTabs(tabsByApp: ReadonlyMap<string, Tab[]>, appId: string): Tab[] {
@@ -83,24 +98,25 @@ export function useShell() {
   const [state, setState] = useState<ShellState>(() => {
     const fav = loadAppId(LS_FAV, '')
     const last = loadAppId(LS_LAST, 'loodi')
+    const apps = getRuntimeApps()
     return {
-      activeAppId: fav || last || 'loodi',
+      activeAppId: getInitialAppId(apps, fav, last),
       tabs: [],
       headerActions: [],
       headerOptions: { hideActions: false, canGoBack: false },
       activeTab: undefined,
-      apps: getRuntimeApps(),
+      apps,
       launcherOpen: false,
       settingsOpen: false,
       history: [],
     }
   })
 
-  const [themeMode, setThemeMode] = useState<ThemeMode>(() => (localStorage.getItem('loodi:theme') as ThemeMode) || 'system')
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => resolveTheme((localStorage.getItem('loodi:theme') as ThemeMode) || 'system'))
+  const [themeMode, setThemeMode] = useState<ThemeMode>(loadThemeMode)
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => resolveTheme(loadThemeMode()))
 
   useEffect(() => {
-    localStorage.setItem('loodi:theme', themeMode)
+    try { localStorage.setItem('loodi:theme', themeMode) } catch { /* noop */ }
     if (themeMode !== 'system') { setTheme(themeMode); return }
     setTheme(resolveTheme('system'))
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
@@ -208,8 +224,11 @@ export function useShell() {
 
   // Apply the theme to One, then notify registered modules through the strict
   // bridge so every postMessage uses the iframe's exact configured origin.
-  useEffect(() => {
+  useLayoutEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
+
+  useEffect(() => {
     state.apps.forEach((app) => {
       bridgeRef.current?.sendThemeChange(app.id, theme)
     })

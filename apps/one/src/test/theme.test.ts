@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { resolveTheme } from '../theme'
+import { resolveTheme, type ThemeMode } from '../theme'
 
 beforeEach(() => {
   // mock `prefers-color-scheme` to a known default before each test
@@ -44,5 +44,10 @@ describe('resolveTheme', () => {
     })) as typeof window.matchMedia
 
     expect(resolveTheme('system')).toBe('dark')
+  })
+
+  it('falls back to the system preference for legacy or invalid stored modes', () => {
+    expect(resolveTheme('auto' as ThemeMode)).toBe('light')
+    expect(resolveTheme('invalid' as ThemeMode)).toBe('light')
   })
 })

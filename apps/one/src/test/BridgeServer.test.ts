@@ -165,6 +165,49 @@ describe('BridgeServer module navigation contract', () => {
 })
 
 describe('BridgeServer optional strict transport validation', () => {
+  it('accepts the physical-device module origin for the complete shell contract', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb, {
+      security: {
+        mode: 'strict',
+        allowedOrigins: ['https://192.168.0.109:4002'],
+      },
+    })
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://192.168.0.109:4002/catalog'
+    const postMessage = vi.fn()
+    const child = { postMessage } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://192.168.0.109:4002',
+      data: { type: 'loodi:ready' },
+    }))
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://192.168.0.109:4002',
+      data: { type: 'loodi:call', method: 'setBottomNav', args: [[{ id: 'home', icon: 'home', label: 'Accueil' }]], id: 1 },
+    }))
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://192.168.0.109:4002',
+      data: { type: 'loodi:event', event: 'loodi:scroll', detail: { scrollY: 120 } },
+    }))
+    bridge.sendThemeChange('loodi', 'dark')
+
+    expect(cb.onReady).toHaveBeenCalledWith('loodi')
+    expect(cb.onTabsChange).toHaveBeenCalledWith('loodi', [{ id: 'home', icon: 'home', label: 'Accueil' }])
+    expect(cb.onScroll).toHaveBeenCalledWith('loodi', 120)
+    expect(postMessage).toHaveBeenLastCalledWith({
+      type: 'loodi:event',
+      event: 'loodi:themechange',
+      detail: { theme: 'dark' },
+    }, 'https://192.168.0.109:4002')
+    bridge.destroy()
+  })
+
   it('requires a known source, schema-valid message and allowlisted origin, then targets the module origin', () => {
     const cb = callbacks()
     const bridge = new BridgeServer(cb, {

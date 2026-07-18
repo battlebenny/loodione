@@ -10,13 +10,16 @@ La documentation de référence est dans [`docs/`](docs/00_ARCHITECTURE_CURRENT.
 | --- | --- | --- |
 | Navigateur local Mac | `npm run dev` | `apps.local.json` |
 | Android Emulator | `npm run build:android-emulator` | `apps.emulator.json` |
+| Android appareil physique | `npm run build:android-device` | `apps.android-device.json` |
 | Simulateur iOS | `npm run build:ios-simulator` | `apps.ios-simulator.json` |
 | Recette | `npm run build:recette` | `apps.recette.json` |
 | Production (`main`) | `npm run build` | `apps.production.json` |
 
-La build émulateur s’installe avec `npm run cap:sync`, puis Android Studio. Elle expose le dummy sur `https://10.0.2.2:4000`.
+La build émulateur se synchronise avec `npm run cap:sync:android-emulator`, puis s’ouvre dans Android Studio. Elle expose le dummy sur `https://10.0.2.2:4000`.
 
-Le simulateur iOS utilise `https://localhost:4000` pour le dummy, puis `localhost:4002–4007` pour les modules. Après `npm run build:ios-simulator && npm run cap:sync`, ouvrir Xcode avec `npm run cap:open:ios`.
+La build Android appareil physique se synchronise avec `npm run cap:sync:android-device`, puis s’ouvre dans Android Studio sur un Pixel connecté. Elle expose Collec sur `https://192.168.0.109:4002`. Le Pixel et le Mac doivent être sur le même réseau Wi-Fi ; `10.0.2.2` est réservé à l’émulateur Android et ne fonctionne pas sur un appareil physique.
+
+Le simulateur iOS utilise `https://localhost:4000` pour le dummy, puis `localhost:4002–4007` pour les modules. Utiliser `npm run cap:sync:ios-simulator`, puis ouvrir Xcode avec `npm run cap:open:ios`.
 
 ## Packages npm partagés
 
@@ -139,4 +142,23 @@ Un serveur lancé dans ton terminal se ferme proprement avec `Ctrl+C`. Ne jamais
 
 ## Prérequis locaux
 
-Les noms `*.loodi.test` doivent résoudre vers `127.0.0.1` dans `/etc/hosts`, et la CA mkcert doit être installée avec `mkcert -install`. Pour un émulateur ou un appareil Android de test, il faut aussi installer cette CA via ADB : voir [Installer la CA mkcert sur Android](docs/05_Developpement_Local_Modules.md#installer-la-ca-mkcert-sur-android). Voir le [guide local des modules](docs/05_Developpement_Local_Modules.md) pour la configuration de Collec et [la distribution](docs/04_Distribution.md) pour l’émulateur Android.
+Les noms `*.loodi.test` doivent résoudre vers `127.0.0.1` dans `/etc/hosts`, et la CA mkcert doit être installée avec `mkcert -install`. Pour les builds Android locales, le certificat partagé `.certs/cert.pem` doit couvrir `localhost`, `*.loodi.test`, `10.0.2.2` et `192.168.0.109`. Ne jamais versionner `.certs/cert.pem` ni `.certs/key.pem`.
+
+Pour régénérer le certificat sans écraser aveuglément un certificat existant :
+
+```bash
+test -f .certs/cert.pem && cp .certs/cert.pem "/private/tmp/loodi-cert.pem.backup.$(date +%Y%m%d%H%M%S)"
+test -f .certs/key.pem && cp .certs/key.pem "/private/tmp/loodi-key.pem.backup.$(date +%Y%m%d%H%M%S)"
+mkdir -p .certs
+mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem \
+  localhost '*.loodi.test' 10.0.2.2 192.168.0.109
+```
+
+Sur un Pixel physique, installer ensuite la CA utilisateur :
+
+```bash
+adb devices
+adb -s <SERIAL> push "$(mkcert -CAROOT)/rootCA.pem" /sdcard/Download/loodi-rootCA.crt
+```
+
+Sur le Pixel : **Paramètres → Sécurité et confidentialité → Plus de paramètres de sécurité → Chiffrement et identifiants → Installer un certificat**, puis sélectionner `loodi-rootCA.crt`. La build Android debug fait confiance aux autorités de certification utilisateur.

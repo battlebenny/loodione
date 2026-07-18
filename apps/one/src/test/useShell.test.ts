@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getActiveTabForPath, getModuleHeaderOptions, getModuleTabs, registerRenderedModules, shouldRetryModule, useShell } from '../useShell'
+import { getActiveTabForPath, getInitialAppId, getModuleHeaderOptions, getModuleTabs, registerRenderedModules, shouldRetryModule, useShell } from '../useShell'
 
 describe('registerRenderedModules', () => {
   it('re-registers mounted iframes when the bridge is recreated', () => {
@@ -27,6 +27,17 @@ describe('shouldRetryModule', () => {
   it('does not retry a ready module or a module already retried', () => {
     expect(shouldRetryModule('loodi', new Set(['loodi']), new Set())).toBe(false)
     expect(shouldRetryModule('loodi', new Set(), new Set(['loodi']))).toBe(false)
+  })
+})
+
+describe('getInitialAppId', () => {
+  it('ignores a persisted module that is absent or unavailable in the current build', () => {
+    const apps = [
+      { id: 'loodi', name: 'Loodi', icon: '🎲', url: 'https://loodi.vercel.app', color: '#ca4a16' },
+      { id: 'loodi-mate', name: 'Mate', icon: '🃏', url: null, color: '#2E8B57' },
+    ]
+
+    expect(getInitialAppId(apps, 'loodi-dev', 'loodi-dev')).toBe('loodi')
   })
 })
 
