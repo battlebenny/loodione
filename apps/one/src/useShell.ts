@@ -4,7 +4,9 @@ import {
   getAppsForEnvironment,
   getRuntimeApps,
   isLocalBuild,
+  isRemoteRegistryEnabled,
   loadLocalModuleUrls,
+  refreshRemoteRegistry,
   saveLocalModuleUrls,
   type LocalModuleUrls,
 } from './apps'
@@ -105,6 +107,13 @@ export function useShell() {
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [themeMode])
+
+  // The remote registry is stored for the following launch only: it must never
+  // delay startup or replace the persistent module iframes while they are live.
+  useEffect(() => {
+    if (!isRemoteRegistryEnabled(import.meta.env.MODE)) return
+    void refreshRemoteRegistry()
+  }, [])
 
   // Apply theme to shell + broadcast to modules
   useEffect(() => {

@@ -1,4 +1,12 @@
-import type { BridgeMethods, BridgeEvents, BridgeEventType, HeaderAction, HeaderOptions } from './types.js'
+import { isBridgeProtocolMessage } from './protocol.js'
+import type {
+  BridgeClientOptions,
+  BridgeMethods,
+  BridgeEvents,
+  BridgeEventType,
+  HeaderAction,
+  HeaderOptions,
+} from './types.js'
 
 interface PendingCall {
   resolve: (value: unknown) => void
@@ -10,11 +18,16 @@ export class BridgeClient {
   private callId = 0
   private pending = new Map<number, PendingCall>()
   private listeners = new Map<string, Set<(detail: unknown) => void>>()
-  private shellOrigin: string
+  private targetOrigin: string
   private mode: 'iframe' | 'standalone'
+  private strictValidation: boolean
 
-  constructor(opts?: { shellOrigin?: string }) {
-    this.shellOrigin = opts?.shellOrigin ?? '*'
+  constructor(opts?: BridgeClientOptions) {
+    this.targetOrigin = opts?.targetOrigin ?? opts?.shellOrigin ?? '*'
+    this.strictValidation = opts?.security?.mode === 'strict'
+    if (this.strictValidation && !isExplicitOrigin(this.targetOrigin)) {
+      throw new Error('Strict bridge validation requires an explicit targetOrigin')
+    }
     this.mode = this.detectMode()
     if (this.mode === 'iframe') {
       window.addEventListener('message', this.onMessage)
@@ -32,6 +45,11 @@ export class BridgeClient {
   private onMessage = (e: MessageEvent) => {
     const msg = e.data
     if (!msg || typeof msg !== 'object') return
+    if (this.strictValidation && (
+      e.source !== window.parent
+      || e.origin !== this.targetOrigin
+      || !isBridgeProtocolMessage(msg)
+    )) return
 
     if (msg.type === 'loodi:response') {
       const pending = this.pending.get(msg.id)
@@ -73,7 +91,7 @@ export class BridgeClient {
       this.pending.set(id, { resolve: resolve as (value: unknown) => void, reject, timeout })
       window.parent.postMessage(
         { type: 'loodi:call', method, args, id },
-        this.shellOrigin,
+        this.targetOrigin,
       )
     })
   }
@@ -84,6 +102,21 @@ export class BridgeClient {
 
   setHeaderOptions(options: HeaderOptions): Promise<void> {
     return this.call('setHeaderOptions', options)
+  }
+
+  /** Announces module readiness to One; intentionally a no-op standalone. */
+  ready(): void {
+    this.postLegacyMessage({ type: 'loodi:ready' })
+  }
+
+  /** Announces module-internal navigation to One; intentionally a no-op standalone. */
+  navigate(path: string): void {
+    this.postLegacyMessage({ type: 'loodi:navigate', path })
+  }
+
+  private postLegacyMessage(message: { type: 'loodi:ready' } | { type: 'loodi:navigate'; path: string }): void {
+    if (this.mode !== 'iframe') return
+    window.parent.postMessage(message, this.targetOrigin)
   }
 
   private handleStandalone(_method: string, _args: unknown[]): unknown {
@@ -103,7 +136,7 @@ export class BridgeClient {
     if (this.mode !== 'iframe') return
     window.parent.postMessage(
       { type: 'loodi:event', event, detail },
-      this.shellOrigin,
+      this.targetOrigin,
     )
   }
 
@@ -125,5 +158,14 @@ export class BridgeClient {
     this.pending.forEach((p) => clearTimeout(p.timeout))
     this.pending.clear()
     this.listeners.clear()
+  }
+}
+
+function isExplicitOrigin(value: string): boolean {
+  if (value === '*') return false
+  try {
+    return new URL(value).origin === value
+  } catch {
+    return false
   }
 }

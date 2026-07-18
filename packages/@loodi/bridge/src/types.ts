@@ -31,6 +31,23 @@ export interface BridgeResponse {
   error?: string
 }
 
+/**
+ * Transport hardening is opt-in while modules still use the legacy POC
+ * transport. Strict mode requires exact origins on both sides of the bridge.
+ */
+export interface BridgeSecurityOptions {
+  mode?: 'legacy' | 'strict'
+  allowedOrigins?: readonly string[]
+}
+
+export interface BridgeClientOptions {
+  /** Explicit origin of the One shell, used as postMessage targetOrigin. */
+  targetOrigin?: string
+  /** @deprecated Use targetOrigin. Kept for modules already using this option. */
+  shellOrigin?: string
+  security?: Pick<BridgeSecurityOptions, 'mode'>
+}
+
 export interface BridgeMethods {
   getUser(): { id: string; name: string; email: string; avatar?: string }
   getToken(): string | null
@@ -60,3 +77,11 @@ export interface BridgeEvents {
 }
 
 export type BridgeEventType = keyof BridgeEvents
+
+export type BridgeProtocolMessage =
+  | BridgeCall
+  | BridgeResponse
+  | { type: 'loodi:event'; event: BridgeEventType; detail?: unknown }
+  | { type: 'loodi:ready' }
+  | { type: 'loodi:navigate'; path: string; direction?: string }
+  | { type: 'loodi:overlaychange'; visible: boolean }

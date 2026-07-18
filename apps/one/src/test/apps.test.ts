@@ -1,9 +1,48 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import {
   applyLocalUrlOverrides,
   getAppsForEnvironment,
   getConfigEnvironment,
+  getRuntimeApps,
+  REGISTRY_CACHE_KEY,
+  REGISTRY_CACHE_MAX_AGE_MS,
+  REMOTE_REGISTRY_URL,
+  refreshRemoteRegistry,
 } from '../apps'
+
+const NOW = Date.UTC(2026, 6, 18)
+
+const acceptedManifest = {
+  apps: [
+    { id: 'loodi', name: 'collec', icon: '📚', url: 'https://loodi.vercel.app', color: '#ca4a16' },
+    { id: 'loodi-mate', name: 'Mate', icon: '🤖', url: null, color: '#2E8B57' },
+  ],
+}
+
+function successfulResponse(body: unknown) {
+  return { ok: true, json: vi.fn().mockResolvedValue(body) }
+}
+
+function createStorage(): Storage {
+  const values = new Map<string, string>()
+  return {
+    get length() { return values.size },
+    clear: () => values.clear(),
+    getItem: (key) => values.get(key) ?? null,
+    key: (index) => [...values.keys()][index] ?? null,
+    removeItem: (key) => values.delete(key),
+    setItem: (key, value) => values.set(key, value),
+  } as Storage
+}
+
+beforeEach(() => {
+  vi.stubGlobal('localStorage', createStorage())
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  vi.unstubAllGlobals()
+})
 
 describe('module configuration', () => {
   it('maps Vite modes to their module configuration environment', () => {
@@ -43,5 +82,88 @@ describe('module configuration', () => {
 
     expect(resolved.find((app) => app.id === 'loodi')?.url).toBe('https://192.168.1.42:4173')
     expect(resolved.find((app) => app.id === 'loodi-mate')?.url).toBe('https://mate.loodi.test:4003')
+  })
+
+  it('starts from the compiled registry when no remote cache exists', () => {
+    const apps = getRuntimeApps({}, 'production', NOW)
+
+    expect(apps).toEqual(getAppsForEnvironment('production'))
+  })
+
+  it('uses only a valid, fresh remote registry cache on the next launch', async () => {
+    const fetchManifest = vi.fn().mockResolvedValue(successfulResponse(acceptedManifest))
+    const firstLaunchApps = getRuntimeApps({}, 'production', NOW)
+
+    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(true)
+
+    expect(fetchManifest).toHaveBeenCalledWith(REMOTE_REGISTRY_URL)
+    expect(firstLaunchApps).toEqual(getAppsForEnvironment('production'))
+    expect(getRuntimeApps({}, 'production', NOW + 1)).toEqual(acceptedManifest.apps)
+  })
+
+  it('falls back to the compiled registry when the cached manifest is expired', () => {
+    localStorage.setItem(REGISTRY_CACHE_KEY, JSON.stringify({
+      version: 1,
+      fetchedAt: NOW - REGISTRY_CACHE_MAX_AGE_MS,
+      apps: acceptedManifest.apps,
+    }))
+
+    expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
+  })
+
+  it('falls back to the compiled registry and discards an invalid cached manifest', () => {
+    localStorage.setItem(REGISTRY_CACHE_KEY, JSON.stringify({
+      version: 1,
+      fetchedAt: NOW,
+      apps: [{ ...acceptedManifest.apps[0], url: 'https://untrusted.example/collec' }],
+    }))
+
+    expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
+    expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
+  })
+
+  it('does not cache an invalid manifest and retains the compiled fallback', async () => {
+    const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({ apps: [{ id: 'loodi' }] }))
+
+    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(false)
+
+    expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
+    expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
+  })
+
+  it('keeps the compiled fallback when the network request fails', async () => {
+    const fetchManifest = vi.fn().mockRejectedValue(new Error('offline'))
+
+    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(false)
+
+    expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
+  })
+
+  it('rejects a remote module URL outside the embedded origin allowlist', async () => {
+    const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({
+      apps: [{ ...acceptedManifest.apps[0], url: 'https://untrusted.example/collec' }],
+    }))
+
+    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(false)
+
+    expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
+    expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
+  })
+
+  it('rejects a development-only module origin from a remote manifest', async () => {
+    const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({
+      apps: [{ ...acceptedManifest.apps[0], url: 'https://collec.loodi.test:4002' }],
+    }))
+
+    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(false)
+
+    expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
+  })
+
+  it('keeps local module URLs exclusive to development builds even when a remote cache exists', async () => {
+    await refreshRemoteRegistry(vi.fn().mockResolvedValue(successfulResponse(acceptedManifest)), NOW)
+
+    expect(getRuntimeApps({}, 'development', NOW + 1).find((app) => app.id === 'loodi')?.url)
+      .toBe('https://collec.loodi.test:4002')
   })
 })

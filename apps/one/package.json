@@ -5,16 +5,16 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "npm run build -w @loodi/ui",
+    "prebuild": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui",
     "build": "tsc -b && vite build",
     "build:local": "tsc -b && vite build --mode development",
     "build:android-emulator": "tsc -b && vite build --mode android-emulator",
     "build:ios-simulator": "tsc -b && vite build --mode ios-simulator",
     "build:recette": "tsc -b && vite build --mode recette",
     "preview": "vite preview",
-    "pretest": "npm run build -w @loodi/ui",
+    "pretest": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui",
     "test": "vitest",
-    "pretest:run": "npm run build -w @loodi/ui",
+    "pretest:run": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui",
     "test:run": "vitest run"
   },
   "dependencies": {

@@ -1,2 +1,15 @@
 export { BridgeClient } from './BridgeClient.js'
-export type { BridgeMethods, BridgeEvents, BridgeEventType, Tab, HeaderAction, HeaderOptions, BridgeResponse, BridgeCall } from './types.js'
+export { isBridgeProtocolMessage } from './protocol.js'
+export type {
+  BridgeCall,
+  BridgeClientOptions,
+  BridgeEventType,
+  BridgeEvents,
+  BridgeMethods,
+  BridgeProtocolMessage,
+  BridgeResponse,
+  BridgeSecurityOptions,
+  HeaderAction,
+  HeaderOptions,
+  Tab,
+} from './types.js'

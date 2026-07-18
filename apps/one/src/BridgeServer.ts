@@ -1,4 +1,5 @@
-import type { HeaderAction, HeaderOptions, Tab } from '@loodi/bridge'
+import { isBridgeProtocolMessage } from '@loodi/bridge'
+import type { BridgeSecurityOptions, HeaderAction, HeaderOptions, Tab } from '@loodi/bridge'
 
 export interface ModuleInfo {
   tabs: Tab[]
@@ -22,13 +23,29 @@ export interface BridgeServerCallbacks {
   onRequestShowSwitcher(callerId: string): void
 }
 
+export interface BridgeServerOptions {
+  /**
+   * Legacy mode keeps the POC transport. Strict mode validates schema, source
+   * and origin, and posts only to the origin declared by each iframe URL.
+   */
+  security?: BridgeSecurityOptions
+}
+
 export class BridgeServer {
   private modules = new Map<string, HTMLIFrameElement>()
   private moduleInfos = new Map<string, ModuleInfo>()
   private history = new Map<string, string[]>()
   private callbacks: BridgeServerCallbacks
-  constructor(callbacks: BridgeServerCallbacks) {
+  private strictValidation: boolean
+  private allowedOrigins: ReadonlySet<string>
+
+  constructor(callbacks: BridgeServerCallbacks, opts?: BridgeServerOptions) {
     this.callbacks = callbacks
+    this.strictValidation = opts?.security?.mode === 'strict'
+    this.allowedOrigins = new Set(opts?.security?.allowedOrigins ?? [])
+    if (this.strictValidation && this.allowedOrigins.size === 0) {
+      throw new Error('Strict bridge validation requires at least one allowed origin')
+    }
     window.addEventListener('message', this.onMessage)
   }
 
@@ -64,7 +81,9 @@ export class BridgeServer {
   postMessage(appId: string, msg: unknown): void {
     const iframe = this.modules.get(appId)
     if (!iframe?.contentWindow) return
-    iframe.contentWindow.postMessage(msg, '*')
+    const targetOrigin = this.getTargetOrigin(iframe)
+    if (!targetOrigin) return
+    iframe.contentWindow.postMessage(msg, targetOrigin)
   }
 
   sendHeaderAction(appId: string, id: string): void {
@@ -88,12 +107,23 @@ export class BridgeServer {
     return null
   }
 
+  private getTargetOrigin(iframe: HTMLIFrameElement): string | null {
+    if (!this.strictValidation) return '*'
+    try {
+      const origin = new URL(iframe.src).origin
+      return this.allowedOrigins.has(origin) ? origin : null
+    } catch {
+      return null
+    }
+  }
+
   private onMessage = (e: MessageEvent) => {
     const msg = e.data
     if (!msg || typeof msg !== 'object') return
 
     const appId = this.findAppId(e.source as WindowProxy | null)
     if (!appId) return
+    if (this.strictValidation && (!this.allowedOrigins.has(e.origin) || !isBridgeProtocolMessage(msg))) return
 
     switch (msg.type) {
       case 'loodi:call':
@@ -152,6 +182,11 @@ export class BridgeServer {
           break
         case 'setBottomNav': {
           const [tabs] = msg.args as [Tab[]]
+          if (!Array.isArray(tabs) || !tabs.every(isTab)) throw new Error('Bottom navigation tabs must be an array of tabs')
+          this.moduleInfos.set(appId, {
+            ...(this.moduleInfos.get(appId) ?? { headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
+            tabs,
+          })
           this.callbacks.onTabsChange(appId, tabs)
           respond(undefined)
           break
@@ -213,4 +248,12 @@ export class BridgeServer {
         break
     }
   }
+}
+
+function isTab(value: unknown): value is Tab {
+  return typeof value === 'object'
+    && value !== null
+    && typeof (value as Tab).id === 'string'
+    && typeof (value as Tab).icon === 'string'
+    && typeof (value as Tab).label === 'string'
 }

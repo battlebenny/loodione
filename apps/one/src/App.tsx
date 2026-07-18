@@ -25,7 +25,7 @@ function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number, v
 }
 
 function App() {
-  const { state, themeMode, setThemeMode, toggleLauncher, activateApp, toggleSettings, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, readyAppIds, setActiveTab, sendHeaderAction, sendBack } = useShell()
+  const { state, themeMode, setThemeMode, toggleLauncher, activateApp, toggleSettings, registerIframe, goBack, overlayActive, scrollProgress, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, readyAppIds, setActiveTab, sendHeaderAction, sendBack } = useShell()
 
   const [exitingId, setExitingId] = useState<string | null>(null)
   const [backward, setBackward] = useState(false)
@@ -175,6 +175,7 @@ function App() {
                 ${!isExiting && !isEntering ? 'transition-[opacity,transform] duration-200 ease-out' : ''}
               `}
               sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              allow="camera"
               title={app.name}
             />
           )
@@ -184,17 +185,13 @@ function App() {
       <BottomNav
         tabs={state.tabs}
         activeTab={state.activeTab}
-        hidden={overlayActive}
+        hidden={overlayActive || state.tabs.length === 0}
+        showApps={false}
         onTabTap={(tabId) => {
           if (state.settingsOpen) toggleSettings()
           setActiveTab(tabId)
           const iframe = document.querySelector<HTMLIFrameElement>(`iframe[data-app="${state.activeAppId}"]`)
           iframe?.contentWindow?.postMessage({ type: 'loodi:event', event: 'loodi:tabtap', detail: { tabId } }, '*')
-        }}
-        onAppsTap={toggleLauncher}
-        onAppsLongPress={() => {
-          const id = lastUsedAppId.current
-          if (id !== state.activeAppId) activateApp(id)
         }}
       />
 

@@ -1,5 +1,9 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BridgeClient } from '@loodi/bridge'
+
+afterEach(() => {
+  vi.restoreAllMocks()
+})
 
 describe('BridgeClient header options', () => {
   it('forwards header options through the typed bridge method', async () => {
@@ -19,6 +23,62 @@ describe('BridgeClient header options', () => {
     bridge.emit('loodi:overlaychange', { visible: true })
     bridge.emit('loodi:scroll', { scrollY: 24 })
 
+    bridge.destroy()
+  })
+})
+
+describe('BridgeClient navigation compatibility', () => {
+  it('keeps ready and navigate as no-ops when the module runs standalone', () => {
+    const bridge = new BridgeClient()
+
+    expect(bridge.ready()).toBeUndefined()
+    expect(bridge.navigate('/catalog')).toBeUndefined()
+
+    bridge.destroy()
+  })
+
+  it('sends the existing legacy ready and navigate messages to an explicit shell origin', () => {
+    const postMessage = vi.spyOn(window.parent, 'postMessage').mockImplementation(() => {})
+    const bridge = new BridgeClient({
+      targetOrigin: 'https://one.loodi.test',
+      security: { mode: 'strict' },
+    })
+    Object.defineProperty(bridge, 'mode', { value: 'iframe' })
+
+    bridge.ready()
+    bridge.navigate('/scanner')
+
+    expect(postMessage).toHaveBeenNthCalledWith(1, { type: 'loodi:ready' }, 'https://one.loodi.test')
+    expect(postMessage).toHaveBeenNthCalledWith(2, { type: 'loodi:navigate', path: '/scanner' }, 'https://one.loodi.test')
+    bridge.destroy()
+  })
+
+  it('only accepts schema-valid shell events from the configured parent origin in strict mode', () => {
+    const bridge = new BridgeClient({
+      targetOrigin: 'https://one.loodi.test',
+      security: { mode: 'strict' },
+    })
+    const onMessage = (bridge as unknown as { onMessage: (event: MessageEvent) => void }).onMessage
+    const onThemeChange = vi.fn()
+    bridge.on('loodi:themechange', onThemeChange)
+
+    onMessage({
+      source: window.parent,
+      origin: 'https://one.loodi.test',
+      data: { type: 'loodi:event', event: 'loodi:themechange', detail: { theme: 'dark' } },
+    } as MessageEvent)
+    onMessage({
+      source: window.parent,
+      origin: 'https://untrusted.example',
+      data: { type: 'loodi:event', event: 'loodi:themechange', detail: { theme: 'light' } },
+    } as MessageEvent)
+    onMessage({
+      source: window.parent,
+      origin: 'https://one.loodi.test',
+      data: { type: 'loodi:event', event: 'loodi:themechange', detail: { theme: 'unexpected' } },
+    } as MessageEvent)
+
+    expect(onThemeChange).toHaveBeenCalledExactlyOnceWith({ theme: 'dark' })
     bridge.destroy()
   })
 })

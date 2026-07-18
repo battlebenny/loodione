@@ -11,6 +11,7 @@ const registerIframe = vi.hoisted(() => vi.fn())
 const shellSettings = vi.hoisted(() => ({ open: false }))
 const shellHeaderOptions = vi.hoisted(() => ({ hideActions: false, canGoBack: false }))
 const shellActiveApp = vi.hoisted(() => ({ id: 'loodi-dev' }))
+const shellTabs = vi.hoisted(() => ({ value: [] as { id: string; icon: string; label: string }[] }))
 
 vi.mock('../useShell', () => ({
   shouldRetryModule: () => false,
@@ -18,7 +19,7 @@ vi.mock('../useShell', () => ({
     state: {
       activeAppId: shellActiveApp.id,
       apps: [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }],
-      tabs: [],
+      tabs: shellTabs.value,
       activeTab: null,
       headerActions: [{ id: 'new-game', label: 'Nouveau jeu' }],
       headerOptions: shellHeaderOptions,
@@ -52,6 +53,7 @@ describe('module frame', () => {
     shellHeaderOptions.hideActions = false
     shellHeaderOptions.canGoBack = false
     shellActiveApp.id = 'loodi-dev'
+    shellTabs.value = []
     sendHeaderAction.mockClear()
     sendBack.mockClear()
     goBack.mockClear()
@@ -78,6 +80,7 @@ describe('module frame', () => {
       bottom: '88px',
       height: 'calc(100% - 164px)',
     })
+    expect(frame.getAttribute('allow')).toBe('camera')
   })
 
   it('keeps iframe refs stable across renders to avoid repeated registrations', () => {
@@ -107,6 +110,28 @@ describe('module frame', () => {
     fireEvent.click(within(container).getByRole('button', { name: 'Nouveau jeu' }))
 
     expect(sendHeaderAction).toHaveBeenCalledWith('new-game')
+  })
+
+  it('hides the shell navigation when a module declares no tabs', () => {
+    shellActiveApp.id = 'loodi'
+    const { container } = render(<App />)
+
+    expect(within(container).getByRole('navigation')).toHaveClass('loodi-bottom-nav--hidden')
+  })
+
+  it('shows only the four tabs declared by a module, with no generic Loodi tab', () => {
+    shellTabs.value = [
+      { id: 'home', icon: 'home', label: 'Accueil' },
+      { id: 'catalog', icon: 'search', label: 'Collection' },
+      { id: 'scanner', icon: 'scan', label: 'Scanner' },
+      { id: 'loans', icon: 'rss', label: 'Prêts' },
+    ]
+    const { container } = render(<App />)
+    const navigation = within(container).getByRole('navigation')
+
+    expect(within(navigation).getAllByRole('button')).toHaveLength(4)
+    expect(within(navigation).queryByRole('button', { name: 'Applications' })).not.toBeInTheDocument()
+    expect(within(navigation).queryByRole('button', { name: 'Loodi' })).not.toBeInTheDocument()
   })
 
   it('hides profile and more actions while settings are open', () => {

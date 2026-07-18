@@ -35,6 +35,7 @@ describe('published package manifests', () => {
   it('exposes the bridge as a typed, publishable ESM package', () => {
     const pkg = manifest('bridge')
 
+    expect(pkg.version).toBe('0.2.0')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -42,12 +43,14 @@ describe('published package manifests', () => {
       '.': { types: './dist/index.d.ts', import: './dist/index.js' },
     })
     expect(pkg.publishConfig).toEqual({ access: 'public' })
+    expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('ready(): void')
+    expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.5.0 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.5.1 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.5.0')
+    expect(pkg.version).toBe('0.5.1')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
