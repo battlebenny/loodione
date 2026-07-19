@@ -1,9 +1,9 @@
 import { MiniHeader } from '@loodi/ui/mini-header'
 import { BottomNav } from '@loodi/ui/bottom-nav'
 import { Launcher, type LauncherApp } from '@loodi/ui/launcher'
-import { shouldRetryModule, useShell } from './useShell'
+import { useShell } from './useShell'
 import { Settings } from './Settings'
-import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
+import { useState, useCallback, useLayoutEffect, useRef } from 'react'
 
 const HEADER_HEIGHT = 52
 const BOTTOM_NAV_CLEARANCE = 72
@@ -18,6 +18,16 @@ function readSafeAreaInsets() {
   }
 }
 
+function isNativeCapacitorShell() {
+  return window.location.protocol === 'capacitor:'
+    || (window.location.protocol === 'https:' && window.location.hostname === 'app')
+}
+
+function hasNativeSafeAreaInjection() {
+  return document.documentElement.style.getPropertyValue('--safe-area-inset-top') !== ''
+    || document.documentElement.style.getPropertyValue('--safe-area-inset-bottom') !== ''
+}
+
 function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number, viewportSafeArea = false) {
   const separator = url.includes('?') ? '&' : '?'
   const viewportParam = viewportSafeArea ? '&viewportSafeArea=1' : ''
@@ -25,16 +35,18 @@ function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number, v
 }
 
 function App() {
-  const { state, themeMode, setThemeMode, toggleLauncher, activateApp, toggleSettings, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, readyAppIds, setActiveTab, sendHeaderAction, sendBack, sendTabTap } = useShell()
+  const { state, themeMode, setThemeMode, toggleLauncher, activateApp, toggleSettings, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, setActiveTab, sendHeaderAction, sendBack, sendTabTap } = useShell()
 
   const [exitingId, setExitingId] = useState<string | null>(null)
   const [backward, setBackward] = useState(false)
   const animRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const navStackRef = useRef<string[]>([])
-  const retriedAppIds = useRef(new Set<string>())
-  const [iframeVersions, setIframeVersions] = useState<Record<string, number>>({})
   const [safeAreaInsets, setSafeAreaInsets] = useState(readSafeAreaInsets)
+  const [moduleFramesReady, setModuleFramesReady] = useState(() => {
+    return !isNativeCapacitorShell() || hasNativeSafeAreaInjection()
+  })
   const iframeRefCallbacks = useRef(new Map<string, (el: HTMLIFrameElement | null) => void>())
+  const iframeSources = useRef(new Map<string, { url: string; src: string }>())
 
   const getIframeRef = useCallback((appId: string) => {
     let ref = iframeRefCallbacks.current.get(appId)
@@ -49,37 +61,34 @@ function App() {
     const updateSafeAreaInsets = () => {
       const next = readSafeAreaInsets()
       setSafeAreaInsets((current) => current.top === next.top && current.bottom === next.bottom ? current : next)
+      if (hasNativeSafeAreaInjection()) setModuleFramesReady(true)
     }
 
-    window.addEventListener('resize', updateSafeAreaInsets)
-    window.visualViewport?.addEventListener('resize', updateSafeAreaInsets)
+    const observer = new MutationObserver(updateSafeAreaInsets)
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
+    updateSafeAreaInsets()
+    const fallback = window.setTimeout(() => setModuleFramesReady(true), 300)
+
     return () => {
-      window.removeEventListener('resize', updateSafeAreaInsets)
-      window.visualViewport?.removeEventListener('resize', updateSafeAreaInsets)
+      observer.disconnect()
+      window.clearTimeout(fallback)
     }
   }, [])
 
   const headerHeight = Math.round(HEADER_HEIGHT + safeAreaInsets.top)
   const bottomNavHeight = Math.round(BOTTOM_NAV_CLEARANCE + safeAreaInsets.bottom)
 
-  const reloadModule = useCallback((appId: string) => {
-    setIframeVersions((versions) => ({
-      ...versions,
-      [appId]: (versions[appId] ?? 0) + 1,
-    }))
-  }, [])
+  // A module owns its in-iframe route and runtime. Safe-area changes can
+  // happen when Android/iOS presents a camera permission sheet, so they must
+  // only update the shell layout—not rewrite iframe.src and reload the PWA.
+  const getIframeSource = useCallback((appId: string, url: string, viewportSafeArea: boolean) => {
+    const current = iframeSources.current.get(appId)
+    if (current?.url === url) return current.src
 
-  useEffect(() => {
-    const appId = state.activeAppId
-    if (!shouldRetryModule(appId, readyAppIds, retriedAppIds.current)) return
-
-    const timeout = window.setTimeout(() => {
-      retriedAppIds.current.add(appId)
-      reloadModule(appId)
-    }, 1500)
-
-    return () => window.clearTimeout(timeout)
-  }, [readyAppIds, reloadModule, state.activeAppId])
+    const src = moduleUrl(url, headerHeight, bottomNavHeight, viewportSafeArea)
+    iframeSources.current.set(appId, { url, src })
+    return src
+  }, [headerHeight, bottomNavHeight])
 
   const handleActivateApp = useCallback((appId: string) => {
     toggleLauncher()
@@ -148,7 +157,7 @@ function App() {
         id="module-container"
         className="relative w-full h-full overflow-hidden"
       >
-        {state.apps.filter((a) => a.url).map((app) => {
+        {moduleFramesReady && state.apps.filter((a) => a.url).map((app) => {
           const isExiting = exitingId === app.id
           const isEntering = state.activeAppId === app.id && exitingId !== null && exitingId !== app.id
           const isActive = state.activeAppId === app.id && !isEntering
@@ -157,16 +166,11 @@ function App() {
 
           return (
             <iframe
-              key={`${app.id}-${iframeVersions[app.id] ?? 0}`}
+              key={app.id}
               data-app={app.id}
               ref={getIframeRef(app.id)}
-              src={moduleUrl(app.url!, headerHeight, bottomNavHeight, usesViewportSafeArea)}
-              style={usesViewportSafeArea ? {
-                top: `${headerHeight}px`,
-                bottom: `${bottomNavHeight}px`,
-                height: `calc(100% - ${headerHeight + bottomNavHeight}px)`,
-              } : undefined}
-              className={`absolute ${usesViewportSafeArea ? 'inset-x-0 w-full' : 'inset-0 w-full h-full'} border-0
+              src={getIframeSource(app.id, app.url!, usesViewportSafeArea)}
+              className={`absolute inset-0 w-full h-full border-0
                 motion-reduce:transition-none
                 ${isExiting ? `${exitClass} z-0 pointer-events-none` : ''}
                 ${isEntering ? `${enterClass} z-10` : ''}

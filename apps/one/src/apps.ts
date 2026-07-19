@@ -2,6 +2,7 @@ import localApps from './config/apps.local.json'
 import emulatorApps from './config/apps.emulator.json'
 import androidDeviceApps from './config/apps.android-device.json'
 import iosSimulatorApps from './config/apps.ios-simulator.json'
+import iosDeviceApps from './config/apps.ios-device.json'
 import recetteApps from './config/apps.recette.json'
 import productionApps from './config/apps.production.json'
 
@@ -13,7 +14,7 @@ export interface AppEntry {
   color: string
 }
 
-export type ConfigEnvironment = 'local' | 'emulator' | 'android-device' | 'ios-simulator' | 'recette' | 'production'
+export type ConfigEnvironment = 'local' | 'emulator' | 'android-device' | 'ios-simulator' | 'ios-device' | 'recette' | 'production'
 export type LocalModuleUrls = Record<string, string>
 export type RegistryFetcher = (url: string) => Promise<{ ok: boolean; json(): Promise<unknown> }>
 
@@ -27,6 +28,7 @@ const appsByEnvironment: Record<ConfigEnvironment, AppEntry[]> = {
   emulator: emulatorApps,
   'android-device': androidDeviceApps,
   'ios-simulator': iosSimulatorApps,
+  'ios-device': iosDeviceApps,
   recette: recetteApps,
   production: productionApps,
 }
@@ -36,6 +38,7 @@ export function getConfigEnvironment(mode: string): ConfigEnvironment {
   if (mode === 'android-emulator') return 'emulator'
   if (mode === 'android-device') return 'android-device'
   if (mode === 'ios-simulator') return 'ios-simulator'
+  if (mode === 'ios-device') return 'ios-device'
   if (mode === 'recette') return 'recette'
   return 'production'
 }
@@ -76,6 +79,7 @@ export const BRIDGE_ALLOWED_ORIGINS: Readonly<Record<ConfigEnvironment, readonly
   emulator: moduleOrigins(emulatorApps),
   'android-device': moduleOrigins(androidDeviceApps),
   'ios-simulator': moduleOrigins(iosSimulatorApps),
+  'ios-device': moduleOrigins(iosDeviceApps),
   recette: moduleOrigins(recetteApps),
   production: moduleOrigins(productionApps),
 }
@@ -200,7 +204,7 @@ export async function refreshRemoteRegistry(
 
 export function isRemoteRegistryEnabled(mode: string): boolean {
   const environment = getConfigEnvironment(mode)
-  return mode !== 'test' && !isLocalEnvironment(environment) && environment !== 'android-device'
+  return mode !== 'test' && !isLocalEnvironment(environment) && environment !== 'android-device' && environment !== 'ios-device'
 }
 
 export function applyLocalUrlOverrides(apps: AppEntry[], overrides: LocalModuleUrls): AppEntry[] {
@@ -211,7 +215,7 @@ export function applyLocalUrlOverrides(apps: AppEntry[], overrides: LocalModuleU
 }
 
 export function loadLocalModuleUrls(mode = import.meta.env.MODE): LocalModuleUrls {
-  if (getConfigEnvironment(mode) === 'android-device') return {}
+  if (getConfigEnvironment(mode) === 'android-device' || getConfigEnvironment(mode) === 'ios-device') return {}
 
   try {
     const value: unknown = JSON.parse(localStorage.getItem(LOCAL_MODULE_URLS_KEY) ?? '{}')
@@ -223,7 +227,7 @@ export function loadLocalModuleUrls(mode = import.meta.env.MODE): LocalModuleUrl
 }
 
 export function saveLocalModuleUrls(urls: LocalModuleUrls, mode = import.meta.env.MODE) {
-  if (getConfigEnvironment(mode) === 'android-device') return {}
+  if (getConfigEnvironment(mode) === 'android-device' || getConfigEnvironment(mode) === 'ios-device') return {}
 
   const validUrls = Object.fromEntries(Object.entries(urls).filter(([, url]) => isModuleUrl(url)))
   try { localStorage.setItem(LOCAL_MODULE_URLS_KEY, JSON.stringify(validUrls)) } catch { /* noop */ }
@@ -240,7 +244,7 @@ export function getRuntimeApps(
   if (isLocalEnvironment(environment)) {
     return applyLocalUrlOverrides(apps, overrides)
   }
-  if (environment === 'android-device') return apps
+  if (environment === 'android-device' || environment === 'ios-device') return apps
   return isRemoteRegistryEnabled(mode) ? loadRemoteRegistryCache(now) ?? apps : apps
 }
 

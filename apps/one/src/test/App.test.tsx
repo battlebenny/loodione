@@ -14,6 +14,9 @@ const toggleLauncher = vi.hoisted(() => vi.fn())
 const shellSettings = vi.hoisted(() => ({ open: false }))
 const shellHeaderOptions = vi.hoisted(() => ({ hideActions: false, canGoBack: false }))
 const shellActiveApp = vi.hoisted(() => ({ id: 'loodi-dev' }))
+const shellApps = vi.hoisted(() => ({
+  value: [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }],
+}))
 const shellTabs = vi.hoisted(() => ({ value: [] as { id: string; icon: string; label: string }[] }))
 
 vi.mock('../useShell', () => ({
@@ -21,7 +24,7 @@ vi.mock('../useShell', () => ({
   useShell: () => ({
     state: {
       activeAppId: shellActiveApp.id,
-      apps: [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }],
+      apps: shellApps.value,
       tabs: shellTabs.value,
       activeTab: null,
       headerActions: [{ id: 'new-game', label: 'Nouveau jeu' }],
@@ -58,6 +61,7 @@ describe('module frame', () => {
     shellHeaderOptions.hideActions = false
     shellHeaderOptions.canGoBack = false
     shellActiveApp.id = 'loodi-dev'
+    shellApps.value = [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }]
     shellTabs.value = []
     sendHeaderAction.mockClear()
     sendBack.mockClear()
@@ -75,7 +79,7 @@ describe('module frame', () => {
     document.documentElement.style.removeProperty('--safe-area-inset-bottom')
   })
 
-  it('passes the header and bottom-navigation clearances to modules', () => {
+  it('passes safe-area clearances to modules while keeping their backgrounds behind the shell glass', () => {
     const { container } = render(<App />)
     const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi-dev"]')!
     const url = new URL(frame.src)
@@ -83,22 +87,35 @@ describe('module frame', () => {
     expect(url.searchParams.get('headerHeight')).toBe('76')
     expect(url.searchParams.get('bottomNavHeight')).toBe('88')
     expect(url.searchParams.get('viewportSafeArea')).toBe('1')
-    expect(frame).toHaveStyle({
-      top: '76px',
-      bottom: '88px',
-      height: 'calc(100% - 164px)',
-    })
+    expect(frame).toHaveClass('inset-0', 'w-full', 'h-full')
+    expect(frame.style.top).toBe('')
+    expect(frame.style.bottom).toBe('')
     expect(frame.getAttribute('allow')).toBe('camera')
+  })
+
+  it('keeps the Collec background full-screen while its content receives shell clearances', () => {
+    shellActiveApp.id = 'loodi'
+    shellApps.value = [{ id: 'loodi', name: 'collec', icon: '📚', color: '#ca4a16', url: 'https://collec.loodi.test:4002' }]
+
+    const { container } = render(<App />)
+    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi"]')!
+
+    const url = new URL(frame.src)
+
+    expect(frame).toHaveClass('inset-0', 'w-full', 'h-full')
+    expect(url.searchParams.get('headerHeight')).toBe('76')
+    expect(url.searchParams.get('bottomNavHeight')).toBe('88')
   })
 
   it('keeps iframe refs stable across renders to avoid repeated registrations', () => {
     const { rerender } = render(<App />)
+    const registrationsAfterMount = registerIframe.mock.calls.length
 
-    expect(registerIframe).toHaveBeenCalledTimes(1)
+    expect(registrationsAfterMount).toBeGreaterThan(0)
 
     rerender(<App />)
 
-    expect(registerIframe).toHaveBeenCalledTimes(1)
+    expect(registerIframe).toHaveBeenCalledTimes(registrationsAfterMount)
   })
 
   it('lets the dev dummy apply both shell clearances as body padding', () => {

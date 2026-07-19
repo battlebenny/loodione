@@ -26,11 +26,12 @@ describe('native configuration', () => {
     expect(iosInfo).toContain('<key>NSCameraUsageDescription</key>')
   })
 
-  it('defines the physical Android device module registry', () => {
+  it('defines the physical Android device registry with Collec and the LAN dummy', () => {
     const apps = JSON.parse(readFileSync(resolve(process.cwd(), 'src/config/apps.android-device.json'), 'utf8'))
 
     expect(apps).toEqual([
       { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
+      { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
     ])
   })
 
@@ -41,6 +42,9 @@ describe('native configuration', () => {
     expect(appPackage.scripts['build:android-device']).toBe('tsc -b && vite build --mode android-device')
     expect(rootPackage.scripts['build:android-device']).toBe('npm run build:android-device -w @loodi/one')
     expect(rootPackage.scripts['cap:sync:android-device']).toBe('npm run build:android-device && npx cap sync android')
+    expect(appPackage.scripts['build:ios-device']).toBe('tsc -b && vite build --mode ios-device')
+    expect(rootPackage.scripts['build:ios-device']).toBe('npm run build:ios-device -w @loodi/one')
+    expect(rootPackage.scripts['cap:sync:ios-device']).toBe('npm run build:ios-device && npx cap sync ios')
     expect(rootPackage.scripts['test:run']).toBe('npm run test:run -w @loodi/one')
   })
 

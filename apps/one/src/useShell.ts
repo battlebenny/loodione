@@ -55,14 +55,6 @@ export function registerRenderedModules(
   })
 }
 
-export function shouldRetryModule(
-  appId: string,
-  readyAppIds: ReadonlySet<string>,
-  retriedAppIds: ReadonlySet<string>,
-): boolean {
-  return !readyAppIds.has(appId) && !retriedAppIds.has(appId)
-}
-
 export function getInitialAppId(
   apps: readonly AppEntry[],
   favoriteAppId: string | null | undefined,

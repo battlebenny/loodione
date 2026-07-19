@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getActiveTabForPath, getInitialAppId, getModuleHeaderOptions, getModuleTabs, registerRenderedModules, shouldRetryModule, useShell } from '../useShell'
+import { getActiveTabForPath, getInitialAppId, getModuleHeaderOptions, getModuleTabs, registerRenderedModules, useShell } from '../useShell'
 
 describe('registerRenderedModules', () => {
   it('re-registers mounted iframes when the bridge is recreated', () => {
@@ -16,17 +16,6 @@ describe('registerRenderedModules', () => {
 
     expect(registerModule).toHaveBeenCalledWith('loodi', loodi)
     expect(registerModule).toHaveBeenCalledWith('loodi-mate', mate)
-  })
-})
-
-describe('shouldRetryModule', () => {
-  it('retries a module that has not completed its bridge handshake', () => {
-    expect(shouldRetryModule('loodi', new Set(), new Set())).toBe(true)
-  })
-
-  it('does not retry a ready module or a module already retried', () => {
-    expect(shouldRetryModule('loodi', new Set(['loodi']), new Set())).toBe(false)
-    expect(shouldRetryModule('loodi', new Set(), new Set(['loodi']))).toBe(false)
   })
 })
 
