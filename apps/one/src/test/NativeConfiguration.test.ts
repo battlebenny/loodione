@@ -42,6 +42,9 @@ describe('native configuration', () => {
     expect(appPackage.scripts['build:android-device']).toBe('tsc -b && vite build --mode android-device')
     expect(rootPackage.scripts['build:android-device']).toBe('npm run build:android-device -w @loodi/one')
     expect(rootPackage.scripts['cap:sync:android-device']).toBe('npm run build:android-device && npx cap sync android')
+    expect(appPackage.scripts['build:ios-device']).toBe('tsc -b && vite build --mode ios-device')
+    expect(rootPackage.scripts['build:ios-device']).toBe('npm run build:ios-device -w @loodi/one')
+    expect(rootPackage.scripts['cap:sync:ios-device']).toBe('npm run build:ios-device && npx cap sync ios')
     expect(rootPackage.scripts['test:run']).toBe('npm run test:run -w @loodi/one')
   })
 

@@ -16,10 +16,40 @@ Pour éviter de synchroniser une ancienne build émulateur sur un appareil physi
 | Émulateur Android | `npm run cap:sync:android-emulator` | `apps.emulator.json` | `10.0.2.2:4000–4002` |
 | Appareil Android physique | `npm run cap:sync:android-device` | `apps.android-device.json` | IP LAN du Mac, actuellement `192.168.0.109` |
 | Simulateur iOS | `npm run cap:sync:ios-simulator` | `apps.ios-simulator.json` | `localhost:4000–4002` |
+| Appareil iOS physique | `npm run cap:sync:ios-device` | `apps.ios-device.json` | IP LAN du Mac, actuellement `192.168.0.109` |
 | Recette | `npm run build:recette` puis sync natif | `apps.recette.json` | selon la configuration de recette |
 | Production | `npm run build` puis sync natif | `apps.production.json` | URLs publiques |
 
 `10.0.2.2` est l’adresse spéciale de l’émulateur Android. Elle ne doit jamais être utilisée pour un Pixel physique.
+
+## Bridge strict, origines et caméra
+
+Le bridge est strict : One accepte uniquement un message dont `event.source` est la `contentWindow` de l’iframe enregistrée, dont `event.origin` correspond exactement à l’origine de son URL configurée, et dont le schéma est valide. Chaque message envoyé par One utilise cette même origine exacte comme `targetOrigin` — jamais `*`.
+
+Les origines de modules acceptées sont dérivées des fichiers `apps/one/src/config/apps.*.json` à la build. Le port fait partie de l’origine.
+
+| Cible | Origine de One | Allowlist des modules |
+| --- | --- | --- |
+| Navigateur Mac | `https://one.loodi.test:4001` | `https://collec.loodi.test:4002`, `https://mate.loodi.test:4003`, `https://mag.loodi.test:4004`, `https://places.loodi.test:4005`, `https://fest.loodi.test:4006`, `https://sessions.loodi.test:4007`, `https://dummy.loodi.test:4000` |
+| Émulateur Android | `https://app` | `https://10.0.2.2:4002`, `https://10.0.2.2:4000` |
+| Android physique | `https://app` | `https://192.168.0.109:4002`, `https://192.168.0.109:4000` |
+| Simulateur iOS | `capacitor://app` | `https://localhost:4002`, `https://localhost:4000` |
+| Appareil iOS physique | `capacitor://app` | `https://192.168.0.109:4002`, `https://192.168.0.109:4000` |
+| Recette | dépend de la registry ; aucune origine tant que les URLs sont `null` | aucune actuellement |
+| Production native | Android : `https://app` ; iOS : `capacitor://app` | `https://loodi.vercel.app` |
+
+Collec doit donc initialiser `BridgeClient` en mode strict avec l’origine de One de la cible comme `targetOrigin`. One calcule son allowlist séparément pour chaque build ; une URL saisie dans l’outil de développement ne l’élargit pas.
+
+La caméra est demandée directement par Collec via les APIs web. One conserve `allow="camera"` sur chaque iframe, `android.permission.CAMERA` dans le manifest Android et `NSCameraUsageDescription` dans l’Info.plist iOS. Un refus reste un état métier affiché par Collec : One ne recharge pas l’iframe et ne remplace pas l’écran par sa home.
+
+### Recette manuelle caméra — appareils réels
+
+Après `npm run cap:sync:android-device` puis réinstallation depuis Android Studio, et `npm run cap:sync:ios-device` puis réinstallation depuis Xcode, valider sur un appareil de chaque plateforme :
+
+1. Ouvrir Collec, aller au scanner et accepter la permission caméra ; scanner un code puis revenir à Collec.
+2. Réinitialiser l’autorisation dans les réglages système, la refuser ; vérifier que l’erreur reste dans Collec, sans écran d’accueil One ni rechargement.
+3. Revenir au scanner et demander à nouveau l’autorisation ; sur un refus définitif, vérifier le parcours vers les réglages système proposé par Collec.
+4. Basculer vers la saisie manuelle puis revenir à la collection ; vérifier que le même runtime Collec est conservé (route, formulaire et navigation basse), y compris après l’apparition de la feuille de permission.
 
 ## Préparer l’environnement local
 
@@ -115,6 +145,17 @@ npm run cap:open:ios
 ```
 
 Dans Xcode, choisir le simulateur puis lancer le scheme **App**. Les modules locaux utilisent `https://localhost:<port>`.
+
+## Workflow appareil iOS physique
+
+Un iPhone ne peut pas joindre le serveur Collec du Mac par `localhost` : utiliser la cible dédiée, avec le Mac et l’iPhone sur le même Wi-Fi.
+
+```bash
+npm run cap:sync:ios-device
+npm run cap:open:ios
+```
+
+Dans Xcode, choisir l’iPhone connecté, vérifier l’équipe de signature puis lancer le scheme **App**. Installer la CA mkcert sur l’iPhone et l’activer dans **Réglages → Général → Informations → Réglages de confiance des certificats** ; le certificat de développement doit couvrir `192.168.0.109`.
 
 ## Recette et production
 

@@ -56,6 +56,7 @@ describe('module configuration', () => {
     expect(getConfigEnvironment('android-emulator')).toBe('emulator')
     expect(getConfigEnvironment('android-device')).toBe('android-device')
     expect(getConfigEnvironment('ios-simulator')).toBe('ios-simulator')
+    expect(getConfigEnvironment('ios-device')).toBe('ios-device')
     expect(getConfigEnvironment('recette')).toBe('recette')
     expect(getConfigEnvironment('production')).toBe('production')
     expect(getConfigEnvironment('unknown')).toBe('production')
@@ -79,6 +80,10 @@ describe('module configuration', () => {
       { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
     ])
     expect(getAppsForEnvironment('ios-simulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://localhost:4000')
+    expect(getAppsForEnvironment('ios-device')).toEqual([
+      { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
+      { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
+    ])
     expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBeNull()
     expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi')?.url).toBe('https://loodi.vercel.app')
   })
@@ -97,6 +102,10 @@ describe('module configuration', () => {
       'https://localhost:4000',
       'https://localhost:4002',
     ])
+    expect(getBridgeAllowedOrigins('ios-device')).toEqual([
+      'https://192.168.0.109:4000',
+      'https://192.168.0.109:4002',
+    ])
     expect(getBridgeAllowedOrigins('recette')).toEqual([])
     expect(getBridgeAllowedOrigins('production')).toEqual(['https://loodi.vercel.app'])
     expect(Object.values(BRIDGE_ALLOWED_ORIGINS).flat()).not.toContain('*')
@@ -113,6 +122,11 @@ describe('module configuration', () => {
     expect(getRuntimeApps(undefined, 'android-device')).toEqual(getAppsForEnvironment('android-device'))
     expect(isLocalBuildForMode('android-device')).toBe(false)
     expect(isRemoteRegistryEnabled('android-device')).toBe(false)
+    expect(loadLocalModuleUrls('ios-device')).toEqual({})
+    expect(saveLocalModuleUrls({ loodi: 'https://10.0.2.2:4002' }, 'ios-device')).toEqual({})
+    expect(getRuntimeApps(undefined, 'ios-device')).toEqual(getAppsForEnvironment('ios-device'))
+    expect(isLocalBuildForMode('ios-device')).toBe(false)
+    expect(isRemoteRegistryEnabled('ios-device')).toBe(false)
   })
 
   it('uses valid local overrides without changing the other module URLs', () => {
