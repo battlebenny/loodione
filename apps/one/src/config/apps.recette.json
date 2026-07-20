@@ -1,5 +1,5 @@
 [
-  { "id": "loodi", "name": "collec", "icon": "🎲", "url": null, "color": "#ca4a16" },
+  { "id": "loodi", "name": "collec", "icon": "🎲", "url": "https://loodi.vercel.app", "color": "#ca4a16" },
   { "id": "loodi-mate", "name": "Mate", "icon": "🃏", "url": null, "color": "#2E8B57" },
   { "id": "loodi-mag", "name": "Mag", "icon": "📰", "url": null, "color": "#4A90D9" },
   { "id": "loodi-places", "name": "Places", "icon": "📍", "url": null, "color": "#9B59B6" },

@@ -66,6 +66,38 @@ Les modules locaux doivent être démarrés séparément. Le dummy de développe
 npm run dev:dummy
 ```
 
+### Java et Android Studio
+
+Gradle a besoin d’un JDK pour fonctionner en ligne de commande. Android Studio
+embarque déjà le sien : il s’agit du **JDK intégré** (JetBrains Runtime), pas
+d’un Java Runtime installé globalement sur macOS.
+
+Si une commande comme `./gradlew assembleDebug` renvoie :
+
+```text
+The operation couldn’t be completed. Unable to locate a Java Runtime.
+```
+
+configurer temporairement le terminal pour utiliser le JDK d’Android Studio :
+
+```bash
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+```
+
+Pour conserver cette configuration dans les nouveaux terminaux, ajouter ces
+deux lignes au fichier `~/.zshrc`. Le chemin peut différer si Android Studio
+est installé ailleurs.
+
+Dans Android Studio, vérifier aussi **Android Studio → Settings → Build,
+Execution, Deployment → Build Tools → Gradle → Gradle JDK** et sélectionner
+**Embedded JDK**. Sur macOS, le menu peut s’appeler **Android Studio →
+Preferences**.
+
+Il n’est donc pas nécessaire d’installer un Java Runtime séparé pour builder
+depuis Android Studio.
+
 Les serveurs PWA utilisent les ports suivants :
 
 | Module | Port | Navigateur Mac |
@@ -113,6 +145,22 @@ npm run cap:open:android
 ```
 
 Dans Android Studio, sélectionner le Pixel connecté et cliquer sur **Run** pour reconstruire et réinstaller l’APK. Une simple synchronisation ne met pas à jour l’APK déjà installé.
+
+Pour générer l’APK depuis l’interface Android Studio, utiliser **Build →
+Generate App Bundles or APKs → Generate APKs**. Android Studio utilise alors
+son JDK intégré et produit l’équivalent de :
+
+```bash
+cd android
+./gradlew assembleDebug
+```
+
+L’APK est générée dans
+`android/app/build/outputs/apk/debug/app-debug.apk`. La notification affichée
+par Android Studio après le build permet également d’utiliser **locate** pour
+ouvrir directement le dossier. Pour l’installer avec Android Studio, utiliser
+**Run** avec le Pixel sélectionné ; pour l’installer manuellement, transférer
+le fichier sur le téléphone puis autoriser l’installation depuis cette source.
 
 La configuration actuelle expose :
 
@@ -213,7 +261,22 @@ npm run cap:open:ios
 
 ### Android
 
-Le debug se fait normalement depuis Android Studio après `cap:sync:<cible>`. En ligne de commande, les commandes Gradle usuelles sont :
+Pour tester rapidement sur un téléphone, aucune signature release n’est
+nécessaire. Une APK debug est signée automatiquement avec le keystore de
+debug Android.
+
+Après `npm run cap:sync:<cible>`, deux parcours sont possibles.
+
+Depuis Android Studio :
+
+1. ouvrir le projet avec `npm run cap:open:android` ;
+2. sélectionner le téléphone ou l’émulateur ;
+3. cliquer sur **Run** pour construire et installer l’application.
+
+Pour générer seulement l’APK, utiliser **Build → Generate App Bundles or APKs
+→ Generate APKs**.
+
+En ligne de commande, les commandes Gradle usuelles sont :
 
 ```bash
 cd android
@@ -227,6 +290,20 @@ Une livraison signée nécessite de configurer la signature Android dans Gradle 
 ./gradlew assembleRelease  # APK
 ./gradlew bundleRelease    # AAB pour le Play Store
 ```
+
+Pour une APK release distribuée hors du Play Store, créer une seule fois un
+keystore privé :
+
+```bash
+keytool -genkey -v -keystore "$HOME/loodi-one.keystore" \
+  -alias loodi-one -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Puis ajouter une configuration `signingConfigs.release` dans
+`android/app/build.gradle` et fournir les mots de passe via des variables
+d’environnement. Ne jamais mettre le keystore ou les mots de passe dans Git.
+Conserver le keystore dans un coffre-fort : il sera nécessaire pour publier
+les futures mises à jour de la même application.
 
 ### iOS
 
@@ -250,6 +327,7 @@ Après `npm run cap:sync:ios-simulator`, ouvrir Xcode avec `npm run cap:open:ios
 | Les modifications ne changent pas dans l’app | `cap sync` a copié un ancien `dist` ou l’APK n’a pas été réinstallé | Refaire le workflow complet de la cible |
 | Écran blanc ou iframe inaccessible | PWA arrêtée, mauvais port ou Mac/Pixel sur des réseaux différents | Vérifier les processus avec `lsof`, le Wi-Fi et l’URL LAN |
 | Erreur TLS | CA non installée ou certificat sans l’IP actuelle | Réinstaller la CA et régénérer `.certs/cert.pem` |
+| `Unable to locate a Java Runtime` | Le terminal ne connaît pas le JDK embarqué par Android Studio | Définir `JAVA_HOME` vers `Android Studio.app/Contents/jbr/Contents/Home`, ou builder depuis Android Studio |
 | Port déjà utilisé | Ancien serveur encore actif | Identifier le PID avec `lsof` avant toute fermeture |
 
 ## Fichiers de référence
