@@ -1,6 +1,6 @@
 {
   "appId": "com.loodi.one",
-  "appName": "Loodi-One",
+  "appName": "Loodi",
   "webDir": "apps/one/dist",
   "server": {
     "allowNavigation": ["*"],

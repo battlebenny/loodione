@@ -84,7 +84,7 @@ describe('module configuration', () => {
       { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
       { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
     ])
-    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBeNull()
+    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBe('https://loodi.vercel.app')
     expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi')?.url).toBe('https://loodi.vercel.app')
   })
 
@@ -106,7 +106,7 @@ describe('module configuration', () => {
       'https://192.168.0.109:4000',
       'https://192.168.0.109:4002',
     ])
-    expect(getBridgeAllowedOrigins('recette')).toEqual([])
+    expect(getBridgeAllowedOrigins('recette')).toEqual(['https://loodi.vercel.app'])
     expect(getBridgeAllowedOrigins('production')).toEqual(['https://loodi.vercel.app'])
     expect(Object.values(BRIDGE_ALLOWED_ORIGINS).flat()).not.toContain('*')
   })

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Loodi-One</string>
-    <string name="title_activity_main">Loodi-One</string>
+    <string name="app_name">Loodi</string>
+    <string name="title_activity_main">Loodi</string>
     <string name="package_name">com.loodi.one</string>
     <string name="custom_url_scheme">com.loodi.one</string>
 </resources>
