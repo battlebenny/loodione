@@ -35,7 +35,7 @@ Les origines de modules acceptées sont dérivées des fichiers `apps/one/src/co
 | Android physique | `https://app` | `https://192.168.0.109:4002`, `https://192.168.0.109:4000` |
 | Simulateur iOS | `capacitor://app` | `https://localhost:4002`, `https://localhost:4000` |
 | Appareil iOS physique | `capacitor://app` | `https://192.168.0.109:4002`, `https://192.168.0.109:4000` |
-| Recette | dépend de la registry ; aucune origine tant que les URLs sont `null` | aucune actuellement |
+| Recette | `https://app` / `capacitor://app` selon la plateforme | `https://loodi.vercel.app` pour Collec ; autres modules non configurés |
 | Production native | Android : `https://app` ; iOS : `capacitor://app` | `https://loodi.vercel.app` |
 
 Collec doit donc initialiser `BridgeClient` en mode strict avec l’origine de One de la cible comme `targetOrigin`. One calcule son allowlist séparément pour chaque build ; une URL saisie dans l’outil de développement ne l’élargit pas.

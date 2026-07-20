@@ -2,7 +2,7 @@
 
 - `apps.local.json` : catalogue des modules disponible dans une build locale. Les URLs sont saisies sur l'appareil via **Paramètres → Développement → Modules locaux** et ne sont jamais livrées en recette ou en production.
 - `apps.android-device.json` : configuration compilée pour un appareil Android physique. Elle contient uniquement Collec sur `https://192.168.0.109:4002`.
-- `apps.recette.json` : URLs des déploiements de recette. Renseigner ici les domaines Vercel associés à chaque branche ou à leurs aliases de recette.
+- `apps.recette.json` : registre de recette. Il pointe actuellement Collec vers `https://loodi.vercel.app` ; les URLs dédiées de recette des autres modules restent à renseigner.
 - `apps.production.json` : URLs publiques correspondant à la branche GitHub `main`.
 
 ## Builds
@@ -23,7 +23,7 @@ Pour un appareil physique, saisir les URLs HTTPS joignables depuis cet appareil 
 
 Les URL non nulles de chaque registre compilé forment l’allowlist exacte de `BridgeServer`. Le shell ne communique jamais avec `targetOrigin: '*'` : une iframe doit avoir une origine déclarée dans le registre de son environnement. Les surcharges de développement ne peuvent pas étendre implicitement cette allowlist ; ajouter une origine de test au fichier `apps.<environnement>.json` correspondant, avec son test, avant d’activer son bridge.
 
-`apps.recette.json` ne contient actuellement aucune URL : le bridge strict y est donc deny-all. Renseigner l’origine de recette validée dans ce fichier avant tout test intégré ; ne pas substituer une valeur approchée ou un wildcard.
+`apps.recette.json` contient actuellement l’origine de Collec (`https://loodi.vercel.app`) ; le bridge strict l’autorise. Les modules dont l’URL est `null` restent absents du runtime. Remplacer cette URL par une origine de recette dédiée lorsqu’elle sera validée ; ne pas substituer une valeur approchée ou un wildcard.
 
 ## Convention locale Mac
 
