@@ -2,7 +2,7 @@ import { fireEvent, render, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import App from '../App'
+import App, { nativeSafeAreaReady, shouldWaitForNonZeroAndroidInset } from '../App'
 
 const sendHeaderAction = vi.hoisted(() => vi.fn())
 const sendBack = vi.hoisted(() => vi.fn())
@@ -77,6 +77,24 @@ describe('module frame', () => {
   afterEach(() => {
     document.documentElement.style.removeProperty('--safe-area-inset-top')
     document.documentElement.style.removeProperty('--safe-area-inset-bottom')
+  })
+
+  it('waits for native safe-area injection before rendering native module frames', () => {
+    expect(nativeSafeAreaReady('https:', 'app', false)).toBe(false)
+    expect(nativeSafeAreaReady('https:', 'app', true)).toBe(true)
+    expect(nativeSafeAreaReady('http:', 'localhost', false)).toBe(true)
+  })
+
+  it('does not treat Capacitor’s initial zero inset as ready in affected Android builds', () => {
+    expect(nativeSafeAreaReady('https:', 'app', true, 0, true)).toBe(false)
+    expect(nativeSafeAreaReady('https:', 'app', true, 24, true)).toBe(true)
+    expect(nativeSafeAreaReady('https:', 'app', true, 0, false)).toBe(true)
+  })
+
+  it('applies the native safe-area readiness guard to the production Android build', () => {
+    expect(shouldWaitForNonZeroAndroidInset('production')).toBe(true)
+    expect(shouldWaitForNonZeroAndroidInset('android-emulator')).toBe(false)
+    expect(shouldWaitForNonZeroAndroidInset('development')).toBe(false)
   })
 
   it('passes safe-area clearances to modules while keeping their backgrounds behind the shell glass', () => {

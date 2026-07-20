@@ -8,6 +8,12 @@ import { useState, useCallback, useLayoutEffect, useRef } from 'react'
 const HEADER_HEIGHT = 52
 const BOTTOM_NAV_CLEARANCE = 72
 
+export function shouldWaitForNonZeroAndroidInset(mode: string) {
+  return mode === 'android-device' || mode === 'recette' || mode === 'production'
+}
+
+const WAIT_FOR_NON_ZERO_ANDROID_INSET = shouldWaitForNonZeroAndroidInset(import.meta.env.MODE)
+
 function readSafeAreaInsets() {
   const styles = window.getComputedStyle(document.documentElement)
   const read = (name: string) => Math.max(0, Number.parseFloat(styles.getPropertyValue(name)) || 0)
@@ -18,14 +24,20 @@ function readSafeAreaInsets() {
   }
 }
 
-function isNativeCapacitorShell() {
-  return window.location.protocol === 'capacitor:'
-    || (window.location.protocol === 'https:' && window.location.hostname === 'app')
-}
-
 function hasNativeSafeAreaInjection() {
   return document.documentElement.style.getPropertyValue('--safe-area-inset-top') !== ''
     || document.documentElement.style.getPropertyValue('--safe-area-inset-bottom') !== ''
+}
+
+export function nativeSafeAreaReady(
+  protocol: string,
+  hostname: string,
+  injected: boolean,
+  topInset = 0,
+  waitForNonZeroInset = false,
+) {
+  const nativeShell = protocol === 'capacitor:' || (protocol === 'https:' && hostname === 'app')
+  return !nativeShell || (injected && (!waitForNonZeroInset || topInset > 0))
 }
 
 function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number, viewportSafeArea = false) {
@@ -43,7 +55,13 @@ function App() {
   const navStackRef = useRef<string[]>([])
   const [safeAreaInsets, setSafeAreaInsets] = useState(readSafeAreaInsets)
   const [moduleFramesReady, setModuleFramesReady] = useState(() => {
-    return !isNativeCapacitorShell() || hasNativeSafeAreaInjection()
+    return nativeSafeAreaReady(
+      window.location.protocol,
+      window.location.hostname,
+      hasNativeSafeAreaInjection(),
+      readSafeAreaInsets().top,
+      WAIT_FOR_NON_ZERO_ANDROID_INSET,
+    )
   })
   const iframeRefCallbacks = useRef(new Map<string, (el: HTMLIFrameElement | null) => void>())
   const iframeSources = useRef(new Map<string, { url: string; src: string }>())
@@ -61,17 +79,21 @@ function App() {
     const updateSafeAreaInsets = () => {
       const next = readSafeAreaInsets()
       setSafeAreaInsets((current) => current.top === next.top && current.bottom === next.bottom ? current : next)
-      if (hasNativeSafeAreaInjection()) setModuleFramesReady(true)
+      if (nativeSafeAreaReady(
+        window.location.protocol,
+        window.location.hostname,
+        hasNativeSafeAreaInjection(),
+        next.top,
+        WAIT_FOR_NON_ZERO_ANDROID_INSET,
+      )) setModuleFramesReady(true)
     }
 
     const observer = new MutationObserver(updateSafeAreaInsets)
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] })
     updateSafeAreaInsets()
-    const fallback = window.setTimeout(() => setModuleFramesReady(true), 300)
 
     return () => {
       observer.disconnect()
-      window.clearTimeout(fallback)
     }
   }, [])
 
