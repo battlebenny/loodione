@@ -4,6 +4,11 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+### Added
+
+- `SharedPreferencesSection`, composant de présentation contrôlé pour les préférences Loodi communes (thème, ligne Langue en attente d'i18n), avec son entrée CSS dédiée.
+- `GlobalSettingsSection`, entrée de navigation vers les paramètres One-only, avec ses exports ESM et CSS dédiés.
+
 ## [0.5.0]
 
 ### Added

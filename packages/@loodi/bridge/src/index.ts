@@ -11,5 +11,8 @@ export type {
   BridgeSecurityOptions,
   HeaderAction,
   HeaderOptions,
+  SharedPreferences,
+  SharedPreferencesUpdate,
+  SharedThemeMode,
   Tab,
 } from './types.js'

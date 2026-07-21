@@ -6,6 +6,9 @@ import type {
   BridgeEventType,
   HeaderAction,
   HeaderOptions,
+  SharedPreferences,
+  SharedPreferencesUpdate,
+  Tab,
 } from './types.js'
 
 interface PendingCall {
@@ -100,8 +103,28 @@ export class BridgeClient {
     return this.call('setHeaderActions', actions)
   }
 
+  setBottomNav(tabs: Tab[]): Promise<void> {
+    return this.call('setBottomNav', tabs)
+  }
+
   setHeaderOptions(options: HeaderOptions): Promise<void> {
     return this.call('setHeaderOptions', options)
+  }
+
+  setSettingsCapability(supportsEmbeddedSettings: boolean): Promise<void> {
+    return this.call('setSettingsCapability', supportsEmbeddedSettings)
+  }
+
+  getSharedPreferences(): Promise<SharedPreferences> {
+    return this.call('getSharedPreferences')
+  }
+
+  updateSharedPreferences(update: SharedPreferencesUpdate): Promise<SharedPreferences> {
+    return this.call('updateSharedPreferences', update)
+  }
+
+  showShellSettings(): Promise<void> {
+    return this.call('showShellSettings')
   }
 
   /** Announces module readiness to One; intentionally a no-op standalone. */

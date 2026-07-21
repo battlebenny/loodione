@@ -175,10 +175,72 @@ describe('strict bridge runtime', () => {
     })
 
     expect(result.current.readyAppIds).toContain('loodi')
-    expect(child.postMessage).toHaveBeenLastCalledWith({
+    expect(child.postMessage).toHaveBeenCalledWith({
       type: 'loodi:event',
       event: 'loodi:themechange',
       detail: { theme: 'dark' },
     }, 'https://collec.loodi.test:4002')
+    expect(child.postMessage).toHaveBeenLastCalledWith({
+      type: 'loodi:event',
+      event: 'loodi:preferenceschange',
+      detail: expect.objectContaining({
+        themeMode: 'dark',
+        resolvedTheme: 'dark',
+      }),
+    }, 'https://collec.loodi.test:4002')
+  })
+
+  it('opens the active module settings when it declares the capability', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    })
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    const { result } = renderHook(() => useShell())
+    const iframe = document.createElement('iframe')
+    iframe.dataset.app = 'loodi'
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+
+    act(() => {
+      result.current.registerIframe('loodi', iframe)
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:call', method: 'setSettingsCapability', args: [true], id: 1 },
+      }))
+      result.current.toggleSettings()
+    })
+
+    expect(result.current.state.settingsOpen).toBe(false)
+    expect(child.postMessage).toHaveBeenCalledWith({
+      type: 'loodi:event',
+      event: 'loodi:settingsopen',
+      detail: undefined,
+    }, 'https://collec.loodi.test:4002')
+  })
+
+  it('falls back to One settings when the active module has no embedded settings capability', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    })
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    const { result } = renderHook(() => useShell())
+
+    act(() => result.current.toggleSettings())
+
+    expect(result.current.state.settingsOpen).toBe(true)
   })
 })

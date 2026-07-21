@@ -40,14 +40,13 @@ export function nativeSafeAreaReady(
   return !nativeShell || (injected && (!waitForNonZeroInset || topInset > 0))
 }
 
-function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number, viewportSafeArea = false) {
+function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number) {
   const separator = url.includes('?') ? '&' : '?'
-  const viewportParam = viewportSafeArea ? '&viewportSafeArea=1' : ''
-  return `${url}${separator}loodi-shell=1&headerHeight=${headerHeight}&bottomNavHeight=${bottomNavHeight}${viewportParam}`
+  return `${url}${separator}loodi-shell=1&headerHeight=${headerHeight}&bottomNavHeight=${bottomNavHeight}`
 }
 
 function App() {
-  const { state, themeMode, setThemeMode, toggleLauncher, activateApp, toggleSettings, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, setActiveTab, sendHeaderAction, sendBack, sendTabTap } = useShell()
+  const { state, toggleLauncher, activateApp, toggleSettings, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, setActiveTab, sendHeaderAction, sendBack, sendTabTap } = useShell()
 
   const [exitingId, setExitingId] = useState<string | null>(null)
   const [backward, setBackward] = useState(false)
@@ -103,11 +102,11 @@ function App() {
   // A module owns its in-iframe route and runtime. Safe-area changes can
   // happen when Android/iOS presents a camera permission sheet, so they must
   // only update the shell layout—not rewrite iframe.src and reload the PWA.
-  const getIframeSource = useCallback((appId: string, url: string, viewportSafeArea: boolean) => {
+  const getIframeSource = useCallback((appId: string, url: string) => {
     const current = iframeSources.current.get(appId)
     if (current?.url === url) return current.src
 
-    const src = moduleUrl(url, headerHeight, bottomNavHeight, viewportSafeArea)
+    const src = moduleUrl(url, headerHeight, bottomNavHeight)
     iframeSources.current.set(appId, { url, src })
     return src
   }, [headerHeight, bottomNavHeight])
@@ -184,14 +183,12 @@ function App() {
           const isEntering = state.activeAppId === app.id && exitingId !== null && exitingId !== app.id
           const isActive = state.activeAppId === app.id && !isEntering
           const isInactive = !isExiting && !isActive && !isEntering
-          const usesViewportSafeArea = app.id === 'loodi-dev'
-
           return (
             <iframe
               key={app.id}
               data-app={app.id}
               ref={getIframeRef(app.id)}
-              src={getIframeSource(app.id, app.url!, usesViewportSafeArea)}
+              src={getIframeSource(app.id, app.url!)}
               className={`absolute inset-0 w-full h-full border-0
                 motion-reduce:transition-none
                 ${isExiting ? `${exitClass} z-0 pointer-events-none` : ''}
@@ -233,8 +230,6 @@ function App() {
 
       {state.settingsOpen && (
         <Settings
-          themeMode={themeMode}
-          onThemeChange={setThemeMode}
           onClose={toggleSettings}
           apps={state.apps.filter((a) => a.url)}
           favoriteAppId={favoriteAppId}

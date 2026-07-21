@@ -10,6 +10,8 @@ export default defineConfig({
         'mini-header': resolve(__dirname, 'src/mini-header.ts'),
         'bottom-nav': resolve(__dirname, 'src/bottom-nav.ts'),
         launcher: resolve(__dirname, 'src/launcher-entry.ts'),
+        'shared-preferences': resolve(__dirname, 'src/SharedPreferencesSection.tsx'),
+        'global-settings': resolve(__dirname, 'src/GlobalSettingsSection.tsx'),
       },
       formats: ['es'],
       fileName: (_format, entryName) => `${entryName}.js`,

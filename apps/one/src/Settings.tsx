@@ -1,11 +1,8 @@
 import { type ReactNode, useEffect, useState } from 'react'
-import type { ThemeMode } from './theme'
 import type { AppEntry, LocalModuleUrls } from './apps'
 import { BottomSheet } from './BottomSheet'
 
 interface SettingsProps {
-  themeMode: ThemeMode
-  onThemeChange: (mode: ThemeMode) => void
   onClose: () => void
   apps: AppEntry[]
   favoriteAppId: string | null
@@ -31,18 +28,6 @@ function ChevronRight() {
   )
 }
 
-function PaletteIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
-      <circle cx="13.5" cy="6.5" r=".5" />
-      <circle cx="17.5" cy="10.5" r=".5" />
-      <circle cx="8.5" cy="7.5" r=".5" />
-      <circle cx="6.5" cy="12.5" r=".5" />
-      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.5-.67 1.5-1.5 0-.37-.15-.72-.4-1-.27-.3-.44-.7-.44-1.1 0-.83.67-1.5 1.5-1.5H16c3.31 0 6-2.69 6-6 0-5.52-4.5-10-10-10" />
-    </svg>
-  )
-}
-
 function GridIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
@@ -60,35 +45,6 @@ function ServerIcon() {
       <rect width="20" height="8" x="2" y="2" rx="2" />
       <rect width="20" height="8" x="2" y="14" rx="2" />
       <path d="M6 6h.01M6 18h.01" />
-    </svg>
-  )
-}
-
-function SunIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" /><path d="m4.93 4.93 1.41 1.41" />
-      <path d="M2 12h2" /><path d="m4.93 19.07 1.41-1.41" />
-      <path d="M12 20v2" /><path d="m19.07 4.93-1.41 1.41" />
-      <path d="M20 12h2" /><path d="m17.66 17.66 1.41 1.41" />
-    </svg>
-  )
-}
-
-function MoonIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  )
-}
-
-function MonitorIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-black/60 dark:text-white/60">
-      <rect width="20" height="14" x="2" y="3" rx="2" />
-      <path d="M8 21h8" /><path d="M12 17v4" />
     </svg>
   )
 }
@@ -153,20 +109,7 @@ function PickerOption({ children, active, onClick }: { children: ReactNode; acti
   )
 }
 
-const themeLabel: Record<ThemeMode, string> = {
-  system: 'Auto',
-  light: 'Clair',
-  dark: 'Sombre',
-}
-
-const themeIcon: Record<ThemeMode, () => ReactNode> = {
-  system: MonitorIcon,
-  light: SunIcon,
-  dark: MoonIcon,
-}
-
-export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppId, onFavoriteChange, developmentApps, localModuleUrls = {}, onLocalModuleUrlsChange }: SettingsProps) {
-  const [themeSheetOpen, setThemeSheetOpen] = useState(false)
+export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, developmentApps, localModuleUrls = {}, onLocalModuleUrlsChange }: SettingsProps) {
   const [appSheetOpen, setAppSheetOpen] = useState(false)
   const [moduleSheetOpen, setModuleSheetOpen] = useState(false)
   const [localModuleUrlDrafts, setLocalModuleUrlDrafts] = useState<LocalModuleUrls>(localModuleUrls)
@@ -184,12 +127,6 @@ export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppI
   const favAppName = favoriteAppId
     ? apps.find((a) => a.id === favoriteAppId)?.name ?? favoriteAppId
     : 'Aucune'
-
-  const themeEntries: { value: ThemeMode; label: string }[] = [
-    { value: 'system', label: 'Système' },
-    { value: 'light', label: 'Clair' },
-    { value: 'dark', label: 'Sombre' },
-  ]
 
   const configuredLocalModuleCount = Object.values(localModuleUrls).filter(Boolean).length
 
@@ -222,12 +159,6 @@ export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppI
         <SectionCard>
           <SectionHeader label="Préférences" />
           <Row
-            icon={<PaletteIcon />}
-            label="Thème"
-            secondary={themeLabel[themeMode]}
-            onClick={() => setThemeSheetOpen(true)}
-          />
-          <Row
             icon={<GridIcon />}
             label="Application préférée"
             secondary={favAppName}
@@ -251,28 +182,6 @@ export function Settings({ themeMode, onThemeChange, onClose, apps, favoriteAppI
           </div>
         )}
       </div>
-
-      <BottomSheet open={themeSheetOpen} onClose={() => setThemeSheetOpen(false)} title="Thème">
-        <div className="space-y-1 pb-2">
-          {themeEntries.map(({ value, label }) => {
-            const Icon = themeIcon[value]
-            return (
-              <PickerOption
-                key={value}
-                active={themeMode === value}
-                onClick={() => { onThemeChange(value); setThemeSheetOpen(false) }}
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
-                  <Icon />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[15px] font-medium text-black/80 dark:text-white/80">{label}</p>
-                </div>
-              </PickerOption>
-            )
-          })}
-        </div>
-      </BottomSheet>
 
       <BottomSheet open={appSheetOpen} onClose={() => setAppSheetOpen(false)} title="Application préférée">
         <div className="space-y-1 pb-2">

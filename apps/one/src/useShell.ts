@@ -14,7 +14,7 @@ import {
 import { normalizeThemeMode, resolveTheme } from './theme'
 import { BridgeServer } from './BridgeServer'
 import type { ThemeMode } from './theme'
-import type { HeaderAction, HeaderOptions } from '@loodi/bridge'
+import type { HeaderAction, HeaderOptions, SharedPreferences, SharedPreferencesUpdate } from '@loodi/bridge'
 import type { Tab } from '@loodi/ui/bottom-nav'
 import type { AppEntry } from './apps'
 
@@ -106,6 +106,18 @@ export function useShell() {
 
   const [themeMode, setThemeMode] = useState<ThemeMode>(loadThemeMode)
   const [theme, setTheme] = useState<'dark' | 'light'>(() => resolveTheme(loadThemeMode()))
+  const sharedPreferencesRef = useRef<SharedPreferences>({
+    themeMode: loadThemeMode(),
+    resolvedTheme: resolveTheme(loadThemeMode()),
+    revision: 0,
+  })
+  const updateSharedPreferencesSnapshot = useCallback((nextThemeMode: ThemeMode, nextTheme: 'dark' | 'light') => {
+    const current = sharedPreferencesRef.current
+    if (current.themeMode === nextThemeMode && current.resolvedTheme === nextTheme) return current
+    const next = { themeMode: nextThemeMode, resolvedTheme: nextTheme, revision: current.revision + 1 }
+    sharedPreferencesRef.current = next
+    return next
+  }, [])
 
   useEffect(() => {
     try { localStorage.setItem('loodi:theme', themeMode) } catch { /* noop */ }
@@ -137,6 +149,22 @@ export function useShell() {
   const headerActionsByApp = useRef<Map<string, HeaderAction[]>>(new Map())
   const headerOptionsByApp = useRef<Map<string, HeaderOptions>>(new Map())
   const bridgeAllowedOrigins = getBridgeAllowedOrigins(import.meta.env.MODE)
+  const settingsOpenTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+
+  const clearSettingsOpenTimeout = useCallback(() => {
+    if (settingsOpenTimeout.current !== undefined) {
+      clearTimeout(settingsOpenTimeout.current)
+      settingsOpenTimeout.current = undefined
+    }
+  }, [])
+
+  const showOneSettings = useCallback(() => {
+    clearSettingsOpenTimeout()
+    setState((s) => {
+      if (!s.settingsOpen) history.pushState({ settings: true }, '')
+      return { ...s, settingsOpen: true }
+    })
+  }, [clearSettingsOpenTimeout])
 
   const HEADER_H = 52
   const scrollProgress = Math.min(scrollY / (HEADER_H * 1.5), 1)
@@ -150,6 +178,7 @@ export function useShell() {
           return new Set(ids).add(appId)
         })
         bridge.sendThemeChange(appId, themeRef.current)
+        bridge.sendSharedPreferencesChange(appId, sharedPreferencesRef.current)
       },
       onBadgeCount: (id, count) => console.log('[Loodi] badge', id, count),
       onError: (id, code, rec) => console.error('[Loodi] error', id, code, rec),
@@ -201,6 +230,19 @@ export function useShell() {
         goBack()
       },
       onRequestShowSwitcher: toggleLauncher,
+      onSettingsCapabilityChange: () => undefined,
+      onSettingsOpenResult: (_appId, opened) => {
+        clearSettingsOpenTimeout()
+        if (!opened) showOneSettings()
+      },
+      onRequestSharedPreferences: () => sharedPreferencesRef.current,
+      onRequestSharedPreferencesUpdate: (_appId, update: SharedPreferencesUpdate) => {
+        const nextThemeMode = normalizeThemeMode(update.themeMode)
+        const next = updateSharedPreferencesSnapshot(nextThemeMode, resolveTheme(nextThemeMode))
+        setThemeMode(nextThemeMode)
+        return next
+      },
+      onRequestShowShellSettings: showOneSettings,
     }, {
       security: {
         mode: 'strict',
@@ -221,10 +263,12 @@ export function useShell() {
   }, [theme])
 
   useEffect(() => {
+    const preferences = updateSharedPreferencesSnapshot(themeMode, theme)
     state.apps.forEach((app) => {
       bridgeRef.current?.sendThemeChange(app.id, theme)
+      bridgeRef.current?.sendSharedPreferencesChange(app.id, preferences)
     })
-  }, [state.apps, theme])
+  }, [state.apps, theme, themeMode, updateSharedPreferencesSnapshot])
 
   // Wheel fallback for iframes without bridge scroll support
   useEffect(() => {
@@ -314,13 +358,23 @@ export function useShell() {
   }, [])
 
   const toggleSettings = useCallback(() => {
-    setState((s) => {
-      if (!s.settingsOpen) {
-        history.pushState({ settings: true }, '')
-      }
-      return { ...s, settingsOpen: !s.settingsOpen }
-    })
-  }, [])
+    if (state.settingsOpen) {
+      clearSettingsOpenTimeout()
+      setState((s) => ({ ...s, settingsOpen: false }))
+      return
+    }
+
+    const bridge = bridgeRef.current
+    const supportsEmbeddedSettings = bridge?.getModuleInfo(state.activeAppId)?.supportsEmbeddedSettings === true
+    if (!bridge || !supportsEmbeddedSettings) {
+      showOneSettings()
+      return
+    }
+
+    clearSettingsOpenTimeout()
+    bridge.sendSettingsOpen(state.activeAppId)
+    settingsOpenTimeout.current = setTimeout(showOneSettings, 600)
+  }, [clearSettingsOpenTimeout, showOneSettings, state.activeAppId, state.settingsOpen])
 
   const goBack = useCallback(() => {
     setState((s) => {

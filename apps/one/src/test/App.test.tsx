@@ -104,7 +104,7 @@ describe('module frame', () => {
 
     expect(url.searchParams.get('headerHeight')).toBe('76')
     expect(url.searchParams.get('bottomNavHeight')).toBe('88')
-    expect(url.searchParams.get('viewportSafeArea')).toBe('1')
+    expect(url.searchParams.get('viewportSafeArea')).toBeNull()
     expect(frame).toHaveClass('inset-0', 'w-full', 'h-full')
     expect(frame.style.top).toBe('')
     expect(frame.style.bottom).toBe('')
@@ -136,13 +136,14 @@ describe('module frame', () => {
     expect(registerIframe).toHaveBeenCalledTimes(registrationsAfterMount)
   })
 
-  it('lets the dev dummy apply both shell clearances as body padding', () => {
-    const dummy = readFileSync(resolve(process.cwd(), 'public/dev/dummy.html'), 'utf8')
+  it('lets the dev dummy persist and apply both shell clearances without moving its full-screen background', () => {
+    const dummy = readFileSync(resolve(process.cwd(), '../dummy/src/safeArea.ts'), 'utf8')
 
     expect(dummy).toContain('--shell-safe-top')
     expect(dummy).toContain('--shell-safe-bottom')
-    expect(dummy).toContain("shellClearance('bottomNavHeight')")
-    expect(dummy).toContain("shellParams.get('viewportSafeArea') === '1'")
+    expect(dummy).toContain('headerHeight')
+    expect(dummy).toContain('bottomNavHeight')
+    expect(dummy).toContain('localStorage')
   })
 
   it('shows declared module actions and returns the selected action to the module', () => {

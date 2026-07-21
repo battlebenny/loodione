@@ -9,5 +9,6 @@ export function normalizeThemeMode(value: unknown): ThemeMode {
 export function resolveTheme(mode: ThemeMode): 'dark' | 'light' {
   const normalizedMode = normalizeThemeMode(mode)
   if (normalizedMode !== 'system') return normalizedMode
+  if (typeof window.matchMedia !== 'function') return 'light'
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }

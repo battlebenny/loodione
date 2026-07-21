@@ -22,12 +22,22 @@
       "types": "./dist/launcher.d.ts",
       "import": "./dist/launcher.js"
     },
+    "./shared-preferences": {
+      "types": "./dist/shared-preferences.d.ts",
+      "import": "./dist/shared-preferences.js"
+    },
+    "./global-settings": {
+      "types": "./dist/global-settings.d.ts",
+      "import": "./dist/global-settings.js"
+    },
     "./styles.css": "./dist/styles.css",
     "./tokens.css": "./dist/tokens.css",
     "./tokens.dtcg.json": "./dist/tokens.dtcg.json",
     "./mini-header.css": "./dist/mini-header.css",
     "./bottom-nav.css": "./dist/bottom-nav.css",
     "./launcher.css": "./dist/launcher.css",
+    "./shared-preferences.css": "./dist/shared-preferences.css",
+    "./global-settings.css": "./dist/global-settings.css",
     "./package.json": "./package.json"
   },
   "files": [
@@ -43,7 +53,9 @@
     "./dist/tokens.css",
     "./dist/mini-header.css",
     "./dist/bottom-nav.css",
-    "./dist/launcher.css"
+    "./dist/launcher.css",
+    "./dist/shared-preferences.css",
+    "./dist/global-settings.css"
   ],
   "scripts": {
     "generate:tokens": "node scripts/generate-tokens.mjs",

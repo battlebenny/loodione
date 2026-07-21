@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import { BridgeServer } from '../BridgeServer'
+import { BridgeServer, type BridgeServerCallbacks } from '../BridgeServer'
 
-function callbacks() {
+function callbacks(): BridgeServerCallbacks {
+  const initialPreferences = { themeMode: 'system' as const, resolvedTheme: 'light' as const, revision: 1 }
+  const updatedPreferences = { themeMode: 'dark' as const, resolvedTheme: 'dark' as const, revision: 2 }
+
   return {
     onReady: vi.fn(),
     onBadgeCount: vi.fn(),
@@ -15,8 +18,64 @@ function callbacks() {
     onRequestOpenApp: vi.fn(),
     onRequestCloseApp: vi.fn(),
     onRequestShowSwitcher: vi.fn(),
+    onSettingsCapabilityChange: vi.fn(),
+    onSettingsOpenResult: vi.fn(),
+    onRequestSharedPreferences: vi.fn(() => initialPreferences),
+    onRequestSharedPreferencesUpdate: vi.fn(() => updatedPreferences),
+    onRequestShowShellSettings: vi.fn(),
   }
 }
+
+describe('BridgeServer embedded settings', () => {
+  it('records support for embedded settings and sends the shell opening command', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb)
+    const iframe = document.createElement('iframe')
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi-dev', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:call', method: 'setSettingsCapability', args: [true], id: 1 },
+    }))
+
+    expect(cb.onSettingsCapabilityChange).toHaveBeenCalledWith('loodi-dev', true)
+    expect(bridge.getModuleInfo('loodi-dev')?.supportsEmbeddedSettings).toBe(true)
+
+    bridge.sendSettingsOpen('loodi-dev')
+    expect(child.postMessage).toHaveBeenCalledWith({
+      type: 'loodi:event',
+      event: 'loodi:settingsopen',
+      detail: undefined,
+    }, '*')
+    bridge.destroy()
+  })
+
+  it('serves and updates the closed shared-preferences model', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb)
+    const iframe = document.createElement('iframe')
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi-dev', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:call', method: 'getSharedPreferences', args: [], id: 1 },
+    }))
+    expect(child.postMessage).toHaveBeenCalledWith({
+      type: 'loodi:response', id: 1, result: { themeMode: 'system', resolvedTheme: 'light', revision: 1 }, error: undefined,
+    }, '*')
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:call', method: 'updateSharedPreferences', args: [{ themeMode: 'dark' }], id: 2 },
+    }))
+    expect(cb.onRequestSharedPreferencesUpdate).toHaveBeenCalledWith('loodi-dev', { themeMode: 'dark' })
+    bridge.destroy()
+  })
+})
 
 describe('BridgeServer header actions', () => {
   it('stores the actions declared by a module', () => {

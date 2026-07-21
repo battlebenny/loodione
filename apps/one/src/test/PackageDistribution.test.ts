@@ -59,12 +59,16 @@ describe('published package manifests', () => {
       './mini-header': { types: './dist/mini-header.d.ts', import: './dist/mini-header.js' },
       './bottom-nav': { types: './dist/bottom-nav.d.ts', import: './dist/bottom-nav.js' },
       './launcher': { types: './dist/launcher.d.ts', import: './dist/launcher.js' },
+      './shared-preferences': { types: './dist/shared-preferences.d.ts', import: './dist/shared-preferences.js' },
+      './global-settings': { types: './dist/global-settings.d.ts', import: './dist/global-settings.js' },
       './styles.css': './dist/styles.css',
       './tokens.css': './dist/tokens.css',
       './tokens.dtcg.json': './dist/tokens.dtcg.json',
       './mini-header.css': './dist/mini-header.css',
       './bottom-nav.css': './dist/bottom-nav.css',
       './launcher.css': './dist/launcher.css',
+      './shared-preferences.css': './dist/shared-preferences.css',
+      './global-settings.css': './dist/global-settings.css',
     })
     expect(pkg.sideEffects).toEqual([
       './dist/styles.css',
@@ -72,6 +76,8 @@ describe('published package manifests', () => {
       './dist/mini-header.css',
       './dist/bottom-nav.css',
       './dist/launcher.css',
+      './dist/shared-preferences.css',
+      './dist/global-settings.css',
     ])
     expect(pkg.publishConfig).toEqual({ access: 'public' })
   })
@@ -248,6 +254,8 @@ describe('published package manifests', () => {
     expect(styles).toContain('@import "./mini-header.css"')
     expect(styles).toContain('@import "./bottom-nav.css"')
     expect(styles).toContain('@import "./launcher.css"')
+    expect(styles).toContain('@import "./shared-preferences.css"')
+    expect(styles).toContain('@import "./global-settings.css"')
   })
 
   it('makes One consume only public @loodi/ui entry points', () => {

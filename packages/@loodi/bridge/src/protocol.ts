@@ -12,6 +12,14 @@ function isThemeDetail(detail: unknown): boolean {
   return isRecord(detail) && (detail.theme === 'dark' || detail.theme === 'light')
 }
 
+function isSharedPreferences(detail: unknown): boolean {
+  return isRecord(detail)
+    && (detail.themeMode === 'system' || detail.themeMode === 'light' || detail.themeMode === 'dark')
+    && (detail.resolvedTheme === 'light' || detail.resolvedTheme === 'dark')
+    && isFiniteNumber(detail.revision)
+    && detail.revision >= 0
+}
+
 function isEventDetail(event: BridgeEventType, detail: unknown): boolean {
   switch (event) {
     case 'loodi:themechange':
@@ -38,7 +46,12 @@ function isEventDetail(event: BridgeEventType, detail: unknown): boolean {
     case 'loodi:headeraction':
       return isRecord(detail) && typeof detail.id === 'string'
     case 'loodi:back':
+    case 'loodi:settingsopen':
       return detail === undefined
+    case 'loodi:settingsopenresult':
+      return isRecord(detail) && typeof detail.opened === 'boolean'
+    case 'loodi:preferenceschange':
+      return isSharedPreferences(detail)
   }
 }
 
@@ -53,6 +66,9 @@ const eventTypes = new Set<BridgeEventType>([
   'loodi:scroll',
   'loodi:headeraction',
   'loodi:back',
+  'loodi:settingsopen',
+  'loodi:settingsopenresult',
+  'loodi:preferenceschange',
 ])
 
 /** Runtime schema guard used when strict postMessage validation is enabled. */
