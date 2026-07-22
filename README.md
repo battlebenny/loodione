@@ -2,7 +2,7 @@
 
 Shell Capacitor qui intègre les modules PWA Loodi dans des iframes persistantes pendant le POC, puis dans des WebViews natives pour le MVP.
 
-La documentation de référence est dans [`docs/`](docs/00_ARCHITECTURE_CURRENT.md), synchronisé avec le vault Obsidian.
+La documentation de référence est dans [`docs/`](docs/00_ARCHITECTURE.md), synchronisé avec le vault Obsidian.
 
 Guides pratiques : [MOBILE.md](MOBILE.md) pour les builds, synchronisations et livraisons natives ; [PACKAGES.md](PACKAGES.md) pour les packages npm partagés.
 

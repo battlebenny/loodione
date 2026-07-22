@@ -30,7 +30,7 @@ Cette règle existe car la configuration ZCode ne définit pas de verrou techniq
 - `packages/@loodi/ui/` — Composants partagés (Header, BottomNav, Launcher, FAB)
 - `packages/@loodi/bridge/` — Pont typé `BridgeClient` pour la communication postMessage
 - `android/`, `ios/` — Projets natifs Capacitor
-- `docs/00_ARCHITECTURE_CURRENT.md` — Architecture de référence (POC iframe et cible WebView native)
+- `docs/00_ARCHITECTURE.md` — Architecture de référence (POC iframe et cible WebView native)
 - `docs/01_DESIGN_GOVERNANCE.md` — Sources de vérité design et workflow
 - `docs/03_Integration_PWA.md` — Intégration des modules PWA
 - `docs/04_Distribution.md` — Distribution native et beta

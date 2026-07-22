@@ -7,13 +7,13 @@ const entries: Array<{
   label: string
   icon: typeof Monitor
 }> = [
-  { value: 'system', label: 'Auto', icon: Monitor },
+  { value: 'system', label: 'Système', icon: Monitor },
   { value: 'light', label: 'Clair', icon: Sun },
   { value: 'dark', label: 'Sombre', icon: Moon },
 ]
 
 function selectedThemeLabel(themeMode: SharedPreferencesThemeMode): string {
-  return entries.find((entry) => entry.value === themeMode)?.label ?? 'Auto'
+  return entries.find((entry) => entry.value === themeMode)?.label ?? 'Système'
 }
 
 /**
@@ -48,7 +48,7 @@ export function SharedPreferencesSection({
   }
 
   const themeDetail = themeMode === 'system'
-    ? `Auto (${resolvedTheme === 'dark' ? 'sombre' : 'clair'})`
+    ? `Système (${resolvedTheme === 'dark' ? 'sombre' : 'clair'})`
     : selectedThemeLabel(themeMode)
 
   return (
