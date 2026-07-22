@@ -1,5 +1,6 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { GlobalSettingsSection } from '@loodi/ui'
 import { DummyApp, type DummyBridge } from './DummyApp'
 
 function bridge(): DummyBridge {
@@ -46,6 +47,23 @@ describe('DummyApp', () => {
     expect(screen.queryByTestId('dummy-log')).not.toBeInTheDocument()
   })
 
+  it('announces the global settings description, including a consumer override', () => {
+    const onOpenShellSettings = vi.fn()
+    const { rerender } = render(<GlobalSettingsSection onOpenShellSettings={onOpenShellSettings} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Autres paramètres — Paramètres pour toutes les applications' }))
+    expect(onOpenShellSettings).toHaveBeenCalledOnce()
+
+    rerender(
+      <GlobalSettingsSection
+        onOpenShellSettings={onOpenShellSettings}
+        settingDescription="Réglages du compte Loodi"
+      />,
+    )
+
+    expect(screen.getByRole('button', { name: 'Autres paramètres — Réglages du compte Loodi' })).toBeInTheDocument()
+  })
+
   it('navigates back from federated settings and opens One-only settings from the dedicated entry', async () => {
     const shellBridge = bridge()
     const listeners = new Map<string, () => void>()
@@ -78,13 +96,13 @@ describe('DummyApp', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Complet' }))
     expect(shellBridge.emit).toHaveBeenCalledWith('loodi:overlaychange', { visible: false })
 
-    await waitFor(() => expect(screen.getByRole('button', { name: 'Thème Auto (clair)' })).toBeEnabled())
-    fireEvent.click(screen.getByRole('button', { name: 'Thème Auto (clair)' }))
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Thème Système (clair)' })).toBeEnabled())
+    fireEvent.click(screen.getByRole('button', { name: 'Thème Système (clair)' }))
     expect(shellBridge.emit).toHaveBeenCalledWith('loodi:overlaychange', { visible: true })
     fireEvent.click(screen.getByRole('radio', { name: 'Clair' }))
     expect(shellBridge.emit).toHaveBeenCalledWith('loodi:overlaychange', { visible: false })
 
-    fireEvent.click(screen.getByRole('button', { name: 'Autres paramètres' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Autres paramètres — Paramètres pour toutes les applications' }))
     expect(shellBridge.showShellSettings).toHaveBeenCalledOnce()
 
     act(() => {

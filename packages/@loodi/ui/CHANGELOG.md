@@ -4,6 +4,15 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.6.1]
+
+### Fixed
+
+- Le nom accessible de `GlobalSettingsSection` annonce aussi sa description personnalisable.
+- Les sous-exports `shared-preferences` et `global-settings` embarquent désormais leurs déclarations TypeScript.
+
+## [0.6.0]
+
 ### Added
 
 - `SharedPreferencesSection`, composant de présentation contrôlé pour les préférences Loodi communes (thème, ligne Langue en attente d'i18n), avec son entrée CSS dédiée.

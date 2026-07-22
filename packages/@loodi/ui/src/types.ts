@@ -63,5 +63,5 @@ export interface SharedPreferencesSectionProps {
 /** Presentation-only entry point to the shell-owned settings. */
 export interface GlobalSettingsSectionProps {
   onOpenShellSettings: () => void
-  shellName?: string
+  settingDescription?: string
 }

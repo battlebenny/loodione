@@ -1,6 +1,6 @@
 {
   "name": "@loodi/bridge",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Typed shell-to-module contract for the Loodi ecosystem.",
   "type": "module",
   "main": "./dist/index.js",
