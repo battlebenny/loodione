@@ -17,6 +17,19 @@ export interface HeaderOptions {
   canGoBack?: boolean
 }
 
+export type SharedThemeMode = 'system' | 'light' | 'dark'
+
+/** Closed model owned by One while a module runs inside the shell. */
+export interface SharedPreferences {
+  themeMode: SharedThemeMode
+  resolvedTheme: 'light' | 'dark'
+  revision: number
+}
+
+export interface SharedPreferencesUpdate {
+  themeMode: SharedThemeMode
+}
+
 export interface BridgeCall {
   type: 'loodi:call'
   method: string
@@ -59,6 +72,10 @@ export interface BridgeMethods {
   setBottomNav(tabs: Tab[]): void
   setHeaderActions(actions: HeaderAction[]): void
   setHeaderOptions(options: HeaderOptions): void
+  setSettingsCapability(supportsEmbeddedSettings: boolean): void
+  getSharedPreferences(): SharedPreferences
+  updateSharedPreferences(update: SharedPreferencesUpdate): SharedPreferences
+  showShellSettings(): void
   queueAction(action: unknown): void
   requestPermission(kind: 'camera' | 'geolocation'): 'granted' | 'denied'
 }
@@ -74,6 +91,9 @@ export interface BridgeEvents {
   'loodi:scroll': { scrollY: number }
   'loodi:headeraction': { id: string }
   'loodi:back': undefined
+  'loodi:settingsopen': undefined
+  'loodi:settingsopenresult': { opened: boolean }
+  'loodi:preferenceschange': SharedPreferences
 }
 
 export type BridgeEventType = keyof BridgeEvents

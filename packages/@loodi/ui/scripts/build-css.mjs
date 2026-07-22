@@ -5,7 +5,7 @@ import { dirname, resolve } from 'node:path'
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const source = resolve(root, 'src')
 const dist = resolve(root, 'dist')
-const componentFiles = ['mini-header.css', 'bottom-nav.css', 'launcher.css']
+const componentFiles = ['mini-header.css', 'bottom-nav.css', 'launcher.css', 'shared-preferences.css', 'global-settings.css']
 
 await Promise.all([
   copyFile(resolve(dist, 'launcher-entry.d.ts'), resolve(dist, 'launcher.d.ts')),

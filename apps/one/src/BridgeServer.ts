@@ -1,11 +1,19 @@
 import { isBridgeProtocolMessage } from '@loodi/bridge'
-import type { BridgeSecurityOptions, HeaderAction, HeaderOptions, Tab } from '@loodi/bridge'
+import type {
+  BridgeSecurityOptions,
+  HeaderAction,
+  HeaderOptions,
+  SharedPreferences,
+  SharedPreferencesUpdate,
+  Tab,
+} from '@loodi/bridge'
 
 export interface ModuleInfo {
   tabs: Tab[]
   headerActions: HeaderAction[]
   headerOptions: HeaderOptions
   badgeCount: number
+  supportsEmbeddedSettings: boolean
 }
 
 export interface BridgeServerCallbacks {
@@ -21,6 +29,11 @@ export interface BridgeServerCallbacks {
   onRequestOpenApp(callerId: string, appId: string, path?: string): void
   onRequestCloseApp(callerId: string): void
   onRequestShowSwitcher(callerId: string): void
+  onSettingsCapabilityChange(appId: string, supportsEmbeddedSettings: boolean): void
+  onSettingsOpenResult(appId: string, opened: boolean): void
+  onRequestSharedPreferences(appId: string): SharedPreferences
+  onRequestSharedPreferencesUpdate(appId: string, update: SharedPreferencesUpdate): SharedPreferences
+  onRequestShowShellSettings(callerId: string): void
 }
 
 export interface BridgeServerOptions {
@@ -65,7 +78,13 @@ export class BridgeServer {
 
   registerModule(appId: string, iframe: HTMLIFrameElement): void {
     this.modules.set(appId, iframe)
-    this.moduleInfos.set(appId, { tabs: [], headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 })
+    this.moduleInfos.set(appId, {
+      tabs: [],
+      headerActions: [],
+      headerOptions: { hideActions: false, canGoBack: false },
+      badgeCount: 0,
+      supportsEmbeddedSettings: false,
+    })
     this.getHistory(appId)
   }
 
@@ -97,6 +116,14 @@ export class BridgeServer {
 
   sendTabTap(appId: string, tabId: string): void {
     this.postMessage(appId, { type: 'loodi:event', event: 'loodi:tabtap', detail: { tabId } })
+  }
+
+  sendSettingsOpen(appId: string): void {
+    this.postMessage(appId, { type: 'loodi:event', event: 'loodi:settingsopen', detail: undefined })
+  }
+
+  sendSharedPreferencesChange(appId: string, preferences: SharedPreferences): void {
+    this.postMessage(appId, { type: 'loodi:event', event: 'loodi:preferenceschange', detail: preferences })
   }
 
   broadcast(type: string, payload: Record<string, unknown>): void {
@@ -194,10 +221,32 @@ export class BridgeServer {
           this.callbacks.onRequestShowSwitcher(appId)
           respond(undefined)
           break
+        case 'setSettingsCapability': {
+          const [supportsEmbeddedSettings] = msg.args as [boolean]
+          this.moduleInfos.set(appId, {
+            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
+            supportsEmbeddedSettings,
+          })
+          this.callbacks.onSettingsCapabilityChange(appId, supportsEmbeddedSettings)
+          respond(undefined)
+          break
+        }
+        case 'getSharedPreferences':
+          respond(this.callbacks.onRequestSharedPreferences(appId))
+          break
+        case 'updateSharedPreferences': {
+          const [update] = msg.args as [SharedPreferencesUpdate]
+          respond(this.callbacks.onRequestSharedPreferencesUpdate(appId, update))
+          break
+        }
+        case 'showShellSettings':
+          this.callbacks.onRequestShowShellSettings(appId)
+          respond(undefined)
+          break
         case 'setBottomNav': {
           const [tabs] = msg.args as [Tab[]]
           this.moduleInfos.set(appId, {
-            ...(this.moduleInfos.get(appId) ?? { headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
+            ...(this.moduleInfos.get(appId) ?? { headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0, supportsEmbeddedSettings: false }),
             tabs,
           })
           this.callbacks.onTabsChange(appId, tabs)
@@ -207,7 +256,7 @@ export class BridgeServer {
         case 'setHeaderActions': {
           const [actions] = msg.args as [HeaderAction[]]
           this.moduleInfos.set(appId, {
-            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
+            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0, supportsEmbeddedSettings: false }),
             headerActions: actions,
           })
           this.callbacks.onHeaderActionsChange(appId, actions)
@@ -221,7 +270,7 @@ export class BridgeServer {
             canGoBack: options.canGoBack === true,
           }
           this.moduleInfos.set(appId, {
-            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerActions: [], badgeCount: 0 }),
+            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerActions: [], badgeCount: 0, supportsEmbeddedSettings: false }),
             headerOptions,
           })
           this.callbacks.onHeaderOptionsChange(appId, headerOptions)
@@ -255,6 +304,9 @@ export class BridgeServer {
       case 'loodi:scroll':
         if (typeof d?.scrollY === 'number') this.callbacks.onScroll(appId, d.scrollY)
         break
+      case 'loodi:settingsopenresult':
+        if (typeof d?.opened === 'boolean') this.callbacks.onSettingsOpenResult(appId, d.opened)
+        break
     }
   }
 }
@@ -287,6 +339,13 @@ function isHeaderOptions(value: unknown): value is HeaderOptions {
     && (options.canGoBack === undefined || typeof options.canGoBack === 'boolean')
 }
 
+function isSharedPreferencesUpdate(value: unknown): value is SharedPreferencesUpdate {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false
+  const update = value as Record<string, unknown>
+  return Object.keys(update).length === 1
+    && (update.themeMode === 'system' || update.themeMode === 'light' || update.themeMode === 'dark')
+}
+
 function hasValidCallArguments(method: string, args: unknown[]): boolean {
   switch (method) {
     case 'getUser':
@@ -295,6 +354,8 @@ function hasValidCallArguments(method: string, args: unknown[]): boolean {
     case 'getNetworkStatus':
     case 'closeApp':
     case 'showAppSwitcher':
+    case 'getSharedPreferences':
+    case 'showShellSettings':
       return args.length === 0
     case 'openApp':
       return (args.length === 1 || args.length === 2)
@@ -306,6 +367,10 @@ function hasValidCallArguments(method: string, args: unknown[]): boolean {
       return args.length === 1 && Array.isArray(args[0]) && args[0].every(isHeaderAction)
     case 'setHeaderOptions':
       return args.length === 1 && isHeaderOptions(args[0])
+    case 'setSettingsCapability':
+      return args.length === 1 && typeof args[0] === 'boolean'
+    case 'updateSharedPreferences':
+      return args.length === 1 && isSharedPreferencesUpdate(args[0])
     case 'queueAction':
       return args.length === 1
     case 'requestPermission':

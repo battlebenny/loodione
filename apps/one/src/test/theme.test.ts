@@ -50,4 +50,10 @@ describe('resolveTheme', () => {
     expect(resolveTheme('auto' as ThemeMode)).toBe('light')
     expect(resolveTheme('invalid' as ThemeMode)).toBe('light')
   })
+
+  it('falls back to light when the platform does not expose matchMedia', () => {
+    Object.defineProperty(window, 'matchMedia', { configurable: true, value: undefined })
+
+    expect(resolveTheme('system')).toBe('light')
+  })
 })

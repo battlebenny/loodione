@@ -47,3 +47,21 @@ export interface LauncherProps {
   onSelect: (appId: string) => void
   onClose: () => void
 }
+
+export type SharedPreferencesThemeMode = 'system' | 'light' | 'dark'
+
+/** Presentation-only shared section, controlled by the consuming application. */
+export interface SharedPreferencesSectionProps {
+  themeMode: SharedPreferencesThemeMode
+  resolvedTheme: 'light' | 'dark'
+  onThemeModeChange: (themeMode: SharedPreferencesThemeMode) => void
+  /** Lets an embedded host reserve the shell chrome while a sheet is visible. */
+  onOverlayChange?: (visible: boolean) => void
+  disabled?: boolean
+}
+
+/** Presentation-only entry point to the shell-owned settings. */
+export interface GlobalSettingsSectionProps {
+  onOpenShellSettings: () => void
+  settingDescription?: string
+}

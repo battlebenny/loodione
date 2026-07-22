@@ -35,7 +35,7 @@ describe('published package manifests', () => {
   it('exposes the bridge as a typed, publishable ESM package', () => {
     const pkg = manifest('bridge')
 
-    expect(pkg.version).toBe('0.2.2')
+    expect(pkg.version).toBe('0.3.0')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -47,10 +47,10 @@ describe('published package manifests', () => {
     expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.5.1 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.6.1 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.5.1')
+    expect(pkg.version).toBe('0.6.1')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -59,12 +59,16 @@ describe('published package manifests', () => {
       './mini-header': { types: './dist/mini-header.d.ts', import: './dist/mini-header.js' },
       './bottom-nav': { types: './dist/bottom-nav.d.ts', import: './dist/bottom-nav.js' },
       './launcher': { types: './dist/launcher.d.ts', import: './dist/launcher.js' },
+      './shared-preferences': { types: './dist/shared-preferences.d.ts', import: './dist/shared-preferences.js' },
+      './global-settings': { types: './dist/global-settings.d.ts', import: './dist/global-settings.js' },
       './styles.css': './dist/styles.css',
       './tokens.css': './dist/tokens.css',
       './tokens.dtcg.json': './dist/tokens.dtcg.json',
       './mini-header.css': './dist/mini-header.css',
       './bottom-nav.css': './dist/bottom-nav.css',
       './launcher.css': './dist/launcher.css',
+      './shared-preferences.css': './dist/shared-preferences.css',
+      './global-settings.css': './dist/global-settings.css',
     })
     expect(pkg.sideEffects).toEqual([
       './dist/styles.css',
@@ -72,8 +76,12 @@ describe('published package manifests', () => {
       './dist/mini-header.css',
       './dist/bottom-nav.css',
       './dist/launcher.css',
+      './dist/shared-preferences.css',
+      './dist/global-settings.css',
     ])
     expect(pkg.publishConfig).toEqual({ access: 'public' })
+    expect(existsSync(resolve(uiDirectory, 'dist/shared-preferences.d.ts'))).toBe(true)
+    expect(existsSync(resolve(uiDirectory, 'dist/global-settings.d.ts'))).toBe(true)
   })
 
   it('derives CSS and DTCG tokens from one canonical source', () => {
@@ -248,6 +256,8 @@ describe('published package manifests', () => {
     expect(styles).toContain('@import "./mini-header.css"')
     expect(styles).toContain('@import "./bottom-nav.css"')
     expect(styles).toContain('@import "./launcher.css"')
+    expect(styles).toContain('@import "./shared-preferences.css"')
+    expect(styles).toContain('@import "./global-settings.css"')
   })
 
   it('makes One consume only public @loodi/ui entry points', () => {

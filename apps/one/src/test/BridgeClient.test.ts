@@ -6,6 +6,15 @@ afterEach(() => {
 })
 
 describe('BridgeClient header options', () => {
+  it('forwards bottom navigation through the typed bridge method', async () => {
+    const bridge = new BridgeClient()
+    const call = vi.spyOn(bridge, 'call').mockResolvedValue(undefined)
+
+    await bridge.setBottomNav([{ id: 'home', icon: 'home', label: 'Accueil' }])
+
+    expect(call).toHaveBeenCalledWith('setBottomNav', [{ id: 'home', icon: 'home', label: 'Accueil' }])
+  })
+
   it('forwards header options through the typed bridge method', async () => {
     const bridge = new BridgeClient()
     const call = vi.spyOn(bridge, 'call').mockResolvedValue(undefined)

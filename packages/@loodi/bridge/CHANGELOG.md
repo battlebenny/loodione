@@ -2,6 +2,13 @@
 
 Toutes les évolutions notables de `@loodi/bridge` sont documentées ici.
 
+## [Unreleased]
+
+### Added
+
+- Contrat de paramètres partagés v1 : `getSharedPreferences`, `updateSharedPreferences` et l’événement `loodi:preferenceschange`.
+- Capacité de paramètres intégrés : `setSettingsCapability`, `loodi:settingsopen`, son accusé `loodi:settingsopenresult`, et `showShellSettings`.
+
 ## [0.2.2]
 
 ### Fixed
