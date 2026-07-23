@@ -3,6 +3,8 @@ import type {
   BridgeSecurityOptions,
   HeaderAction,
   HeaderOptions,
+  NavigationDirection,
+  NavigationRequestSource,
   SharedPreferences,
   SharedPreferencesUpdate,
   Tab,
@@ -14,6 +16,7 @@ export interface ModuleInfo {
   headerOptions: HeaderOptions
   badgeCount: number
   supportsEmbeddedSettings: boolean
+  supportsNavigationGestures: boolean
 }
 
 export interface BridgeServerCallbacks {
@@ -51,6 +54,8 @@ export class BridgeServer {
   private callbacks: BridgeServerCallbacks
   private strictValidation: boolean
   private allowedOrigins: ReadonlySet<string>
+  private navigationRequestId = 0
+  private pendingNavigation = new Map<string, { appId: string; resolve: (handled: boolean) => void; timeout: ReturnType<typeof setTimeout> }>()
 
   constructor(callbacks: BridgeServerCallbacks, opts?: BridgeServerOptions) {
     this.callbacks = callbacks
@@ -61,6 +66,11 @@ export class BridgeServer {
 
   destroy(): void {
     window.removeEventListener('message', this.onMessage)
+    this.pendingNavigation.forEach(({ resolve, timeout }) => {
+      clearTimeout(timeout)
+      resolve(false)
+    })
+    this.pendingNavigation.clear()
   }
 
   getModuleInfo(appId: string): ModuleInfo | undefined {
@@ -84,6 +94,7 @@ export class BridgeServer {
       headerOptions: { hideActions: false, canGoBack: false },
       badgeCount: 0,
       supportsEmbeddedSettings: false,
+      supportsNavigationGestures: false,
     })
     this.getHistory(appId)
   }
@@ -92,6 +103,12 @@ export class BridgeServer {
     this.modules.delete(appId)
     this.moduleInfos.delete(appId)
     this.history.delete(appId)
+    this.pendingNavigation.forEach((pending, requestId) => {
+      if (pending.appId !== appId) return
+      clearTimeout(pending.timeout)
+      pending.resolve(false)
+      this.pendingNavigation.delete(requestId)
+    })
   }
 
   postMessage(appId: string, msg: unknown): void {
@@ -108,6 +125,25 @@ export class BridgeServer {
 
   sendBack(appId: string): void {
     this.postMessage(appId, { type: 'loodi:event', event: 'loodi:back', detail: undefined })
+  }
+
+  requestNavigation(appId: string, direction: NavigationDirection, source: NavigationRequestSource, timeoutMs = 500): Promise<boolean> {
+    if (this.moduleInfos.get(appId)?.supportsNavigationGestures !== true || !this.modules.has(appId)) {
+      return Promise.resolve(false)
+    }
+    const requestId = `navigation-${++this.navigationRequestId}`
+    return new Promise((resolve) => {
+      const timeout = setTimeout(() => {
+        this.pendingNavigation.delete(requestId)
+        resolve(false)
+      }, timeoutMs)
+      this.pendingNavigation.set(requestId, { appId, resolve, timeout })
+      this.postMessage(appId, {
+        type: 'loodi:event',
+        event: 'loodi:navigationrequest',
+        detail: { requestId, direction, source },
+      })
+    })
   }
 
   sendThemeChange(appId: string, theme: 'dark' | 'light'): void {
@@ -224,10 +260,19 @@ export class BridgeServer {
         case 'setSettingsCapability': {
           const [supportsEmbeddedSettings] = msg.args as [boolean]
           this.moduleInfos.set(appId, {
-            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0 }),
+            ...(this.moduleInfos.get(appId) ?? defaultModuleInfo()),
             supportsEmbeddedSettings,
           })
           this.callbacks.onSettingsCapabilityChange(appId, supportsEmbeddedSettings)
+          respond(undefined)
+          break
+        }
+        case 'setNavigationGestureCapability': {
+          const [supportsNavigationGestures] = msg.args as [boolean]
+          this.moduleInfos.set(appId, {
+            ...(this.moduleInfos.get(appId) ?? defaultModuleInfo()),
+            supportsNavigationGestures,
+          })
           respond(undefined)
           break
         }
@@ -246,7 +291,7 @@ export class BridgeServer {
         case 'setBottomNav': {
           const [tabs] = msg.args as [Tab[]]
           this.moduleInfos.set(appId, {
-            ...(this.moduleInfos.get(appId) ?? { headerActions: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0, supportsEmbeddedSettings: false }),
+            ...(this.moduleInfos.get(appId) ?? defaultModuleInfo()),
             tabs,
           })
           this.callbacks.onTabsChange(appId, tabs)
@@ -256,7 +301,7 @@ export class BridgeServer {
         case 'setHeaderActions': {
           const [actions] = msg.args as [HeaderAction[]]
           this.moduleInfos.set(appId, {
-            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerOptions: { hideActions: false, canGoBack: false }, badgeCount: 0, supportsEmbeddedSettings: false }),
+            ...(this.moduleInfos.get(appId) ?? defaultModuleInfo()),
             headerActions: actions,
           })
           this.callbacks.onHeaderActionsChange(appId, actions)
@@ -270,7 +315,7 @@ export class BridgeServer {
             canGoBack: options.canGoBack === true,
           }
           this.moduleInfos.set(appId, {
-            ...(this.moduleInfos.get(appId) ?? { tabs: [], headerActions: [], badgeCount: 0, supportsEmbeddedSettings: false }),
+            ...(this.moduleInfos.get(appId) ?? defaultModuleInfo()),
             headerOptions,
           })
           this.callbacks.onHeaderOptionsChange(appId, headerOptions)
@@ -307,7 +352,27 @@ export class BridgeServer {
       case 'loodi:settingsopenresult':
         if (typeof d?.opened === 'boolean') this.callbacks.onSettingsOpenResult(appId, d.opened)
         break
+      case 'loodi:navigationresult': {
+        if (typeof d?.requestId !== 'string' || typeof d?.handled !== 'boolean') break
+        const pending = this.pendingNavigation.get(d.requestId)
+        if (!pending || pending.appId !== appId) break
+        clearTimeout(pending.timeout)
+        this.pendingNavigation.delete(d.requestId)
+        pending.resolve(d.handled)
+        break
+      }
     }
+  }
+}
+
+function defaultModuleInfo(): ModuleInfo {
+  return {
+    tabs: [],
+    headerActions: [],
+    headerOptions: { hideActions: false, canGoBack: false },
+    badgeCount: 0,
+    supportsEmbeddedSettings: false,
+    supportsNavigationGestures: false,
   }
 }
 
@@ -368,6 +433,7 @@ function hasValidCallArguments(method: string, args: unknown[]): boolean {
     case 'setHeaderOptions':
       return args.length === 1 && isHeaderOptions(args[0])
     case 'setSettingsCapability':
+    case 'setNavigationGestureCapability':
       return args.length === 1 && typeof args[0] === 'boolean'
     case 'updateSharedPreferences':
       return args.length === 1 && isSharedPreferencesUpdate(args[0])

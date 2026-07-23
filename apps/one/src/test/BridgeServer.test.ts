@@ -26,6 +26,51 @@ function callbacks(): BridgeServerCallbacks {
   }
 }
 
+describe('BridgeServer navigation gestures', () => {
+  it('delegates only after the module declares the capability and accepts only its correlated result', async () => {
+    const bridge = new BridgeServer(callbacks())
+    const iframe = document.createElement('iframe')
+    const postMessage = vi.fn()
+    const child = { postMessage } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi', iframe)
+
+    await expect(bridge.requestNavigation('loodi', 'back', 'gesture')).resolves.toBe(false)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:call', method: 'setNavigationGestureCapability', args: [true], id: 1 },
+    }))
+    const navigation = bridge.requestNavigation('loodi', 'back', 'system')
+    const request = postMessage.mock.calls.at(-1)?.[0]
+    expect(request).toMatchObject({
+      type: 'loodi:event',
+      event: 'loodi:navigationrequest',
+      detail: { direction: 'back', source: 'system' },
+    })
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: {
+        type: 'loodi:event',
+        event: 'loodi:navigationresult',
+        detail: { requestId: 'wrong-request', handled: true },
+      },
+    }))
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: {
+        type: 'loodi:event',
+        event: 'loodi:navigationresult',
+        detail: { requestId: request.detail.requestId, handled: true },
+      },
+    }))
+
+    await expect(navigation).resolves.toBe(true)
+    bridge.destroy()
+  })
+})
+
 describe('BridgeServer embedded settings', () => {
   it('records support for embedded settings and sends the shell opening command', () => {
     const cb = callbacks()

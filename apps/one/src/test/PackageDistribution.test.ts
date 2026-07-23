@@ -35,7 +35,7 @@ describe('published package manifests', () => {
   it('exposes the bridge as a typed, publishable ESM package', () => {
     const pkg = manifest('bridge')
 
-    expect(pkg.version).toBe('0.3.0')
+    expect(pkg.version).toBe('0.4.0')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
