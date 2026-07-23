@@ -4,6 +4,8 @@ Toutes les évolutions notables de `@loodi/bridge` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-07-23
+
 ### Added
 
 - Contrat de paramètres partagés v1 : `getSharedPreferences`, `updateSharedPreferences` et l’événement `loodi:preferenceschange`.
