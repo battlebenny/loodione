@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { BridgeClient } from '@loodi/bridge'
+import { BridgeClient, isBridgeProtocolMessage } from '@loodi/bridge'
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -22,6 +22,28 @@ describe('BridgeClient header options', () => {
     await bridge.setHeaderOptions({ hideActions: true })
 
     expect(call).toHaveBeenCalledWith('setHeaderOptions', { hideActions: true })
+  })
+
+  it('forwards navigation gesture capability through the typed bridge method', async () => {
+    const bridge = new BridgeClient()
+    const call = vi.spyOn(bridge, 'call').mockResolvedValue(undefined)
+
+    await bridge.setNavigationGestureCapability(true)
+
+    expect(call).toHaveBeenCalledWith('setNavigationGestureCapability', true)
+  })
+
+  it('strictly validates navigation request and result event payloads', () => {
+    expect(isBridgeProtocolMessage({
+      type: 'loodi:event',
+      event: 'loodi:navigationrequest',
+      detail: { requestId: 'navigation-1', direction: 'back', source: 'gesture' },
+    })).toBe(true)
+    expect(isBridgeProtocolMessage({
+      type: 'loodi:event',
+      event: 'loodi:navigationresult',
+      detail: { requestId: 'navigation-1', handled: 'yes' },
+    })).toBe(false)
   })
 
   it('keeps the legacy module-to-shell event contract available', () => {

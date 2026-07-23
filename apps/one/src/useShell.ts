@@ -13,6 +13,9 @@ import {
 } from './apps'
 import { normalizeThemeMode, resolveTheme } from './theme'
 import { BridgeServer } from './BridgeServer'
+import { Capacitor } from '@capacitor/core'
+import { App as CapacitorApp } from '@capacitor/app'
+import { installNavigationRuntime, type NavigationPlatform } from './navigation'
 import type { ThemeMode } from './theme'
 import type { HeaderAction, HeaderOptions, SharedPreferences, SharedPreferencesUpdate } from '@loodi/bridge'
 import type { Tab } from '@loodi/ui/bottom-nav'
@@ -416,6 +419,31 @@ export function useShell() {
     bridgeRef.current?.sendTabTap(state.activeAppId, tabId)
   }, [state.activeAppId])
 
+  const requestNavigation = useCallback(async (direction: 'back' | 'forward', source: 'gesture' | 'system') => {
+    if (direction === 'back' && state.settingsOpen) {
+      clearSettingsOpenTimeout()
+      setState((s) => ({ ...s, settingsOpen: false }))
+      return true
+    }
+    const bridge = bridgeRef.current
+    if (!bridge) return false
+    return bridge.requestNavigation(state.activeAppId, direction, source)
+  }, [clearSettingsOpenTimeout, state.activeAppId, state.settingsOpen])
+
+  useEffect(() => {
+    const rawPlatform = Capacitor.getPlatform()
+    const platform: NavigationPlatform = rawPlatform === 'android' || rawPlatform === 'ios' ? rawPlatform : 'web'
+    const navigationApp = CapacitorApp as {
+      addListener: (event: 'backButton', handler: () => void) => Promise<{ remove: () => Promise<void> }> | { remove: () => Promise<void> }
+    }
+    return installNavigationRuntime(
+      platform,
+      requestNavigation,
+      () => CapacitorApp.exitApp(),
+      navigationApp,
+    )
+  }, [requestNavigation])
+
   const setLocalModuleUrls = useCallback((urls: LocalModuleUrls) => {
     const validUrls = saveLocalModuleUrls(urls)
     setLocalModuleUrlsState(validUrls)
@@ -450,5 +478,6 @@ export function useShell() {
     sendHeaderAction,
     sendBack,
     sendTabTap,
+    requestNavigation,
   }
 }

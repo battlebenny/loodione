@@ -6,6 +6,7 @@ import type {
   BridgeEventType,
   HeaderAction,
   HeaderOptions,
+  NavigationResult,
   SharedPreferences,
   SharedPreferencesUpdate,
   Tab,
@@ -113,6 +114,14 @@ export class BridgeClient {
 
   setSettingsCapability(supportsEmbeddedSettings: boolean): Promise<void> {
     return this.call('setSettingsCapability', supportsEmbeddedSettings)
+  }
+
+  setNavigationGestureCapability(enabled: boolean): Promise<void> {
+    return this.call('setNavigationGestureCapability', enabled)
+  }
+
+  respondToNavigationRequest(result: NavigationResult): void {
+    this.emit('loodi:navigationresult', result)
   }
 
   getSharedPreferences(): Promise<SharedPreferences> {

@@ -30,6 +30,20 @@ export interface SharedPreferencesUpdate {
   themeMode: SharedThemeMode
 }
 
+export type NavigationDirection = 'back' | 'forward'
+export type NavigationRequestSource = 'gesture' | 'system'
+
+export interface NavigationRequest {
+  requestId: string
+  direction: NavigationDirection
+  source: NavigationRequestSource
+}
+
+export interface NavigationResult {
+  requestId: string
+  handled: boolean
+}
+
 export interface BridgeCall {
   type: 'loodi:call'
   method: string
@@ -73,6 +87,7 @@ export interface BridgeMethods {
   setHeaderActions(actions: HeaderAction[]): void
   setHeaderOptions(options: HeaderOptions): void
   setSettingsCapability(supportsEmbeddedSettings: boolean): void
+  setNavigationGestureCapability(enabled: boolean): void
   getSharedPreferences(): SharedPreferences
   updateSharedPreferences(update: SharedPreferencesUpdate): SharedPreferences
   showShellSettings(): void
@@ -94,6 +109,8 @@ export interface BridgeEvents {
   'loodi:settingsopen': undefined
   'loodi:settingsopenresult': { opened: boolean }
   'loodi:preferenceschange': SharedPreferences
+  'loodi:navigationrequest': NavigationRequest
+  'loodi:navigationresult': NavigationResult
 }
 
 export type BridgeEventType = keyof BridgeEvents

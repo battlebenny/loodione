@@ -244,3 +244,85 @@ describe('strict bridge runtime', () => {
     expect(result.current.state.settingsOpen).toBe(true)
   })
 })
+
+describe('global settings navigation', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  function renderShell() {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    })
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    return renderHook(() => useShell())
+  }
+
+  function registerNavigationModule(result: ReturnType<typeof renderShell>['result']) {
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    const postMessage = vi.fn()
+    const child = { postMessage } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    act(() => {
+      result.current.registerIframe('loodi', iframe)
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:call', method: 'setNavigationGestureCapability', args: [true], id: 1 },
+      }))
+    })
+    return { child, postMessage }
+  }
+
+  it('handles gesture back locally when One global settings are open without calling the module bridge', async () => {
+    const { result } = renderShell()
+    const { postMessage } = registerNavigationModule(result)
+    act(() => result.current.toggleSettings())
+
+    let handled = false
+    await act(async () => { handled = await result.current.requestNavigation('back', 'gesture') })
+
+    expect(handled).toBe(true)
+    expect(result.current.state.settingsOpen).toBe(false)
+    expect(postMessage).not.toHaveBeenCalledWith(expect.objectContaining({ event: 'loodi:navigationrequest' }), expect.anything())
+  })
+
+  it('keeps back delegation when global settings are closed', async () => {
+    const { result } = renderShell()
+    const { child, postMessage } = registerNavigationModule(result)
+    const navigation = result.current.requestNavigation('back', 'gesture')
+    const request = postMessage.mock.calls.at(-1)?.[0]
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:event', event: 'loodi:navigationresult', detail: { requestId: request.detail.requestId, handled: true } },
+    }))
+
+    await expect(navigation).resolves.toBe(true)
+  })
+
+  it('leaves forward delegation unchanged while global settings are open', async () => {
+    const { result } = renderShell()
+    const { child, postMessage } = registerNavigationModule(result)
+    act(() => result.current.toggleSettings())
+    const navigation = result.current.requestNavigation('forward', 'gesture')
+    const request = postMessage.mock.calls.at(-1)?.[0]
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://collec.loodi.test:4002',
+      data: { type: 'loodi:event', event: 'loodi:navigationresult', detail: { requestId: request.detail.requestId, handled: true } },
+    }))
+
+    await expect(navigation).resolves.toBe(true)
+    expect(result.current.state.settingsOpen).toBe(true)
+  })
+})

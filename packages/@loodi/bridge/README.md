@@ -30,6 +30,21 @@ Depuis une iframe, ils les envoient au shell. En standalone, ils sont volontaire
 
 Les événements et appels legacy restent pris en charge pendant la migration : header (`setHeaderActions`, `setHeaderOptions`, `loodi:headeraction`), retour (`loodi:back`), thème, onglets, scroll et `loodi:overlaychange`.
 
+## Gestes de navigation
+
+Un module qui sait traiter les gestes de navigation le déclare explicitement ; sans cette déclaration, One conserve le geste. Cette capacité est indépendante de `setHeaderOptions({ canGoBack })`.
+
+```ts
+await bridge.setNavigationGestureCapability(true)
+
+bridge.on('loodi:navigationrequest', ({ requestId, direction, source }) => {
+  const handled = direction === 'back' ? router.back() : router.forward()
+  bridge.respondToNavigationRequest({ requestId, handled })
+})
+```
+
+Chaque `loodi:navigationresult` doit reprendre exactement le `requestId` reçu et contenir un booléen `handled`. One ignore les réponses invalides, non corrélées, tardives ou émises par un autre module. Il attend au plus 500 ms ; indisponibilité du bridge, délai dépassé ou réponse invalide sont traités comme `handled: false` sans fermer l’app. Un back non géré ne ferme One que sur Android natif ; il est absorbé sur le Web et iOS. Un forward non géré est toujours un no-op.
+
 ## Transport strict (opt-in)
 
 Le POC conserve le transport legacy (`'*'`) par défaut. Avant de faire transiter identité, token, collection ou handoff, activer le mode strict des deux côtés : le client vérifie `event.source`, `event.origin` et le schéma ; One vérifie la source, l'allowlist et le schéma puis calcule un `targetOrigin` depuis l'URL de l'iframe.
