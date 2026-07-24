@@ -26,7 +26,7 @@ Les tokens sont disponibles sans React via `@loodi/ui/tokens.css`. Le fichier `@
 
 Les bundles ESM externalisent `react`, `react-dom` et `lucide-react`.
 
-`MiniHeader` attend les assets `/loodi-monogram.svg` et `/loodi-monogram-dark.svg` dans l'application hôte.
+`MiniHeader` attend les assets `/logo.svg`, `/logo-dark.svg`, `/loodi-wordmark.svg` et `/loodi-wordmark-dark.svg` dans l'application hôte. Le logo occupe le même slot que le retour ; le wordmark et le nom de module restent visibles sur les deux types de page.
 
 ## BottomNav
 
