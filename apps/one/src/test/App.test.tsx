@@ -228,7 +228,6 @@ describe('module frame', () => {
     const { container, rerender } = render(<App />)
     const backButton = within(container).getByRole('button', { name: 'Retour' })
 
-    expect(backButton).toHaveClass('opacity-100')
     fireEvent.click(backButton)
     expect(sendBack).toHaveBeenCalledOnce()
     expect(goBack).not.toHaveBeenCalled()
@@ -236,6 +235,6 @@ describe('module frame', () => {
     shellHeaderOptions.canGoBack = false
     rerender(<App />)
 
-    expect(within(container).getByRole('button', { name: 'Retour' })).toHaveClass('opacity-0')
+    expect(within(container).queryByRole('button', { name: 'Retour' })).not.toBeInTheDocument()
   })
 })
