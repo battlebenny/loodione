@@ -21,6 +21,32 @@ describe('MiniHeader', () => {
     })
   })
 
+  it('shows the logo and wordmark at the start of a root page', () => {
+    const { container } = render(<MiniHeader onSettings={vi.fn()} onUser={vi.fn()} />)
+
+    expect(within(container).getByRole('img', { name: 'Logo Loodi' })).toHaveAttribute('src', '/logo.svg')
+    expect(within(container).getByRole('img', { name: 'Loodi' })).toHaveAttribute('src', '/loodi-wordmark.svg')
+    expect(within(container).queryByRole('button', { name: 'Retour' })).not.toBeInTheDocument()
+  })
+
+  it('replaces the logo with a back button while preserving the wordmark', () => {
+    const onBack = vi.fn()
+    const { container } = render(<MiniHeader onSettings={vi.fn()} onUser={vi.fn()} showBack onBack={onBack} />)
+
+    expect(within(container).getByRole('button', { name: 'Retour' })).toBeInTheDocument()
+    expect(within(container).queryByRole('img', { name: 'Logo Loodi' })).not.toBeInTheDocument()
+    expect(within(container).getByRole('img', { name: 'Loodi' })).toHaveAttribute('src', '/loodi-wordmark.svg')
+  })
+
+  it('presents the active module as a raised pion-yellow tile', () => {
+    const { container } = render(<MiniHeader onSettings={vi.fn()} onUser={vi.fn()} appName="collec" />)
+
+    expect(within(container).getByText('collec')).toHaveClass('loodi-mini-header__app-name')
+    expect(within(container).getByText('collec')).toHaveClass('loodi-mini-header__app-tile')
+    expect(within(container).getByText('collec')).toHaveClass('loodi-mini-header__app-tile--compact')
+    expect(within(container).getByText('collec')).toHaveClass('loodi-mini-header__app-tile--tilted')
+  })
+
   it('renders contextual menu actions with their Lucide icons', () => {
     const { container } = render(
       <MiniHeader

@@ -4,6 +4,12 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.6.2]
+
+### Fixed
+
+- Le MiniHeader dissocie désormais logo et wordmark : le logo partage le slot 36 px du retour, tandis que le nom du module est présenté comme une tuile compacte jaune pion légèrement inclinée.
+
 ## [0.6.1]
 
 ### Fixed

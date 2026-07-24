@@ -39,17 +39,21 @@ export function MiniHeader({ onSettings, onUser, appName, scrollProgress = 0, sh
       <div className="loodi-mini-header__glass" style={{ opacity: scrollProgress }} />
 
       <div className="loodi-mini-header__left">
-        <button
-          onClick={onBack}
-          className={`loodi-mini-header__back ${showBack ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
-          aria-label="Retour"
-        >
-          <ArrowLeft size={18} aria-hidden="true" />
-        </button>
-
-        <img src="/loodi-monogram.svg" alt="Loodi" className="loodi-mini-header__logo loodi-mini-header__logo--light" />
-        <img src="/loodi-monogram-dark.svg" alt="Loodi" className="loodi-mini-header__logo loodi-mini-header__logo--dark" />
-        {appName && <span className="loodi-mini-header__app-name">{appName}</span>}
+        <div className="loodi-mini-header__brand-slot">
+          {showBack ? (
+            <button onClick={onBack} className="loodi-mini-header__back" aria-label="Retour">
+              <ArrowLeft size={18} aria-hidden="true" />
+            </button>
+          ) : (
+            <>
+              <img src="/logo.svg" alt="Logo Loodi" className="loodi-mini-header__logo loodi-mini-header__logo--light" />
+              <img src="/logo-dark.svg" alt="" className="loodi-mini-header__logo loodi-mini-header__logo--dark" />
+            </>
+          )}
+        </div>
+        <img src="/loodi-wordmark.svg" alt="Loodi" className="loodi-mini-header__wordmark loodi-mini-header__wordmark--light" />
+        <img src="/loodi-wordmark-dark.svg" alt="" className="loodi-mini-header__wordmark loodi-mini-header__wordmark--dark" />
+        {appName && <span className="loodi-mini-header__app-name loodi-mini-header__app-tile loodi-mini-header__app-tile--compact loodi-mini-header__app-tile--tilted">{appName}</span>}
       </div>
 
       {!hideActions && (
