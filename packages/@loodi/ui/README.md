@@ -41,7 +41,7 @@ Par défaut, `BottomNav` conserve le modèle historique : quatre `tabs` au maxim
 />
 ```
 
-Pour une PWA sans launcher, `showApps={false}` affiche jusqu’à cinq onglets fournis et rend `onAppsTap` optionnel. Les icônes Lucide `settings`, `square-library`, `user` et `users`, ainsi que les icônes de navigation Loodi, sont reconnues.
+Pour une PWA sans launcher, `showApps={false}` affiche jusqu’à cinq onglets fournis et rend `onAppsTap` optionnel. Les icônes Lucide `settings`, `library-big`, `user` et `users`, ainsi que les icônes de navigation Loodi, sont reconnues.
 
 ```tsx
 <BottomNav
