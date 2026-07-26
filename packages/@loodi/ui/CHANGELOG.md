@@ -4,6 +4,13 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.6.3]
+
+### Fixed
+
+- La BottomNav utilise désormais l’icône Lucide `library-big` pour les onglets de collection.
+- Le MiniHeader passe derrière le backdrop du launcher.
+
 ## [0.6.2]
 
 ### Fixed

@@ -1,9 +1,9 @@
 import { useCallback, useRef, type PointerEvent, type ReactNode } from 'react'
-import { Grid2X2, Settings, SquareLibrary, User, Users, type LucideIcon } from 'lucide-react'
+import { Grid2X2, Settings, LibraryBig, User, Users, type LucideIcon } from 'lucide-react'
 import type { BottomNavProps } from './types.js'
 
 const LUCIDE: Record<string, LucideIcon> = {
-  'square-library': SquareLibrary,
+  'library-big': LibraryBig,
   settings: Settings,
   users: Users,
   user: User,

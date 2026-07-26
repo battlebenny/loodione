@@ -11,7 +11,7 @@ describe('BottomNav', () => {
     const { container } = render(
       <BottomNav
         tabs={[
-          { id: 'collection', icon: 'square-library', label: 'Collection' },
+          { id: 'collection', icon: 'library-big', label: 'Collection' },
           { id: 'discover', icon: 'search', label: 'Découvrir' },
           { id: 'activity', icon: 'rss', label: 'Activité' },
           { id: 'profile', icon: 'user', label: 'Profil' },
@@ -40,7 +40,7 @@ describe('BottomNav', () => {
         showApps={false}
         tabs={[
           { id: 'home', icon: 'home', label: 'Accueil' },
-          { id: 'collection', icon: 'square-library', label: 'Collection' },
+          { id: 'collection', icon: 'library-big', label: 'Collection' },
           { id: 'scan', icon: 'scan', label: 'Scanner' },
           { id: 'settings', icon: 'settings', label: 'Paramètres' },
           { id: 'profile', icon: 'user', label: 'Profil' },
@@ -83,7 +83,7 @@ describe('BottomNav', () => {
     const onSwipeUp = vi.fn()
     const { container } = render(
       <BottomNav
-        tabs={[{ id: 'collection', icon: 'square-library', label: 'Collection' }]}
+        tabs={[{ id: 'collection', icon: 'library-big', label: 'Collection' }]}
         onTabTap={vi.fn()}
         onAppsTap={vi.fn()}
         onSwipeUp={onSwipeUp}
@@ -104,7 +104,7 @@ describe('BottomNav', () => {
       <BottomNav
         tabs={[
           { id: 'home', icon: 'home', label: 'Accueil' },
-          { id: 'catalog', icon: 'square-library', label: 'Collection' },
+          { id: 'catalog', icon: 'library-big', label: 'Collection' },
           { id: 'scanner', icon: 'scan', label: 'Scanner' },
           { id: 'loans', icon: 'users', label: 'Prêts' },
         ]}
@@ -120,7 +120,7 @@ describe('BottomNav', () => {
     const loans = container.querySelector('[aria-label="Prêts"]')
 
     expect(home?.querySelector('path')?.getAttribute('d')).toBe('M3 12l9-9 9 9')
-    expect(collection?.querySelector('svg')).toBeInTheDocument()
+    expect(collection?.querySelector('svg')).toHaveClass('lucide-library-big')
     expect(scanner?.querySelectorAll('path')).toHaveLength(4)
     expect(loans?.querySelectorAll('path')).toHaveLength(3)
     expect(loans?.querySelector('circle')).toBeInTheDocument()
@@ -129,7 +129,7 @@ describe('BottomNav', () => {
   it('uses the Loodi brand color for the active tab', () => {
     const { container } = render(
       <BottomNav
-        tabs={[{ id: 'catalog', icon: 'square-library', label: 'Collection' }]}
+        tabs={[{ id: 'catalog', icon: 'library-big', label: 'Collection' }]}
         activeTab="catalog"
         onTabTap={vi.fn()}
         onAppsTap={vi.fn()}
@@ -147,7 +147,7 @@ describe('BottomNav', () => {
       <BottomNav
         tabs={[
           { id: 'home', icon: 'home', label: 'Accueil' },
-          { id: 'collection', icon: 'square-library', label: 'Collection' },
+          { id: 'collection', icon: 'library-big', label: 'Collection' },
           { id: 'scan', icon: 'scan', label: 'Scanner' },
           { id: 'loans', icon: 'users', label: 'Prêts' },
         ]}
