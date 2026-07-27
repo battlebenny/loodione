@@ -60,4 +60,19 @@ describe('native configuration', () => {
       'https://*.vercel.app',
     ])
   })
+
+  it('keeps the remotely published registry in the public deployment folder', () => {
+    const registry = JSON.parse(readFileSync(resolve(projectRoot, 'public/config.json'), 'utf8'))
+
+    expect(registry).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'loodi', url: 'https://loodi.vercel.app' }),
+    ]))
+  })
+
+  it('deploys only the public folder to GitHub Pages', () => {
+    const workflow = readFileSync(resolve(projectRoot, '.github/workflows/deploy-public-pages.yml'), 'utf8')
+
+    expect(workflow).toContain('path: public')
+    expect(workflow).toContain('actions/deploy-pages')
+  })
 })

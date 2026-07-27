@@ -30,9 +30,9 @@ Le manifeste public est `https://battlebenny.github.io/loodione/config.json`. Ch
 
 ### Publier `config.json` avec GitHub Pages
 
-1. Dans GitHub, ouvrir **Settings → Pages** du dépôt `battlebenny/loodione`.
-2. Choisir **Deploy from a branch**, sélectionner `main` et le dossier `/ (root)`, puis enregistrer.
-3. Pousser `config.json` sur `main` et attendre le déploiement Pages.
+1. Dans GitHub, ouvrir **Settings → Pages** du dépôt `battlebenny/loodione` et choisir **Source: GitHub Actions**.
+2. Le workflow `.github/workflows/deploy-public-pages.yml` publie uniquement `public/` à chaque push de ce dossier sur `main`.
+3. Modifier `public/config.json`, pousser sur `main` et attendre la fin du workflow **Deploy public assets to GitHub Pages**.
 4. Vérifier que `https://battlebenny.github.io/loodione/config.json` répond `200` et contient uniquement des URLs HTTPS de modules livrables.
 5. Installer ou relancer la build recette/production : le registre est téléchargé puis appliqué au lancement suivant.
 
