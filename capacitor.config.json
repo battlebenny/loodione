@@ -5,5 +5,10 @@
   "server": {
     "allowNavigation": ["https://*.loodi.test", "https://*.vercel.app"],
     "hostname": "app"
+  },
+  "plugins": {
+    "SystemBars": {
+      "style": "DEFAULT"
+    }
   }
 }
