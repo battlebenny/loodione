@@ -1,7 +1,7 @@
 # Configurations des modules
 
 - `apps.local.json` : catalogue des modules disponible dans une build locale. Les URLs sont saisies sur l'appareil via **Paramètres → Développement → Modules locaux** et ne sont jamais livrées en recette ou en production.
-- `apps.android-device.json` et `apps.ios-device.json` : réseau de développement `*.loodi.test` pour les appareils physiques.
+- `apps.android-device.json` et `apps.ios-device.json` : réseau de développement des appareils physiques ; `{{DEVICE_HOST}}` est remplacé par l’IPv4 LAN du Mac au build.
 - `apps.recette.json` et `apps.production.json` : fallback public livré avec One ; le registre distant peut ensuite mettre à jour le catalogue au prochain lancement.
 
 ## Builds
@@ -16,13 +16,13 @@ npm run build:recette  # build de recette
 npm run build          # build de production
 ```
 
-Les builds physiques restent sur le réseau de développement et ne téléchargent jamais le registre distant : elles permettent de tester les PWA et les APIs natives réelles avant livraison.
+Les builds physiques restent sur le réseau de développement et ne téléchargent jamais le registre distant : elles permettent de tester les PWA et les APIs natives réelles avant livraison. L’IP LAN est détectée automatiquement ; en cas de plusieurs interfaces, forcer le choix avec `LOODI_DEVICE_HOST=192.168.1.42 npm run cap:sync:android-device`.
 
 ## Origines du bridge strict
 
 Les URL non nulles de chaque registre compilé forment l’allowlist exacte de `BridgeServer`. Le shell ne communique jamais avec `targetOrigin: '*'` : une iframe doit avoir une origine déclarée dans le registre de son environnement. Les surcharges de développement ne peuvent pas étendre implicitement cette allowlist ; ajouter une origine de test au fichier `apps.<environnement>.json` correspondant, avec son test, avant d’activer son bridge.
 
-Pour recette et production, le bridge dérive ses origines exactes du registre actif. Le registre distant est l’autorité de confiance : ses modules doivent avoir une URL HTTPS, puis chaque message reste vérifié contre l’origine exacte de l’iframe. Les builds device gardent l’allowlist `*.loodi.test` compilée.
+Pour recette et production, le bridge dérive ses origines exactes du registre actif. Le registre distant est l’autorité de confiance : ses modules doivent avoir une URL HTTPS, puis chaque message reste vérifié contre l’origine exacte de l’iframe. Les builds device compilent l’allowlist exacte de l’IP LAN sélectionnée.
 
 ## Publication du registre distant
 
@@ -77,7 +77,7 @@ npm run cap:sync:android-emulator
 
 ## Appareil Android physique
 
-La build `npm run build:android-device` utilise `apps.android-device.json` et les serveurs réseau `*.loodi.test`. Les paramètres **Modules locaux** restent masqués et les anciennes surcharges sont ignorées. Configurer le DNS local des appareils pour que ces noms résolvent vers la machine de développement, puis installer la CA mkcert sur chaque appareil de test.
+La build `npm run build:android-device` utilise `apps.android-device.json` et l’IPv4 LAN détectée. Les paramètres **Modules locaux** restent masqués et les anciennes surcharges sont ignorées. `npm run cap:sync:android-device` ajoute temporairement cette IP à `allowNavigation` lors du sync Capacitor, sans modifier le fichier suivi. Installer la CA mkcert sur chaque appareil de test ; si l’IP a changé, le certificat est régénéré et les serveurs Vite doivent être redémarrés.
 
 ## Simulateur iOS
 

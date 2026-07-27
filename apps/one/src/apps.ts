@@ -22,13 +22,22 @@ const LOCAL_MODULE_URLS_KEY = 'loodi:localModuleUrls'
 export const REGISTRY_CACHE_KEY = 'loodi:remoteRegistry'
 export const REGISTRY_CACHE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000
 export const REMOTE_REGISTRY_URL = 'https://battlebenny.github.io/loodione/config.json'
+const DEVICE_HOST_FALLBACK = '192.168.0.109'
+
+function resolveDeviceApps(apps: AppEntry[]): AppEntry[] {
+  const host = import.meta.env.VITE_LOODI_DEVICE_HOST ?? DEVICE_HOST_FALLBACK
+  return apps.map((app) => ({
+    ...app,
+    url: app.url?.replace('{{DEVICE_HOST}}', host) ?? null,
+  }))
+}
 
 const appsByEnvironment: Record<ConfigEnvironment, AppEntry[]> = {
   local: localApps,
   emulator: emulatorApps,
-  'android-device': androidDeviceApps,
+  'android-device': resolveDeviceApps(androidDeviceApps),
   'ios-simulator': iosSimulatorApps,
-  'ios-device': iosDeviceApps,
+  'ios-device': resolveDeviceApps(iosDeviceApps),
   recette: recetteApps,
   production: productionApps,
 }
@@ -82,9 +91,9 @@ export function getBridgeAllowedOriginsForApps(apps: readonly AppEntry[]): reado
 export const BRIDGE_ALLOWED_ORIGINS: Readonly<Record<ConfigEnvironment, readonly string[]>> = {
   local: moduleOrigins(localApps),
   emulator: moduleOrigins(emulatorApps),
-  'android-device': moduleOrigins(androidDeviceApps),
+  'android-device': moduleOrigins(appsByEnvironment['android-device']),
   'ios-simulator': moduleOrigins(iosSimulatorApps),
-  'ios-device': moduleOrigins(iosDeviceApps),
+  'ios-device': moduleOrigins(appsByEnvironment['ios-device']),
   recette: moduleOrigins(recetteApps),
   production: moduleOrigins(productionApps),
 }

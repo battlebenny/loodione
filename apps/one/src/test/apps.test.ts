@@ -77,9 +77,9 @@ describe('module configuration', () => {
       'loodi-sessions': 'https://sessions.loodi.test:4007',
     })
     expect(getAppsForEnvironment('android-emulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://10.0.2.2:4000')
-    expect(getAppsForEnvironment('android-device')).toEqual(getAppsForEnvironment('development'))
+    expect(getAppsForEnvironment('android-device').find((app) => app.id === 'loodi')?.url).toBe('https://192.168.0.109:4002')
     expect(getAppsForEnvironment('ios-simulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://localhost:4000')
-    expect(getAppsForEnvironment('ios-device')).toEqual(getAppsForEnvironment('development'))
+    expect(getAppsForEnvironment('ios-device').find((app) => app.id === 'loodi')?.url).toBe('https://192.168.0.109:4002')
     expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBe(COLLEC_URL)
     expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi')?.url).toBe(COLLEC_URL)
   })
@@ -90,12 +90,12 @@ describe('module configuration', () => {
       'https://10.0.2.2:4000',
       'https://10.0.2.2:4002',
     ])
-    expect(getBridgeAllowedOrigins('android-device')).toEqual(BRIDGE_ALLOWED_ORIGINS.local)
+    expect(getBridgeAllowedOrigins('android-device')).toContain('https://192.168.0.109:4002')
     expect(getBridgeAllowedOrigins('ios-simulator')).toEqual([
       'https://localhost:4000',
       'https://localhost:4002',
     ])
-    expect(getBridgeAllowedOrigins('ios-device')).toEqual(BRIDGE_ALLOWED_ORIGINS.local)
+    expect(getBridgeAllowedOrigins('ios-device')).toContain('https://192.168.0.109:4002')
     expect(getBridgeAllowedOrigins('recette')).toEqual([COLLEC_URL])
     expect(getBridgeAllowedOrigins('production')).toEqual([COLLEC_URL])
     expect(Object.values(BRIDGE_ALLOWED_ORIGINS).flat()).not.toContain('*')
