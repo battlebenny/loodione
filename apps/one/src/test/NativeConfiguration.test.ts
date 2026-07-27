@@ -26,14 +26,14 @@ describe('native configuration', () => {
     expect(iosInfo).toContain('<key>NSCameraUsageDescription</key>')
   })
 
-  it('uses the local network registry on physical devices', () => {
+  it('uses the build-time network host template on physical devices', () => {
     const apps = JSON.parse(readFileSync(resolve(process.cwd(), 'src/config/apps.android-device.json'), 'utf8'))
 
     expect(apps.find((app: { id: string }) => app.id === 'loodi')).toMatchObject({
-      url: 'https://collec.loodi.test:4002',
+      url: 'https://{{DEVICE_HOST}}:4002',
     })
     expect(apps.find((app: { id: string }) => app.id === 'loodi-dev')).toMatchObject({
-      url: 'https://dummy.loodi.test:4000',
+      url: 'https://{{DEVICE_HOST}}:4000',
     })
   })
 
@@ -41,24 +41,22 @@ describe('native configuration', () => {
     const appPackage = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8'))
     const rootPackage = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'))
 
-    expect(appPackage.scripts['build:android-device']).toBe('tsc -b && vite build --mode android-device')
+    expect(appPackage.scripts['build:android-device']).toBe('tsc -b && node scripts/build-device.mjs android-device')
     expect(rootPackage.scripts['build:android-device']).toBe('npm run build:android-device -w @loodi/one')
-    expect(rootPackage.scripts['cap:sync:android-device']).toBe('npm run build:android-device && npx cap sync android')
-    expect(appPackage.scripts['build:ios-device']).toBe('tsc -b && vite build --mode ios-device')
+    expect(rootPackage.scripts['cap:sync:android-device']).toBe('node apps/one/scripts/sync-device.mjs android')
+    expect(appPackage.scripts['build:ios-device']).toBe('tsc -b && node scripts/build-device.mjs ios-device')
     expect(rootPackage.scripts['build:ios-device']).toBe('npm run build:ios-device -w @loodi/one')
-    expect(rootPackage.scripts['cap:sync:ios-device']).toBe('npm run build:ios-device && npx cap sync ios')
+    expect(rootPackage.scripts['cap:sync:ios-device']).toBe('node apps/one/scripts/sync-device.mjs ios')
     expect(rootPackage.scripts['test:run']).toBe('npm run test:run -w @loodi/one')
   })
 
-  it('keeps the native shell served from Capacitor without a server URL override', () => {
-    const capacitorConfig = JSON.parse(readFileSync(resolve(projectRoot, 'capacitor.config.json'), 'utf8'))
+  it('injects the detected device IP into Capacitor navigation only during device sync', () => {
+    const capacitorConfig = readFileSync(resolve(projectRoot, 'capacitor.config.json'), 'utf8')
+    const syncScript = readFileSync(resolve(process.cwd(), 'scripts/sync-device.mjs'), 'utf8')
 
-    expect(capacitorConfig.server?.url).toBeUndefined()
-    expect(capacitorConfig.server?.hostname).toBe('app')
-    expect(capacitorConfig.server?.allowNavigation).toEqual([
-      'https://*.loodi.test',
-      'https://*.vercel.app',
-    ])
+    expect(capacitorConfig).not.toContain('"https://*"')
+    expect(syncScript).toContain('`https://${host}`')
+    expect(syncScript).toContain('finally')
   })
 
   it('keeps the remotely published registry in the public deployment folder', () => {

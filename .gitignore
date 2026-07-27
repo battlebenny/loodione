@@ -9,6 +9,7 @@
 .env
 .env.*
 !.env.example
+.device-host.json
 
 # ─── Dependencies ─────────────────────────────────────────────
 node_modules/

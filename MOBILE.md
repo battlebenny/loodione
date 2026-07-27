@@ -14,9 +14,9 @@ Pour éviter de synchroniser une ancienne build émulateur sur un appareil physi
 | --- | --- | --- | --- |
 | Navigateur Mac | `npm run dev` | `apps.local.json` | `*.loodi.test` |
 | Émulateur Android | `npm run cap:sync:android-emulator` | `apps.emulator.json` | `10.0.2.2:4000–4002` |
-| Appareil Android physique | `npm run cap:sync:android-device` | `apps.android-device.json` | `*.loodi.test:4000–4007` |
+| Appareil Android physique | `npm run cap:sync:android-device` | `apps.android-device.json` | IPv4 LAN du Mac : `4000–4007` |
 | Simulateur iOS | `npm run cap:sync:ios-simulator` | `apps.ios-simulator.json` | `localhost:4000–4002` |
-| Appareil iOS physique | `npm run cap:sync:ios-device` | `apps.ios-device.json` | `*.loodi.test:4000–4007` |
+| Appareil iOS physique | `npm run cap:sync:ios-device` | `apps.ios-device.json` | IPv4 LAN du Mac : `4000–4007` |
 | Recette | `npm run build:recette` puis sync natif | `apps.recette.json` | selon la configuration de recette |
 | Production | `npm run build` puis sync natif | `apps.production.json` | URLs publiques |
 
@@ -137,11 +137,17 @@ Dans Android Studio, sélectionner l’émulateur puis lancer l’application av
 
 ## Workflow Android appareil physique
 
-Le Pixel charge les modules HTTPS `*.loodi.test`. Configurer le DNS local pour résoudre ces noms vers le Mac de développement et installer la CA mkcert sur l’appareil.
+Le script détecte l’IPv4 privée du Mac et compile les URLs HTTPS `https://<IP>:<port>`. Il régénère le certificat mkcert si cette IP n’est pas déjà couverte et injecte temporairement l’origine exacte dans la configuration Capacitor pendant le sync. Après une régénération, redémarrer les serveurs Vite des modules.
 
 ```bash
 npm run cap:sync:android-device
 npm run cap:open:android
+```
+
+S’il y a plusieurs interfaces réseau, forcer l’adresse :
+
+```bash
+LOODI_DEVICE_HOST=192.168.1.42 npm run cap:sync:android-device
 ```
 
 Dans Android Studio, sélectionner le Pixel connecté et cliquer sur **Run** pour reconstruire et réinstaller l’APK. Une simple synchronisation ne met pas à jour l’APK déjà installé.
@@ -175,11 +181,17 @@ Dans Xcode, choisir le simulateur puis lancer le scheme **App**. Les modules loc
 
 ## Workflow appareil iOS physique
 
-L’iPhone charge les modules HTTPS `*.loodi.test`. Configurer le DNS local vers le Mac et installer la CA mkcert sur l’iPhone.
+L’iPhone charge les modules sur l’IPv4 LAN détectée du Mac, avec le même mécanisme que la cible Android. Installer la CA mkcert sur l’iPhone et lui accorder la confiance complète.
 
 ```bash
 npm run cap:sync:ios-device
 npm run cap:open:ios
+```
+
+En cas de plusieurs interfaces réseau :
+
+```bash
+LOODI_DEVICE_HOST=192.168.1.42 npm run cap:sync:ios-device
 ```
 
 Dans Xcode, choisir l’iPhone connecté, vérifier l’équipe de signature puis lancer le scheme **App**. Installer la CA mkcert sur l’iPhone et l’activer dans **Réglages → Général → Informations → Réglages de confiance des certificats**.
@@ -305,7 +317,7 @@ Après `npm run cap:sync:ios-simulator`, ouvrir Xcode avec `npm run cap:open:ios
 | L’app utilise `10.0.2.2` sur le Pixel | Dernière build produite en mode émulateur | Relancer `npm run cap:sync:android-device`, puis **Run** dans Android Studio |
 | Les modifications ne changent pas dans l’app | `cap sync` a copié un ancien `dist` ou l’APK n’a pas été réinstallé | Refaire le workflow complet de la cible |
 | Écran blanc ou iframe inaccessible | PWA arrêtée, mauvais port ou Mac/Pixel sur des réseaux différents | Vérifier les processus avec `lsof`, le Wi-Fi et l’URL LAN |
-| Erreur TLS | CA non installée ou certificat sans l’IP actuelle | Réinstaller la CA et régénérer `.certs/cert.pem` |
+| Erreur TLS | CA non installée ou certificat sans l’IP actuelle | Réinstaller la CA ; relancer le sync device puis redémarrer les serveurs Vite si le certificat a été régénéré |
 | `Unable to locate a Java Runtime` | Le terminal ne connaît pas le JDK embarqué par Android Studio | Définir `JAVA_HOME` vers `Android Studio.app/Contents/jbr/Contents/Home`, ou builder depuis Android Studio |
 | Port déjà utilisé | Ancien serveur encore actif | Identifier le PID avec `lsof` avant toute fermeture |
 
@@ -315,5 +327,5 @@ Après `npm run cap:sync:ios-simulator`, ouvrir Xcode avec `npm run cap:open:ios
 - [apps/one/package.json](apps/one/package.json) : scripts Vite et modes ;
 - [apps/one/src/apps.ts](apps/one/src/apps.ts) : sélection de l’environnement ;
 - [apps/one/src/config](apps/one/src/config) : registries par cible ;
-- [capacitor.config.json](capacitor.config.json) : configuration Capacitor ;
+- [capacitor.config.json](capacitor.config.json) : configuration Capacitor ; l’IP device est ajoutée uniquement pendant le sync ;
 - [PACKAGES.md](PACKAGES.md) : publication des packages npm.
