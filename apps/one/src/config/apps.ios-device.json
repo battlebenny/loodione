@@ -1,4 +1,8 @@
 [
-  { "id": "loodi", "name": "collec", "icon": "📚", "url": "https://192.168.0.109:4002", "color": "#ca4a16" },
-  { "id": "loodi-dev", "name": "Dev", "icon": "🚧", "url": "https://192.168.0.109:4000", "color": "#6B7280" }
+  { "id": "loodi", "name": "collec", "icon": "🎲", "url": "https://battlebenny.github.io/loodione/modules/loodi/", "color": "#ca4a16" },
+  { "id": "loodi-mate", "name": "Mate", "icon": "🃏", "url": null, "color": "#2E8B57" },
+  { "id": "loodi-mag", "name": "Mag", "icon": "📰", "url": null, "color": "#4A90D9" },
+  { "id": "loodi-places", "name": "Places", "icon": "📍", "url": null, "color": "#9B59B6" },
+  { "id": "loodi-fest", "name": "Fest", "icon": "🎪", "url": null, "color": "#E67E22" },
+  { "id": "loodi-sessions", "name": "Sessions", "icon": "👥", "url": null, "color": "#1ABC9C" }
 ]

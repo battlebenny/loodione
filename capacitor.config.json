@@ -3,7 +3,7 @@
   "appName": "Loodi",
   "webDir": "apps/one/dist",
   "server": {
-    "allowNavigation": ["*"],
+    "allowNavigation": ["https://battlebenny.github.io"],
     "hostname": "app"
   }
 }

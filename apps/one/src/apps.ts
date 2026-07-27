@@ -204,7 +204,7 @@ export async function refreshRemoteRegistry(
 
 export function isRemoteRegistryEnabled(mode: string): boolean {
   const environment = getConfigEnvironment(mode)
-  return mode !== 'test' && !isLocalEnvironment(environment) && environment !== 'android-device' && environment !== 'ios-device'
+  return mode !== 'test' && !isLocalEnvironment(environment)
 }
 
 export function applyLocalUrlOverrides(apps: AppEntry[], overrides: LocalModuleUrls): AppEntry[] {

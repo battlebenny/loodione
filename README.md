@@ -20,11 +20,11 @@ Guides pratiques : [MOBILE.md](MOBILE.md) pour les builds, synchronisations et l
 
 La build émulateur se synchronise avec `npm run cap:sync:android-emulator`, puis s’ouvre dans Android Studio. Elle expose le dummy sur `https://10.0.2.2:4000`.
 
-La build Android appareil physique se synchronise avec `npm run cap:sync:android-device`, puis s’ouvre dans Android Studio sur un Pixel connecté. Elle expose Collec sur `https://192.168.0.109:4002`. Le Pixel et le Mac doivent être sur le même réseau Wi-Fi ; `10.0.2.2` est réservé à l’émulateur Android et ne fonctionne pas sur un appareil physique.
+La build Android appareil physique se synchronise avec `npm run cap:sync:android-device`, puis charge son fallback et son registre distant depuis GitHub Pages. Elle peut donc recevoir un nouveau module au lancement suivant, sans nouvelle livraison store.
 
 Le simulateur iOS utilise `https://localhost:4000` pour le dummy, puis `localhost:4002–4007` pour les modules. Utiliser `npm run cap:sync:ios-simulator`, puis ouvrir Xcode avec `npm run cap:open:ios`.
 
-Sur un iPhone réel, utiliser `npm run cap:sync:ios-device` : les modules sont joints via l’IP LAN du Mac (`192.168.0.109` actuellement), jamais `localhost`. Installer et approuver la CA mkcert sur l’iPhone avant le test.
+Sur un iPhone réel, utiliser `npm run cap:sync:ios-device` : les modules sont joints depuis le canal HTTPS GitHub Pages. Une CA mkcert n’est nécessaire que pour les tests locaux.
 
 ## Packages npm partagés
 
