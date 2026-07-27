@@ -3,6 +3,7 @@ import {
   BRIDGE_ALLOWED_ORIGINS,
   applyLocalUrlOverrides,
   getBridgeAllowedOrigins,
+  getBridgeAllowedOriginsForApps,
   getAppsForEnvironment,
   getConfigEnvironment,
   getRuntimeApps,
@@ -17,10 +18,11 @@ import {
 } from '../apps'
 
 const NOW = Date.UTC(2026, 6, 18)
+const COLLEC_URL = 'https://loodi.vercel.app'
 
 const acceptedManifest = {
   apps: [
-    { id: 'loodi', name: 'collec', icon: '📚', url: 'https://loodi.vercel.app', color: '#ca4a16' },
+    { id: 'loodi', name: 'collec', icon: '📚', url: COLLEC_URL, color: '#ca4a16' },
     { id: 'loodi-mate', name: 'Mate', icon: '🤖', url: null, color: '#2E8B57' },
   ],
 }
@@ -75,17 +77,11 @@ describe('module configuration', () => {
       'loodi-sessions': 'https://sessions.loodi.test:4007',
     })
     expect(getAppsForEnvironment('android-emulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://10.0.2.2:4000')
-    expect(getAppsForEnvironment('android-device')).toEqual([
-      { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
-      { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
-    ])
+    expect(getAppsForEnvironment('android-device')).toEqual(getAppsForEnvironment('development'))
     expect(getAppsForEnvironment('ios-simulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://localhost:4000')
-    expect(getAppsForEnvironment('ios-device')).toEqual([
-      { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
-      { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
-    ])
-    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBe('https://loodi.vercel.app')
-    expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi')?.url).toBe('https://loodi.vercel.app')
+    expect(getAppsForEnvironment('ios-device')).toEqual(getAppsForEnvironment('development'))
+    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBe(COLLEC_URL)
+    expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi')?.url).toBe(COLLEC_URL)
   })
 
   it('exposes an explicit bridge origin allowlist for every environment', () => {
@@ -94,20 +90,14 @@ describe('module configuration', () => {
       'https://10.0.2.2:4000',
       'https://10.0.2.2:4002',
     ])
-    expect(getBridgeAllowedOrigins('android-device')).toEqual([
-      'https://192.168.0.109:4000',
-      'https://192.168.0.109:4002',
-    ])
+    expect(getBridgeAllowedOrigins('android-device')).toEqual(BRIDGE_ALLOWED_ORIGINS.local)
     expect(getBridgeAllowedOrigins('ios-simulator')).toEqual([
       'https://localhost:4000',
       'https://localhost:4002',
     ])
-    expect(getBridgeAllowedOrigins('ios-device')).toEqual([
-      'https://192.168.0.109:4000',
-      'https://192.168.0.109:4002',
-    ])
-    expect(getBridgeAllowedOrigins('recette')).toEqual(['https://loodi.vercel.app'])
-    expect(getBridgeAllowedOrigins('production')).toEqual(['https://loodi.vercel.app'])
+    expect(getBridgeAllowedOrigins('ios-device')).toEqual(BRIDGE_ALLOWED_ORIGINS.local)
+    expect(getBridgeAllowedOrigins('recette')).toEqual([COLLEC_URL])
+    expect(getBridgeAllowedOrigins('production')).toEqual([COLLEC_URL])
     expect(Object.values(BRIDGE_ALLOWED_ORIGINS).flat()).not.toContain('*')
   })
 
@@ -172,7 +162,7 @@ describe('module configuration', () => {
     localStorage.setItem(REGISTRY_CACHE_KEY, JSON.stringify({
       version: 1,
       fetchedAt: NOW,
-      apps: [{ ...acceptedManifest.apps[0], url: 'https://untrusted.example/collec' }],
+      apps: [{ ...acceptedManifest.apps[0], url: 'http://untrusted.example/collec' }],
     }))
 
     expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
@@ -196,25 +186,40 @@ describe('module configuration', () => {
     expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
   })
 
-  it('rejects a remote module URL outside the embedded origin allowlist', async () => {
+  it('accepts a remote HTTPS module from the trusted registry', async () => {
     const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({
-      apps: [{ ...acceptedManifest.apps[0], url: 'https://untrusted.example/collec' }],
+      apps: [{ ...acceptedManifest.apps[0], url: 'https://loodi-mate.vercel.app/' }],
     }))
 
-    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(false)
+    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(true)
 
-    expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
-    expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
+    expect(getRuntimeApps({}, 'production', NOW + 1)[0]?.url).toBe('https://loodi-mate.vercel.app/')
   })
 
-  it('rejects a development-only module origin from a remote manifest', async () => {
+  it('rejects a remote module URL served over HTTP', async () => {
     const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({
-      apps: [{ ...acceptedManifest.apps[0], url: 'https://collec.loodi.test:4002' }],
+      apps: [{ ...acceptedManifest.apps[0], url: 'http://loodi-mate.vercel.app/' }],
     }))
 
     await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(false)
 
     expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
+  })
+
+  it('derives strict bridge origins from the cached remote registry in production only', async () => {
+    const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({
+      apps: [
+        ...acceptedManifest.apps,
+        { id: 'loodi-mag', name: 'Mag', icon: '📰', url: 'https://loodi-mag.vercel.app/', color: '#4A90D9' },
+      ],
+    }))
+
+    await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(true)
+
+    expect(getBridgeAllowedOriginsForApps(getRuntimeApps({}, 'production', NOW + 1))).toEqual([
+      'https://loodi-mag.vercel.app',
+      'https://loodi.vercel.app',
+    ])
   })
 
   it('keeps local module URLs exclusive to development builds even when a remote cache exists', async () => {

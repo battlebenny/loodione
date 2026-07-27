@@ -26,13 +26,15 @@ describe('native configuration', () => {
     expect(iosInfo).toContain('<key>NSCameraUsageDescription</key>')
   })
 
-  it('defines the physical Android device registry with Collec and the LAN dummy', () => {
+  it('uses the local network registry on physical devices', () => {
     const apps = JSON.parse(readFileSync(resolve(process.cwd(), 'src/config/apps.android-device.json'), 'utf8'))
 
-    expect(apps).toEqual([
-      { id: 'loodi', name: 'collec', icon: '📚', url: 'https://192.168.0.109:4002', color: '#ca4a16' },
-      { id: 'loodi-dev', name: 'Dev', icon: '🚧', url: 'https://192.168.0.109:4000', color: '#6B7280' },
-    ])
+    expect(apps.find((app: { id: string }) => app.id === 'loodi')).toMatchObject({
+      url: 'https://collec.loodi.test:4002',
+    })
+    expect(apps.find((app: { id: string }) => app.id === 'loodi-dev')).toMatchObject({
+      url: 'https://dummy.loodi.test:4000',
+    })
   })
 
   it('exposes dedicated physical-device build and sync scripts', () => {
@@ -53,5 +55,24 @@ describe('native configuration', () => {
 
     expect(capacitorConfig.server?.url).toBeUndefined()
     expect(capacitorConfig.server?.hostname).toBe('app')
+    expect(capacitorConfig.server?.allowNavigation).toEqual([
+      'https://*.loodi.test',
+      'https://*.vercel.app',
+    ])
+  })
+
+  it('keeps the remotely published registry in the public deployment folder', () => {
+    const registry = JSON.parse(readFileSync(resolve(projectRoot, 'public/config.json'), 'utf8'))
+
+    expect(registry).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'loodi', url: 'https://loodi.vercel.app' }),
+    ]))
+  })
+
+  it('deploys only the public folder to GitHub Pages', () => {
+    const workflow = readFileSync(resolve(projectRoot, '.github/workflows/deploy-public-pages.yml'), 'utf8')
+
+    expect(workflow).toContain('path: public')
+    expect(workflow).toContain('actions/deploy-pages')
   })
 })

@@ -1,9 +1,8 @@
 # Configurations des modules
 
 - `apps.local.json` : catalogue des modules disponible dans une build locale. Les URLs sont saisies sur l'appareil via **Paramètres → Développement → Modules locaux** et ne sont jamais livrées en recette ou en production.
-- `apps.android-device.json` : configuration compilée pour un appareil Android physique. Elle contient uniquement Collec sur `https://192.168.0.109:4002`.
-- `apps.recette.json` : registre de recette. Il pointe actuellement Collec vers `https://loodi.vercel.app` ; les URLs dédiées de recette des autres modules restent à renseigner.
-- `apps.production.json` : URLs publiques correspondant à la branche GitHub `main`.
+- `apps.android-device.json` et `apps.ios-device.json` : réseau de développement `*.loodi.test` pour les appareils physiques.
+- `apps.recette.json` et `apps.production.json` : fallback public livré avec One ; le registre distant peut ensuite mettre à jour le catalogue au prochain lancement.
 
 ## Builds
 
@@ -17,13 +16,27 @@ npm run build:recette  # build de recette
 npm run build          # build de production
 ```
 
-Pour un appareil physique, saisir les URLs HTTPS joignables depuis cet appareil : IP LAN du Mac ou URL de tunnel. `localhost` ne cible pas le Mac depuis un téléphone Android.
+Les builds physiques restent sur le réseau de développement et ne téléchargent jamais le registre distant : elles permettent de tester les PWA et les APIs natives réelles avant livraison.
 
 ## Origines du bridge strict
 
 Les URL non nulles de chaque registre compilé forment l’allowlist exacte de `BridgeServer`. Le shell ne communique jamais avec `targetOrigin: '*'` : une iframe doit avoir une origine déclarée dans le registre de son environnement. Les surcharges de développement ne peuvent pas étendre implicitement cette allowlist ; ajouter une origine de test au fichier `apps.<environnement>.json` correspondant, avec son test, avant d’activer son bridge.
 
-`apps.recette.json` contient actuellement l’origine de Collec (`https://loodi.vercel.app`) ; le bridge strict l’autorise. Les modules dont l’URL est `null` restent absents du runtime. Remplacer cette URL par une origine de recette dédiée lorsqu’elle sera validée ; ne pas substituer une valeur approchée ou un wildcard.
+Pour recette et production, le bridge dérive ses origines exactes du registre actif. Le registre distant est l’autorité de confiance : ses modules doivent avoir une URL HTTPS, puis chaque message reste vérifié contre l’origine exacte de l’iframe. Les builds device gardent l’allowlist `*.loodi.test` compilée.
+
+## Publication du registre distant
+
+Le manifeste public est `https://battlebenny.github.io/loodione/config.json`. Chaque livraison d’un module met à jour ce fichier avec son URL HTTPS Vercel (ou son futur hébergeur). One télécharge et valide le manifeste au démarrage, le conserve au plus 30 jours et ne l’applique qu’au lancement suivant. Si le téléchargement ou la validation échoue, le registre compilé reste utilisé.
+
+### Publier `config.json` avec GitHub Pages
+
+1. Dans GitHub, ouvrir **Settings → Pages** du dépôt `battlebenny/loodione` et choisir **Source: GitHub Actions**.
+2. Le workflow `.github/workflows/deploy-public-pages.yml` publie uniquement `public/` à chaque push de ce dossier sur `main`.
+3. Modifier `public/config.json`, pousser sur `main` et attendre la fin du workflow **Deploy public assets to GitHub Pages**.
+4. Vérifier que `https://battlebenny.github.io/loodione/config.json` répond `200` et contient uniquement des URLs HTTPS de modules livrables.
+5. Installer ou relancer la build recette/production : le registre est téléchargé puis appliqué au lancement suivant.
+
+`allowNavigation` autorise `https://*.vercel.app` dans Capacitor afin qu’un nouveau module Vercel puisse être chargé sans livraison store. Ajouter un module sur un autre hébergeur exigera une nouvelle version native, ou un domaine commun stabilisé. Ne mettre dans le registre que des déploiements Vercel destinés à rester accessibles.
 
 ## Convention locale Mac
 
@@ -64,33 +77,7 @@ npm run cap:sync:android-emulator
 
 ## Appareil Android physique
 
-La build `npm run build:android-device` utilise `apps.android-device.json` et Collec sur `https://192.168.0.109:4002`. L’adresse `192.168.0.109` est l’IP LAN du Mac ; le Pixel doit être sur le même réseau. `10.0.2.2` ne doit pas être utilisée dans cette build : elle est réservée à l’émulateur Android.
-
-Les paramètres **Modules locaux** sont masqués dans cette build. Les anciennes valeurs de `loodi:localModuleUrls`, notamment une ancienne URL `10.0.2.2`, sont ignorées ; elles ne peuvent pas remplacer l’URL LAN compilée. Le bridge strict utilise exclusivement l’allowlist compilée et contient exactement `https://192.168.0.109:4002`.
-
-Le certificat partagé `.certs/cert.pem` doit contenir les noms suivants : `localhost`, `*.loodi.test`, `10.0.2.2` et `192.168.0.109`. Ne jamais committer le certificat ni la clé privée. Avant de régénérer un certificat existant, en conserver une copie de sauvegarde puis utiliser :
-
-```bash
-mkdir -p .certs
-mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem \
-  localhost '*.loodi.test' 10.0.2.2 192.168.0.109
-```
-
-Installer la CA sur le Pixel :
-
-```bash
-adb devices
-adb -s <SERIAL> push "$(mkcert -CAROOT)/rootCA.pem" /sdcard/Download/loodi-rootCA.crt
-```
-
-Puis ouvrir **Paramètres → Sécurité et confidentialité → Plus de paramètres de sécurité → Chiffrement et identifiants → Installer un certificat** et sélectionner le fichier copié.
-
-Commandes complètes :
-
-```bash
-npm run build:android-device
-npm run cap:sync:android-device
-```
+La build `npm run build:android-device` utilise `apps.android-device.json` et les serveurs réseau `*.loodi.test`. Les paramètres **Modules locaux** restent masqués et les anciennes surcharges sont ignorées. Configurer le DNS local des appareils pour que ces noms résolvent vers la machine de développement, puis installer la CA mkcert sur chaque appareil de test.
 
 ## Simulateur iOS
 
