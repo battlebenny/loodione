@@ -206,6 +206,12 @@ export function useShell() {
         setState((s) => s.activeAppId === appId ? { ...s, headerOptions } : s)
       },
       onNavigate: (appId, path) => {
+        setOpenOverlayAppIds((ids) => {
+          if (!ids.has(appId)) return ids
+          const next = new Set(ids)
+          next.delete(appId)
+          return next
+        })
         setState((s) => s.activeAppId === appId
           ? { ...s, activeTab: getActiveTabForPath(path) }
           : s)

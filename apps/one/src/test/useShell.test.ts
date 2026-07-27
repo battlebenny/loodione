@@ -127,6 +127,45 @@ describe('module overlays', () => {
 
     expect(result.current.overlayActive).toBe(false)
   })
+
+  it('restores the bottom navigation when the active module navigates away from an open overlay', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    })
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    const { result } = renderHook(() => useShell())
+    const appId = result.current.state.activeAppId
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+
+    act(() => {
+      result.current.registerIframe(appId, iframe)
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:event', event: 'loodi:overlaychange', detail: { visible: true } },
+      }))
+    })
+    expect(result.current.overlayActive).toBe(true)
+
+    act(() => {
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:navigate', path: '/' },
+      }))
+    })
+
+    expect(result.current.overlayActive).toBe(false)
+  })
 })
 
 describe('strict bridge runtime', () => {
