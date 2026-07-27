@@ -70,6 +70,11 @@ function moduleOrigins(apps: readonly AppEntry[]): string[] {
   }))].sort()
 }
 
+/** Exact origins trusted by the strict bridge for the active registry. */
+export function getBridgeAllowedOriginsForApps(apps: readonly AppEntry[]): readonly string[] {
+  return moduleOrigins(apps)
+}
+
 /**
  * Exact module origins compiled for every shell environment. An origin entered
  * through the development override UI never expands this list implicitly.
@@ -87,19 +92,6 @@ export const BRIDGE_ALLOWED_ORIGINS: Readonly<Record<ConfigEnvironment, readonly
 export function getBridgeAllowedOrigins(mode: string): readonly string[] {
   return BRIDGE_ALLOWED_ORIGINS[getConfigEnvironment(mode)]
 }
-
-/**
- * Production origins compiled into One; development-only origins are excluded
- * so a remote registry cannot make a local module reachable in production.
- */
-export const MODULE_ORIGIN_ALLOWLIST = [...new Set(
-  productionApps.flatMap((app) => {
-    const origin = moduleOrigin(app.url)
-    return origin ? [origin] : []
-  }),
-)].sort()
-
-const allowedModuleOrigins = new Set(MODULE_ORIGIN_ALLOWLIST)
 
 export function getAppsForEnvironment(mode: string): AppEntry[] {
   return appsByEnvironment[getConfigEnvironment(mode)].map((app) => ({ ...app }))
@@ -140,8 +132,8 @@ function parseRemoteRegistry(value: unknown): AppEntry[] | null {
       || (record.url !== null && typeof record.url !== 'string')) return null
 
     if (typeof record.url === 'string') {
-      const origin = moduleOrigin(record.url)
-      if (!origin || new URL(record.url).protocol !== 'https:' || !allowedModuleOrigins.has(origin)) return null
+      const url = new URL(record.url)
+      if (url.protocol !== 'https:') return null
     }
 
     ids.add(record.id)
@@ -204,7 +196,10 @@ export async function refreshRemoteRegistry(
 
 export function isRemoteRegistryEnabled(mode: string): boolean {
   const environment = getConfigEnvironment(mode)
-  return mode !== 'test' && !isLocalEnvironment(environment)
+  return mode !== 'test'
+    && !isLocalEnvironment(environment)
+    && environment !== 'android-device'
+    && environment !== 'ios-device'
 }
 
 export function applyLocalUrlOverrides(apps: AppEntry[], overrides: LocalModuleUrls): AppEntry[] {
@@ -244,7 +239,6 @@ export function getRuntimeApps(
   if (isLocalEnvironment(environment)) {
     return applyLocalUrlOverrides(apps, overrides)
   }
-  if (environment === 'android-device' || environment === 'ios-device') return apps
   return isRemoteRegistryEnabled(mode) ? loadRemoteRegistryCache(now) ?? apps : apps
 }
 

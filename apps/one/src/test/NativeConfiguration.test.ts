@@ -26,13 +26,15 @@ describe('native configuration', () => {
     expect(iosInfo).toContain('<key>NSCameraUsageDescription</key>')
   })
 
-  it('uses the GitHub Pages fallback registry on physical devices', () => {
+  it('uses the local network registry on physical devices', () => {
     const apps = JSON.parse(readFileSync(resolve(process.cwd(), 'src/config/apps.android-device.json'), 'utf8'))
 
     expect(apps.find((app: { id: string }) => app.id === 'loodi')).toMatchObject({
-      url: 'https://battlebenny.github.io/loodione/modules/loodi/',
+      url: 'https://collec.loodi.test:4002',
     })
-    expect(apps.find((app: { id: string }) => app.id === 'loodi-dev')).toBeUndefined()
+    expect(apps.find((app: { id: string }) => app.id === 'loodi-dev')).toMatchObject({
+      url: 'https://dummy.loodi.test:4000',
+    })
   })
 
   it('exposes dedicated physical-device build and sync scripts', () => {
@@ -53,6 +55,9 @@ describe('native configuration', () => {
 
     expect(capacitorConfig.server?.url).toBeUndefined()
     expect(capacitorConfig.server?.hostname).toBe('app')
-    expect(capacitorConfig.server?.allowNavigation).toEqual(['https://battlebenny.github.io'])
+    expect(capacitorConfig.server?.allowNavigation).toEqual([
+      'https://*.loodi.test',
+      'https://*.vercel.app',
+    ])
   })
 })

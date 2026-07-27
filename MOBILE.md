@@ -14,9 +14,9 @@ Pour éviter de synchroniser une ancienne build émulateur sur un appareil physi
 | --- | --- | --- | --- |
 | Navigateur Mac | `npm run dev` | `apps.local.json` | `*.loodi.test` |
 | Émulateur Android | `npm run cap:sync:android-emulator` | `apps.emulator.json` | `10.0.2.2:4000–4002` |
-| Appareil Android physique | `npm run cap:sync:android-device` | `apps.android-device.json` | IP LAN du Mac, actuellement `192.168.0.109` |
+| Appareil Android physique | `npm run cap:sync:android-device` | `apps.android-device.json` | `*.loodi.test:4000–4007` |
 | Simulateur iOS | `npm run cap:sync:ios-simulator` | `apps.ios-simulator.json` | `localhost:4000–4002` |
-| Appareil iOS physique | `npm run cap:sync:ios-device` | `apps.ios-device.json` | IP LAN du Mac, actuellement `192.168.0.109` |
+| Appareil iOS physique | `npm run cap:sync:ios-device` | `apps.ios-device.json` | `*.loodi.test:4000–4007` |
 | Recette | `npm run build:recette` puis sync natif | `apps.recette.json` | selon la configuration de recette |
 | Production | `npm run build` puis sync natif | `apps.production.json` | URLs publiques |
 
@@ -26,17 +26,17 @@ Pour éviter de synchroniser une ancienne build émulateur sur un appareil physi
 
 Le bridge est strict : One accepte uniquement un message dont `event.source` est la `contentWindow` de l’iframe enregistrée, dont `event.origin` correspond exactement à l’origine de son URL configurée, et dont le schéma est valide. Chaque message envoyé par One utilise cette même origine exacte comme `targetOrigin` — jamais `*`.
 
-Les origines de modules acceptées sont dérivées des fichiers `apps/one/src/config/apps.*.json` à la build. Le port fait partie de l’origine.
+Les origines de modules acceptées proviennent des registres compilés sur les builds de développement, et du registre distant validé au lancement seulement en recette et production. Le port fait partie de l’origine.
 
 | Cible | Origine de One | Allowlist des modules |
 | --- | --- | --- |
 | Navigateur Mac | `https://one.loodi.test:4001` | `https://collec.loodi.test:4002`, `https://mate.loodi.test:4003`, `https://mag.loodi.test:4004`, `https://places.loodi.test:4005`, `https://fest.loodi.test:4006`, `https://sessions.loodi.test:4007`, `https://dummy.loodi.test:4000` |
 | Émulateur Android | `https://app` | `https://10.0.2.2:4002`, `https://10.0.2.2:4000` |
-| Android physique | `https://app` | `https://192.168.0.109:4002`, `https://192.168.0.109:4000` |
+| Android physique | `https://app` | `https://*.loodi.test:4000–4007` |
 | Simulateur iOS | `capacitor://app` | `https://localhost:4002`, `https://localhost:4000` |
-| Appareil iOS physique | `capacitor://app` | `https://192.168.0.109:4002`, `https://192.168.0.109:4000` |
-| Recette | `https://app` / `capacitor://app` selon la plateforme | `https://loodi.vercel.app` pour Collec ; autres modules non configurés |
-| Production native | Android : `https://app` ; iOS : `capacitor://app` | `https://loodi.vercel.app` |
+| Appareil iOS physique | `capacitor://app` | `https://*.loodi.test:4000–4007` |
+| Recette | `https://app` / `capacitor://app` selon la plateforme | fallback public + registre distant |
+| Production native | Android : `https://app` ; iOS : `capacitor://app` | fallback public + registre distant |
 
 Collec doit donc initialiser `BridgeClient` en mode strict avec l’origine de One de la cible comme `targetOrigin`. One calcule son allowlist séparément pour chaque build ; une URL saisie dans l’outil de développement ne l’élargit pas.
 
@@ -137,7 +137,7 @@ Dans Android Studio, sélectionner l’émulateur puis lancer l’application av
 
 ## Workflow Android appareil physique
 
-Le Mac et le Pixel doivent être sur le même réseau Wi-Fi. Vérifier l’adresse LAN du Mac, puis la reporter dans [apps.android-device.json](apps/one/src/config/apps.android-device.json) et dans le certificat si elle a changé.
+Le Pixel charge les modules HTTPS `*.loodi.test`. Configurer le DNS local pour résoudre ces noms vers le Mac de développement et installer la CA mkcert sur l’appareil.
 
 ```bash
 npm run cap:sync:android-device
@@ -162,28 +162,7 @@ ouvrir directement le dossier. Pour l’installer avec Android Studio, utiliser
 **Run** avec le Pixel sélectionné ; pour l’installer manuellement, transférer
 le fichier sur le téléphone puis autoriser l’installation depuis cette source.
 
-La configuration actuelle expose :
-
-- Collec : `https://192.168.0.109:4002` ;
-- Dummy : `https://192.168.0.109:4000`.
-
-Pour un appareil physique, installer une fois la CA mkcert sur le Pixel :
-
-```bash
-mkcert -install
-adb devices
-adb -s <SERIAL> push "$(mkcert -CAROOT)/rootCA.pem" /sdcard/Download/loodi-rootCA.crt
-```
-
-Puis installer le certificat depuis les paramètres de sécurité du Pixel. Le certificat du projet doit couvrir `192.168.0.109` :
-
-```bash
-mkdir -p .certs
-mkcert -cert-file .certs/cert.pem -key-file .certs/key.pem \
-  localhost '*.loodi.test' 10.0.2.2 192.168.0.109
-```
-
-Les fichiers `.certs/` ne doivent jamais être commités.
+Ne modifier ni `config.json` ni le registre distant pour ce flux : il est réservé à recette et production. Les URL locales et le certificat mkcert doivent être testés avant une livraison de module.
 
 ## Workflow simulateur iOS
 
@@ -196,14 +175,14 @@ Dans Xcode, choisir le simulateur puis lancer le scheme **App**. Les modules loc
 
 ## Workflow appareil iOS physique
 
-Un iPhone ne peut pas joindre le serveur Collec du Mac par `localhost` : utiliser la cible dédiée, avec le Mac et l’iPhone sur le même Wi-Fi.
+L’iPhone charge les modules HTTPS `*.loodi.test`. Configurer le DNS local vers le Mac et installer la CA mkcert sur l’iPhone.
 
 ```bash
 npm run cap:sync:ios-device
 npm run cap:open:ios
 ```
 
-Dans Xcode, choisir l’iPhone connecté, vérifier l’équipe de signature puis lancer le scheme **App**. Installer la CA mkcert sur l’iPhone et l’activer dans **Réglages → Général → Informations → Réglages de confiance des certificats** ; le certificat de développement doit couvrir `192.168.0.109`.
+Dans Xcode, choisir l’iPhone connecté, vérifier l’équipe de signature puis lancer le scheme **App**. Installer la CA mkcert sur l’iPhone et l’activer dans **Réglages → Général → Informations → Réglages de confiance des certificats**.
 
 ## Recette et production
 

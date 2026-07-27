@@ -1,7 +1,7 @@
 import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import {
   applyLocalUrlOverrides,
-  getBridgeAllowedOrigins,
+  getBridgeAllowedOriginsForApps,
   getAppsForEnvironment,
   getRuntimeApps,
   isLocalBuild,
@@ -151,7 +151,7 @@ export function useShell() {
   const tabsByApp = useRef<Map<string, Tab[]>>(new Map())
   const headerActionsByApp = useRef<Map<string, HeaderAction[]>>(new Map())
   const headerOptionsByApp = useRef<Map<string, HeaderOptions>>(new Map())
-  const bridgeAllowedOrigins = getBridgeAllowedOrigins(import.meta.env.MODE)
+  const bridgeAllowedOrigins = getBridgeAllowedOriginsForApps(state.apps)
   const settingsOpenTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const clearSettingsOpenTimeout = useCallback(() => {

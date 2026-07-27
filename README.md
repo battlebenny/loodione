@@ -20,11 +20,11 @@ Guides pratiques : [MOBILE.md](MOBILE.md) pour les builds, synchronisations et l
 
 La build émulateur se synchronise avec `npm run cap:sync:android-emulator`, puis s’ouvre dans Android Studio. Elle expose le dummy sur `https://10.0.2.2:4000`.
 
-La build Android appareil physique se synchronise avec `npm run cap:sync:android-device`, puis charge son fallback et son registre distant depuis GitHub Pages. Elle peut donc recevoir un nouveau module au lancement suivant, sans nouvelle livraison store.
+La build Android appareil physique se synchronise avec `npm run cap:sync:android-device`, puis charge les modules du réseau de développement sous `*.loodi.test`. Elle ne télécharge pas le registre distant.
 
 Le simulateur iOS utilise `https://localhost:4000` pour le dummy, puis `localhost:4002–4007` pour les modules. Utiliser `npm run cap:sync:ios-simulator`, puis ouvrir Xcode avec `npm run cap:open:ios`.
 
-Sur un iPhone réel, utiliser `npm run cap:sync:ios-device` : les modules sont joints depuis le canal HTTPS GitHub Pages. Une CA mkcert n’est nécessaire que pour les tests locaux.
+Sur un iPhone réel, utiliser `npm run cap:sync:ios-device` : les modules sont joints depuis les URLs réseau `*.loodi.test`. Configurer leur DNS local et approuver la CA mkcert sur l’appareil.
 
 ## Packages npm partagés
 

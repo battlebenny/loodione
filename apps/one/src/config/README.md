@@ -1,7 +1,8 @@
 # Configurations des modules
 
 - `apps.local.json` : catalogue des modules disponible dans une build locale. Les URLs sont saisies sur l'appareil via **Paramètres → Développement → Modules locaux** et ne sont jamais livrées en recette ou en production.
-- `apps.android-device.json`, `apps.ios-device.json`, `apps.recette.json` et `apps.production.json` : fallback stable GitHub Pages. Le registre distant peut ensuite mettre à jour le catalogue au prochain lancement.
+- `apps.android-device.json` et `apps.ios-device.json` : réseau de développement `*.loodi.test` pour les appareils physiques.
+- `apps.recette.json` et `apps.production.json` : fallback public livré avec One ; le registre distant peut ensuite mettre à jour le catalogue au prochain lancement.
 
 ## Builds
 
@@ -15,19 +16,27 @@ npm run build:recette  # build de recette
 npm run build          # build de production
 ```
 
-Les builds physiques n'embarquent aucune URL LAN : elles récupèrent le registre HTTPS publié, ce qui permet d'ajouter un module sans publier une nouvelle version de One.
+Les builds physiques restent sur le réseau de développement et ne téléchargent jamais le registre distant : elles permettent de tester les PWA et les APIs natives réelles avant livraison.
 
 ## Origines du bridge strict
 
 Les URL non nulles de chaque registre compilé forment l’allowlist exacte de `BridgeServer`. Le shell ne communique jamais avec `targetOrigin: '*'` : une iframe doit avoir une origine déclarée dans le registre de son environnement. Les surcharges de développement ne peuvent pas étendre implicitement cette allowlist ; ajouter une origine de test au fichier `apps.<environnement>.json` correspondant, avec son test, avant d’activer son bridge.
 
-Le canal recette et production autorise uniquement `https://battlebenny.github.io`. Les modules sont publiés sous `https://battlebenny.github.io/loodione/modules/<module-id>/` ; un manifeste ne peut introduire ni HTTP ni une autre origine.
+Pour recette et production, le bridge dérive ses origines exactes du registre actif. Le registre distant est l’autorité de confiance : ses modules doivent avoir une URL HTTPS, puis chaque message reste vérifié contre l’origine exacte de l’iframe. Les builds device gardent l’allowlist `*.loodi.test` compilée.
 
 ## Publication du registre distant
 
-Le manifeste public est `https://battlebenny.github.io/loodione/config.json`. Chaque livraison d’un module publie son build statique dans `modules/<module-id>/`, puis met à jour ce fichier avec son URL HTTPS. One télécharge et valide le manifeste au démarrage, le conserve au plus 30 jours et ne l’applique qu’au lancement suivant. Si le téléchargement ou la validation échoue, le registre compilé reste utilisé.
+Le manifeste public est `https://battlebenny.github.io/loodione/config.json`. Chaque livraison d’un module met à jour ce fichier avec son URL HTTPS Vercel (ou son futur hébergeur). One télécharge et valide le manifeste au démarrage, le conserve au plus 30 jours et ne l’applique qu’au lancement suivant. Si le téléchargement ou la validation échoue, le registre compilé reste utilisé.
 
-Les URLs Vercel de preview peuvent servir aux tests navigateur, mais ne sont jamais ajoutées au registre ni à l’allowlist native.
+### Publier `config.json` avec GitHub Pages
+
+1. Dans GitHub, ouvrir **Settings → Pages** du dépôt `battlebenny/loodione`.
+2. Choisir **Deploy from a branch**, sélectionner `main` et le dossier `/ (root)`, puis enregistrer.
+3. Pousser `config.json` sur `main` et attendre le déploiement Pages.
+4. Vérifier que `https://battlebenny.github.io/loodione/config.json` répond `200` et contient uniquement des URLs HTTPS de modules livrables.
+5. Installer ou relancer la build recette/production : le registre est téléchargé puis appliqué au lancement suivant.
+
+`allowNavigation` autorise `https://*.vercel.app` dans Capacitor afin qu’un nouveau module Vercel puisse être chargé sans livraison store. Ajouter un module sur un autre hébergeur exigera une nouvelle version native, ou un domaine commun stabilisé. Ne mettre dans le registre que des déploiements Vercel destinés à rester accessibles.
 
 ## Convention locale Mac
 
@@ -68,7 +77,7 @@ npm run cap:sync:android-emulator
 
 ## Appareil Android physique
 
-La build `npm run build:android-device` utilise le fallback GitHub Pages puis rafraîchit le registre distant. Les paramètres **Modules locaux** restent masqués et les anciennes surcharges sont ignorées. Une CA mkcert n’est nécessaire que pour les tests locaux sur émulateur, jamais pour ce canal HTTPS public.
+La build `npm run build:android-device` utilise `apps.android-device.json` et les serveurs réseau `*.loodi.test`. Les paramètres **Modules locaux** restent masqués et les anciennes surcharges sont ignorées. Configurer le DNS local des appareils pour que ces noms résolvent vers la machine de développement, puis installer la CA mkcert sur chaque appareil de test.
 
 ## Simulateur iOS
 
