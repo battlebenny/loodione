@@ -16,6 +16,7 @@ import { BridgeServer } from './BridgeServer'
 import { Capacitor } from '@capacitor/core'
 import { App as CapacitorApp } from '@capacitor/app'
 import { installNavigationRuntime, type NavigationPlatform } from './navigation'
+import { syncStatusBarTheme } from './statusBar'
 import type { ThemeMode } from './theme'
 import type { HeaderAction, HeaderOptions, SharedPreferences, SharedPreferencesUpdate } from '@loodi/bridge'
 import type { Tab } from '@loodi/ui/bottom-nav'
@@ -263,6 +264,7 @@ export function useShell() {
   // bridge so every postMessage uses the iframe's exact configured origin.
   useLayoutEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
+    void syncStatusBarTheme(theme).catch(() => undefined)
   }, [theme])
 
   useEffect(() => {

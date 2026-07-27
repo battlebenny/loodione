@@ -59,6 +59,14 @@ describe('native configuration', () => {
     expect(syncScript).toContain('finally')
   })
 
+  it('uses Capacitor’s built-in system-bars runtime without replacing its safe-area handling', () => {
+    const capacitorConfig = JSON.parse(readFileSync(resolve(projectRoot, 'capacitor.config.json'), 'utf8'))
+    const rootPackage = JSON.parse(readFileSync(resolve(projectRoot, 'package.json'), 'utf8'))
+
+    expect(rootPackage.dependencies['@capacitor/status-bar']).toBeUndefined()
+    expect(capacitorConfig.plugins.SystemBars.style).toBe('DEFAULT')
+  })
+
   it('keeps the remotely published registry in the public deployment folder', () => {
     const registry = JSON.parse(readFileSync(resolve(projectRoot, 'public/config.json'), 'utf8'))
 
