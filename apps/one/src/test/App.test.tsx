@@ -1,4 +1,4 @@
-import { fireEvent, render, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -18,6 +18,30 @@ const shellApps = vi.hoisted(() => ({
   value: [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }],
 }))
 const shellTabs = vi.hoisted(() => ({ value: [] as { id: string; icon: string; label: string }[] }))
+const showLoodiAccount = vi.hoisted(() => vi.fn())
+const signOut = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const auth = vi.hoisted(() => ({
+  state: 'anonymous' as 'anonymous' | 'authenticated',
+  session: null as { userId: string; accessToken: string; expiresAt: number; handle?: string } | null,
+  profile: null as { id: string; handle: string } | null,
+}))
+
+vi.mock('@loodi/auth', () => ({
+  useAuth: () => ({
+    ...auth,
+    email: null,
+    hasGoogleIdentity: false,
+    error: null,
+    signOut,
+    signInWithGoogle: vi.fn(),
+    signInWithMagicLink: vi.fn(),
+    abandonIncompleteAccount: vi.fn(),
+    updateEmail: vi.fn(),
+    linkGoogleIdentity: vi.fn(),
+    unlinkGoogleIdentity: vi.fn(),
+    completeHandle: vi.fn(),
+  }),
+}))
 
 vi.mock('../useShell', () => ({
   shouldRetryModule: () => false,
@@ -37,6 +61,7 @@ vi.mock('../useShell', () => ({
     toggleLauncher,
     activateApp: vi.fn(),
     toggleSettings: vi.fn(),
+    showLoodiAccount,
     registerIframe,
     goBack,
     overlayActive: false,
@@ -70,11 +95,18 @@ describe('module frame', () => {
     goBack.mockClear()
     registerIframe.mockClear()
     toggleLauncher.mockClear()
+    showLoodiAccount.mockClear()
+    signOut.mockClear()
+    auth.state = 'anonymous'
+    auth.session = null
+    auth.profile = null
     document.documentElement.style.setProperty('--safe-area-inset-top', '24px')
     document.documentElement.style.setProperty('--safe-area-inset-bottom', '16px')
   })
 
   afterEach(() => {
+    cleanup()
+    window.history.replaceState({}, '', '/')
     document.documentElement.style.removeProperty('--safe-area-inset-top')
     document.documentElement.style.removeProperty('--safe-area-inset-bottom')
   })
@@ -236,5 +268,73 @@ describe('module frame', () => {
     rerender(<App />)
 
     expect(within(container).queryByRole('button', { name: 'Retour' })).not.toBeInTheDocument()
+  })
+
+  it('opens the connected profile sheet instead of signing out immediately', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+
+    expect(screen.getByText('Mon compte Loodi')).toBeInTheDocument()
+    expect(signOut).not.toHaveBeenCalled()
+  })
+
+  it('hides the bottom navigation while the connected profile sheet is open', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    shellTabs.value = [{ id: 'home', icon: 'home', label: 'Accueil' }]
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+
+    expect(within(container).getByRole('navigation')).toHaveClass('loodi-bottom-nav--hidden')
+  })
+
+  it('opens account management from the connected profile sheet', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Gérer mon compte' }))
+
+    expect(showLoodiAccount).toHaveBeenCalledOnce()
+  })
+
+  it('requires confirmation before signing out from the connected profile sheet', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Se déconnecter' }))
+
+    expect(screen.getByText('Tu veux vraiment changer de compte ? Tu pourras te reconnecter quand tu veux.')).toBeInTheDocument()
+    expect(signOut).not.toHaveBeenCalled()
+  })
+
+  it('confirms a successful magic-link connection after returning from the email', () => {
+    window.history.replaceState({}, '', '/#access_token=token&type=magiclink')
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+
+    render(<App />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Connexion réussie. Heureux de te revoir !')
+  })
+
+  it('explains when a magic-link connection has expired', () => {
+    window.history.replaceState({}, '', '/#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired')
+
+    render(<App />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Ce lien de connexion a expiré. Demande-en un nouveau.')
   })
 })

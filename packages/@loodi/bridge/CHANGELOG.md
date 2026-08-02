@@ -4,6 +4,10 @@ Toutes les évolutions notables de `@loodi/bridge` sont documentées ici.
 
 ## [Unreleased]
 
+### Changed
+
+- Suppression des appels POC `getUser` et `getToken`. Les modules embarqués utilisent `getAuthSession` puis l’événement `loodi:authchange`.
+
 ## [0.4.0] - 2026-07-23
 
 ### Added

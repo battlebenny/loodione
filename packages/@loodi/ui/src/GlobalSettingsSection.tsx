@@ -1,4 +1,4 @@
-import { ChevronRight, Settings } from 'lucide-react'
+import { ChevronRight, Settings, UserRound } from 'lucide-react'
 import type { GlobalSettingsSectionProps } from './types.js'
 
 /**
@@ -7,12 +7,26 @@ import type { GlobalSettingsSectionProps } from './types.js'
  */
 export function GlobalSettingsSection({
   onOpenShellSettings,
+  onOpenLoodiAccount,
   settingDescription = 'Paramètres pour toutes les applications',
 }: GlobalSettingsSectionProps) {
   return (
     <section className="loodi-global-settings" aria-labelledby="loodi-global-settings-title">
       <div className="loodi-global-settings__card">
-        <h2 id="loodi-global-settings-title" className="loodi-global-settings__title">Paramètres globaux</h2>
+        <h2 id="loodi-global-settings-title" className="loodi-global-settings__title">Paramètres généraux</h2>
+        <button
+          type="button"
+          className="loodi-global-settings__row"
+          aria-label="Mon compte Loodi — Connexion et identité"
+          onClick={onOpenLoodiAccount}
+        >
+          <span className="loodi-global-settings__icon"><UserRound size={18} aria-hidden="true" /></span>
+          <span className="loodi-global-settings__copy">
+            <strong>Mon compte Loodi</strong>
+            <small>Connexion et identité</small>
+          </span>
+          <ChevronRight className="loodi-global-settings__chevron" size={18} aria-hidden="true" />
+        </button>
         <button
           type="button"
           className="loodi-global-settings__row"

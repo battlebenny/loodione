@@ -23,6 +23,7 @@ function callbacks(): BridgeServerCallbacks {
     onRequestSharedPreferences: vi.fn(() => initialPreferences),
     onRequestSharedPreferencesUpdate: vi.fn(() => updatedPreferences),
     onRequestShowShellSettings: vi.fn(),
+    onRequestShowLoodiAccount: vi.fn(),
   }
 }
 
@@ -72,6 +73,24 @@ describe('BridgeServer navigation gestures', () => {
 })
 
 describe('BridgeServer embedded settings', () => {
+  it('rejects the removed POC identity methods', () => {
+    const bridge = new BridgeServer(callbacks())
+    const iframe = document.createElement('iframe')
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi-dev', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:call', method: 'getToken', args: [], id: 1 },
+    }))
+
+    expect(child.postMessage).toHaveBeenCalledWith({
+      type: 'loodi:response', id: 1, result: undefined, error: 'Unknown method: getToken',
+    }, '*')
+    bridge.destroy()
+  })
+
   it('records support for embedded settings and sends the shell opening command', () => {
     const cb = callbacks()
     const bridge = new BridgeServer(cb)
@@ -118,6 +137,23 @@ describe('BridgeServer embedded settings', () => {
       data: { type: 'loodi:call', method: 'updateSharedPreferences', args: [{ themeMode: 'dark' }], id: 2 },
     }))
     expect(cb.onRequestSharedPreferencesUpdate).toHaveBeenCalledWith('loodi-dev', { themeMode: 'dark' })
+    bridge.destroy()
+  })
+
+  it('opens the Loodi account page when a module requests it', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb)
+    const iframe = document.createElement('iframe')
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi-dev', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:call', method: 'showLoodiAccount', args: [], id: 1 },
+    }))
+
+    expect(cb.onRequestShowLoodiAccount).toHaveBeenCalledWith('loodi-dev')
     bridge.destroy()
   })
 })

@@ -19,6 +19,7 @@ export interface DummyBridge {
   getSharedPreferences(): Promise<SharedPreferences>
   updateSharedPreferences(update: SharedPreferencesUpdate): Promise<SharedPreferences>
   showShellSettings(): Promise<void>
+  showLoodiAccount(): Promise<void>
   emit<E extends BridgeEventType>(event: E, detail: BridgeEvents[E]): void
   on<E extends BridgeEventType>(event: E, handler: (detail: BridgeEvents[E]) => void): () => void
 }

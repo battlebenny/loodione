@@ -16,6 +16,7 @@ function bridge(): DummyBridge {
     getSharedPreferences: vi.fn().mockResolvedValue({ themeMode: 'system', resolvedTheme: 'light', revision: 1 }),
     updateSharedPreferences: vi.fn().mockResolvedValue({ themeMode: 'light', resolvedTheme: 'light', revision: 2 }),
     showShellSettings: vi.fn().mockResolvedValue(undefined),
+    showLoodiAccount: vi.fn().mockResolvedValue(undefined),
   }
 }
 
@@ -29,7 +30,13 @@ describe('DummyApp', () => {
 
     expect(screen.getByRole('navigation')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Accueil' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'getUser' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'getAuthSession' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'getUser' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'getToken' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'setHeaderActions' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'setNavigationGestureCapability' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'queueAction' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Authentification' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'setBottomNav' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Ouvrir l’overlay' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Ouvrir l’overlay' }))
@@ -49,7 +56,11 @@ describe('DummyApp', () => {
 
   it('announces the global settings description, including a consumer override', () => {
     const onOpenShellSettings = vi.fn()
-    const { rerender } = render(<GlobalSettingsSection onOpenShellSettings={onOpenShellSettings} />)
+    const onOpenLoodiAccount = vi.fn()
+    const { rerender } = render(<GlobalSettingsSection onOpenShellSettings={onOpenShellSettings} onOpenLoodiAccount={onOpenLoodiAccount} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mon compte Loodi — Connexion et identité' }))
+    expect(onOpenLoodiAccount).toHaveBeenCalledOnce()
 
     fireEvent.click(screen.getByRole('button', { name: 'Autres paramètres — Paramètres pour toutes les applications' }))
     expect(onOpenShellSettings).toHaveBeenCalledOnce()
@@ -57,6 +68,7 @@ describe('DummyApp', () => {
     rerender(
       <GlobalSettingsSection
         onOpenShellSettings={onOpenShellSettings}
+        onOpenLoodiAccount={onOpenLoodiAccount}
         settingDescription="Réglages du compte Loodi"
       />,
     )
@@ -89,7 +101,10 @@ describe('DummyApp', () => {
     expect(shellBridge.emit).toHaveBeenCalledWith('loodi:settingsopenresult', { opened: true })
     expect(screen.getByRole('heading', { name: 'Diagnostics' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Préférences' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Paramètres globaux' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Paramètres généraux' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mon compte Loodi — Connexion et identité' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mon compte Loodi — Connexion et identité' }))
+    expect(shellBridge.showLoodiAccount).toHaveBeenCalledOnce()
 
     fireEvent.click(screen.getByRole('button', { name: 'Mode des diagnostics' }))
     expect(shellBridge.emit).toHaveBeenCalledWith('loodi:overlaychange', { visible: true })

@@ -71,6 +71,21 @@
 .loodi-mini-header__back:active,
 .loodi-mini-header__icon-button:active { transform: scale(.9); }
 
+.loodi-mini-header__avatar-button {
+  border-color: color-mix(in srgb, var(--user-avatar-color) 42%, var(--color-border-subtle));
+  background: color-mix(in srgb, var(--user-avatar-color) 40%, var(--color-surface-glass));
+  color: var(--user-avatar-text, #fff);
+  text-shadow: 0 1px 2px rgb(0 0 0 / 24%);
+}
+
+.loodi-mini-header__avatar-button:hover {
+  background: color-mix(in srgb, var(--user-avatar-color) 52%, var(--color-surface-glass));
+}
+
+.loodi-mini-header__avatar-initial {
+  font: 600 .875rem/1 var(--font-brand, var(--typography-body));
+}
+
 .loodi-mini-header__brand-slot { width: 36px; height: 36px; flex: 0 0 36px; padding: 0 4px; }
 .loodi-mini-header__logo { display: block; width: 36px; height: 36px; }
 .loodi-mini-header__logo--dark { display: none; }
@@ -133,6 +148,8 @@
 :where(.dark) .loodi-mini-header__glass { border-color: var(--color-border-subtle-dark); background: var(--color-surface-glass-dark); }
 :where(.dark) .loodi-mini-header__icon-button { border-color: var(--color-border-subtle-dark); background: var(--color-surface-glass-dark); }
 :where(.dark) .loodi-mini-header__icon-button:hover { background: color-mix(in srgb, var(--color-surface-glass-dark) 85%, var(--color-bg-dark)); }
+:where(.dark) .loodi-mini-header__avatar-button { border-color: color-mix(in srgb, var(--user-avatar-color) 55%, var(--color-border-subtle-dark)); background: color-mix(in srgb, var(--user-avatar-color) 46%, var(--color-surface-glass-dark)); }
+:where(.dark) .loodi-mini-header__avatar-button:hover { background: color-mix(in srgb, var(--user-avatar-color) 58%, var(--color-surface-glass-dark)); }
 :where(.dark) .loodi-mini-header__logo--light { display: none; }
 :where(.dark) .loodi-mini-header__logo--dark { display: block; }
 :where(.dark) .loodi-mini-header__wordmark--light { display: none; }

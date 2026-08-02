@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import { Activity, BellRing, Bug, ChevronRight, Eye, EyeOff, SlidersHorizontal, X } from 'lucide-react'
 import { BottomNav, GlobalSettingsSection, MiniHeader, SharedPreferencesSection, type SharedPreferencesThemeMode, type Tab } from '@loodi/ui'
 import type { BridgeMethods, SharedPreferences } from '@loodi/bridge'
+import { useAuth } from '@loodi/auth'
 import { createDummyBridge, createStandaloneDummyBridge, type DummyBridge } from './bridge'
 import './dummy.css'
 
@@ -116,6 +117,8 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
   const [logs, setLogs] = useState<string[]>(['Prêt'])
   const [rpcResult, setRpcResult] = useState('Cliquez un bouton')
   const [scrollProgress, setScrollProgress] = useState(0)
+  const [bridgeAuthSession, setBridgeAuthSession] = useState<Awaited<ReturnType<BridgeMethods['getAuthSession']>>>(null)
+  const auth = useAuth()
   const createdBridge = useRef<DummyBridge | null>(null)
   const diagnosticsSheetOpenRef = useRef(false)
   if (!bridge && !createdBridge.current) {
@@ -159,6 +162,7 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
     shellBridge.ready()
     void shellBridge.setSettingsCapability(true)
     void shellBridge.setBottomNav(HOME_TABS)
+    void shellBridge.call('getAuthSession').then((session) => { if (live) setBridgeAuthSession(session) }).catch(() => addLog('Session One indisponible'))
     void shellBridge.getSharedPreferences()
       .then((snapshot) => {
         if (live) setPreferences(snapshot)
@@ -170,6 +174,7 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
       setPreferences((current) => ({ ...current, resolvedTheme: theme }))
     })
     const unsubscribePreferences = shellBridge.on('loodi:preferenceschange', setPreferences)
+    const unsubscribeAuth = shellBridge.on('loodi:authchange', setBridgeAuthSession)
     const unsubscribeTab = shellBridge.on('loodi:tabtap', ({ tabId }) => {
       if (tabId === 'home') setPage('home')
     })
@@ -191,6 +196,7 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
       live = false
       unsubscribeTheme()
       unsubscribePreferences()
+      unsubscribeAuth()
       unsubscribeTab()
       unsubscribeSettings()
       unsubscribeBack()
@@ -259,6 +265,7 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
 
   const tabs = useMemo(() => mode === 'standalone' ? STANDALONE_TABS : HOME_TABS, [mode])
   const activeTab = page === 'settings' ? 'settings' : 'home'
+  const activeSession = mode === 'embedded' ? bridgeAuthSession : auth.session
 
   return (
     <div className={`dummy-app ${mode === 'embedded' ? 'dummy-app--embedded' : ''}`}>
@@ -295,16 +302,29 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
             <section className="dummy-card dummy-card--actions">
               <h2>RPC methods</h2>
               <div className="dummy-actions">
-                <button type="button" onClick={() => runMethod('getUser')}>getUser</button>
-                <button type="button" onClick={() => runMethod('getToken')}>getToken</button>
+                <button type="button" onClick={() => runMethod('getAuthSession')}>getAuthSession</button>
                 <button type="button" onClick={() => runMethod('getNetworkStatus')}>getNetworkStatus</button>
                 <button type="button" onClick={() => runMethod('getCollection')}>getCollection</button>
                 <button type="button" onClick={() => runMethod('openApp', 'loodi')}>openApp loodi</button>
                 <button type="button" onClick={() => runMethod('closeApp')}>closeApp</button>
                 <button type="button" onClick={() => runMethod('showAppSwitcher')}>showAppSwitcher</button>
                 <button type="button" onClick={() => runMethod('requestPermission', 'camera')}>requestPermission</button>
+                <button type="button" onClick={() => runMethod('setHeaderActions', [{ id: 'dummy-action', label: 'Action Dummy' }])}>setHeaderActions</button>
+                <button type="button" onClick={() => runMethod('setNavigationGestureCapability', true)}>setNavigationGestureCapability</button>
+                <button type="button" onClick={() => runMethod('queueAction', { type: 'dummy:sync' })}>queueAction</button>
               </div>
               <output className="dummy-result" data-testid="rpc-result">{rpcResult}</output>
+            </section>
+
+            <section className="dummy-card dummy-card--actions" data-testid="dummy-auth">
+              <h2>Authentification</h2>
+              <p>{activeSession ? `Connecté${activeSession.handle ? ` · @${activeSession.handle}` : ''}` : 'Aucune session active'}</p>
+              {mode === 'embedded' && <div className="dummy-actions"><button type="button" onClick={() => runBridgeCall('getAuthSession', async () => {
+                const session = await (shellBridge?.call('getAuthSession') ?? Promise.resolve(null))
+                setBridgeAuthSession(session)
+                return session
+              })}>Actualiser la session</button></div>}
+              {mode === 'standalone' && auth.session && <div className="dummy-actions"><button type="button" onClick={() => void auth.signOut().catch((error: unknown) => addLog(error instanceof Error ? error.message : String(error)))}>Se déconnecter</button></div>}
             </section>
 
             <section className="dummy-card dummy-card--actions">
@@ -363,7 +383,10 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
               />
 
               {mode === 'embedded' && shellBridge && (
-                <GlobalSettingsSection onOpenShellSettings={() => { void shellBridge.showShellSettings() }} />
+                <GlobalSettingsSection
+                  onOpenShellSettings={() => { void shellBridge.showShellSettings() }}
+                  onOpenLoodiAccount={() => { void shellBridge.showLoodiAccount() }}
+                />
               )}
             </div>
           </>

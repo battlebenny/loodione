@@ -17,6 +17,10 @@ export interface LauncherApp {
 export interface MiniHeaderProps {
   onSettings: () => void
   onUser: () => void
+  /** When present, renders the authenticated player's monogram avatar. */
+  userInitial?: string
+  /** Temporary deterministic avatar tint, until players can choose one. */
+  userAvatarColor?: string
   appName?: string
   scrollProgress?: number
   showBack?: boolean
@@ -63,5 +67,26 @@ export interface SharedPreferencesSectionProps {
 /** Presentation-only entry point to the shell-owned settings. */
 export interface GlobalSettingsSectionProps {
   onOpenShellSettings: () => void
+  onOpenLoodiAccount: () => void
   settingDescription?: string
+}
+
+/** Auth-provider agnostic account management screen for embedded and standalone apps. */
+export interface LoodiAccountPageProps {
+  isAuthenticated: boolean
+  playerName?: string
+  profileColor?: string
+  email?: string | null
+  hasGoogleIdentity?: boolean
+  onCreateAccount: () => void
+  onSignIn: () => void
+  onSignOut?: () => Promise<void>
+  onUpdateEmail?: (email: string) => Promise<void>
+  onLinkGoogleIdentity?: () => Promise<void>
+  onUnlinkGoogleIdentity?: () => Promise<void>
+  onUpdateProfileColor?: (color: string) => Promise<void>
+  /** Lets the host hide its navigation while an account sheet is visible. */
+  onOverlayChange?: (visible: boolean) => void
+  /** A one-shot confirmation supplied by the host after an OAuth redirect. */
+  successMessage?: string
 }

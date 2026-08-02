@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { ArrowLeft, EllipsisVertical, Pencil, Plus, Settings, Trash2, User, type LucideIcon } from 'lucide-react'
+import { profileColorText } from './profile-colors.js'
 import type { MiniHeaderProps } from './types.js'
 
 const HEADER_H = 52
@@ -11,7 +12,7 @@ const MENU_ICONS: Record<string, LucideIcon> = {
   settings: Settings,
 }
 
-export function MiniHeader({ onSettings, onUser, appName, scrollProgress = 0, showBack = false, onBack, menuItems, onMenuItemSelect, hideActions = false }: MiniHeaderProps) {
+export function MiniHeader({ onSettings, onUser, userInitial, userAvatarColor, appName, scrollProgress = 0, showBack = false, onBack, menuItems, onMenuItemSelect, hideActions = false }: MiniHeaderProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -58,8 +59,13 @@ export function MiniHeader({ onSettings, onUser, appName, scrollProgress = 0, sh
 
       {!hideActions && (
         <div className="loodi-mini-header__actions">
-          <button onClick={onUser} className="loodi-mini-header__icon-button" aria-label="Profil">
-            <User size={18} aria-hidden="true" />
+          <button
+            onClick={onUser}
+            className={`loodi-mini-header__icon-button${userInitial ? ' loodi-mini-header__avatar-button' : ''}`}
+            aria-label="Profil"
+            style={userInitial && userAvatarColor ? { '--user-avatar-color': userAvatarColor, '--user-avatar-text': profileColorText(userAvatarColor) } as CSSProperties : undefined}
+          >
+            {userInitial ? <span className="loodi-mini-header__avatar-initial" aria-hidden="true">{userInitial}</span> : <User size={18} aria-hidden="true" />}
           </button>
 
           <div className="loodi-mini-header__menu-container">

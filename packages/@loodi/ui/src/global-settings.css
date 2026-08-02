@@ -39,6 +39,7 @@
 }
 
 .loodi-global-settings__row:hover { background: color-mix(in srgb, var(--color-theme-surface-subtle, var(--color-surface-subtle)) 70%, transparent); }
+.loodi-global-settings__row + .loodi-global-settings__row { border-top: 1px solid var(--color-theme-border-subtle, var(--color-border-subtle)); }
 .loodi-global-settings__icon { display: inline-flex; width: 36px; height: 36px; flex: 0 0 auto; align-items: center; justify-content: center; border-radius: var(--radius-lg); background: var(--color-theme-surface-subtle, var(--color-surface-subtle)); color: var(--color-theme-text-secondary, var(--color-text-secondary)); }
 .loodi-global-settings__copy { display: grid; flex: 1; gap: 2px; min-width: 0; }
 .loodi-global-settings__copy strong { font-size: .9375rem; font-weight: 500; }
