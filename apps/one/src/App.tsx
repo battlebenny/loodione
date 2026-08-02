@@ -1,5 +1,5 @@
 import { MiniHeader } from '@loodi/ui/mini-header'
-import { defaultProfileColor } from '@loodi/ui'
+import { defaultProfileColor, useBottomSheetDrag } from '@loodi/ui'
 import { BottomNav } from '@loodi/ui/bottom-nav'
 import { Launcher, type LauncherApp } from '@loodi/ui/launcher'
 import { useShell } from './useShell'
@@ -178,6 +178,12 @@ function App() {
       setAuthPendingAction(null)
     }
   }, [authPendingAction])
+  const requestAuthClose = useCallback(() => {
+    if (confirmSignOut) { setConfirmSignOut(false); return }
+    if (auth.state === 'handle-required') { setConfirmSignOut(true); return }
+    setAuthOpen(false)
+  }, [auth.state, confirmSignOut])
+  const authSheetDrag = useBottomSheetDrag(requestAuthClose)
   const [moduleFramesReady, setModuleFramesReady] = useState(() => {
     return nativeSafeAreaReady(
       window.location.protocol,
@@ -410,7 +416,7 @@ function App() {
 
       {authOpen && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/30 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="Connexion Loodi">
-          <form className="w-full max-w-md rounded-2xl border border-black/5 bg-white/90 p-5 text-[var(--color-text-light)] shadow-xl dark:border-white/10 dark:bg-[var(--color-bg-dark)] dark:text-[var(--color-text-primary-dark)]" onSubmit={(event) => {
+          <form className="relative w-full max-w-md rounded-2xl border border-black/5 bg-white/90 px-5 pb-5 pt-7 text-[var(--color-text-light)] shadow-xl dark:border-white/10 dark:bg-[var(--color-bg-dark)] dark:text-[var(--color-text-primary-dark)]" style={{ transform: `translateY(${authSheetDrag.dragOffset}px)`, transition: authSheetDrag.isDragging ? 'none' : 'transform 250ms ease-out' }} onSubmit={(event) => {
             event.preventDefault()
             if (auth.state === 'handle-required') {
               void runAuthAction('handle', () => auth.completeHandle(handle))
@@ -423,8 +429,9 @@ function App() {
             }
           }}>
             <div className="flex items-start justify-between gap-4">
+              <div data-testid="auth-sheet-handle" className="absolute left-1/2 top-2 h-1 w-9 -translate-x-1/2 touch-none rounded-full bg-black/20 before:absolute before:-inset-x-3 before:-inset-y-5 before:content-[''] dark:bg-white/20" {...authSheetDrag.handleProps} />
               <h2 className="font-serif text-xl">{confirmSignOut ? auth.state === 'handle-required' ? 'Annuler l’inscription' : 'Changer de compte' : auth.state === 'handle-required' ? 'Quel nom choisiras-tu ?' : 'Bienvenue dans Loodi'}</h2>
-              <button type="button" disabled={authPendingAction !== null} className="-mr-1 -mt-1 rounded-full p-1 text-[var(--color-text-secondary)] transition-colors hover:bg-black/5 hover:text-[var(--color-text-light)] disabled:cursor-not-allowed disabled:opacity-60 dark:text-[var(--color-text-secondary-dark)] dark:hover:bg-white/10 dark:hover:text-[var(--color-text-primary-dark)]" onClick={() => { if (confirmSignOut) { setConfirmSignOut(false); return } if (auth.state === 'handle-required') { setConfirmSignOut(true); return } setAuthOpen(false) }} aria-label="Fermer">
+              <button type="button" disabled={authPendingAction !== null} className="-mr-1 -mt-1 rounded-full p-1 text-[var(--color-text-secondary)] transition-colors hover:bg-black/5 hover:text-[var(--color-text-light)] disabled:cursor-not-allowed disabled:opacity-60 dark:text-[var(--color-text-secondary-dark)] dark:hover:bg-white/10 dark:hover:text-[var(--color-text-primary-dark)]" onClick={requestAuthClose} aria-label="Fermer">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>

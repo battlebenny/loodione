@@ -109,6 +109,19 @@ describe('Settings', () => {
     expect(onOverlayChange).toHaveBeenLastCalledWith(false)
   })
 
+  it('closes an account bottom sheet when its handle is dragged down', () => {
+    render(<LoodiAccountPage isAuthenticated onCreateAccount={vi.fn()} onSignIn={vi.fn()} onLinkGoogleIdentity={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /associer un compte google/i }))
+    const handle = screen.getByTestId('account-sheet-handle')
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 210 })
+    expect(handle.parentElement?.style.getPropertyValue('--sheet-drag-offset')).toBe('110px')
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 210 })
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
   it('lets a player unlink Google without removing their e-mail identity', () => {
     const onUnlinkGoogleIdentity = vi.fn().mockResolvedValue(undefined)
     render(<LoodiAccountPage isAuthenticated hasGoogleIdentity onCreateAccount={vi.fn()} onSignIn={vi.fn()} onUnlinkGoogleIdentity={onUnlinkGoogleIdentity} />)

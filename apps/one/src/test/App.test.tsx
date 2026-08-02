@@ -11,7 +11,7 @@ const setActiveTab = vi.hoisted(() => vi.fn())
 const goBack = vi.hoisted(() => vi.fn())
 const registerIframe = vi.hoisted(() => vi.fn())
 const toggleLauncher = vi.hoisted(() => vi.fn())
-const shellSettings = vi.hoisted(() => ({ open: false }))
+const shellSettings = vi.hoisted(() => ({ open: false, page: undefined as 'account' | undefined }))
 const shellHeaderOptions = vi.hoisted(() => ({ hideActions: false, canGoBack: false }))
 const shellActiveApp = vi.hoisted(() => ({ id: 'loodi-dev' }))
 const shellApps = vi.hoisted(() => ({
@@ -57,6 +57,7 @@ vi.mock('../useShell', () => ({
       headerActions: [{ id: 'new-game', label: 'Nouveau jeu' }],
       headerOptions: shellHeaderOptions,
       settingsOpen: shellSettings.open,
+      settingsPage: shellSettings.page,
       launcherOpen: false,
     },
     themeMode: 'auto',
@@ -86,6 +87,7 @@ vi.mock('../useShell', () => ({
 describe('module frame', () => {
   beforeEach(() => {
     shellSettings.open = false
+    shellSettings.page = undefined
     shellHeaderOptions.hideActions = false
     shellHeaderOptions.canGoBack = false
     shellActiveApp.id = 'loodi-dev'
@@ -233,6 +235,7 @@ describe('module frame', () => {
 
   it('hides profile and more actions while settings are open', () => {
     shellSettings.open = true
+    shellSettings.page = 'account'
     const { container } = render(<App />)
 
     expect(within(container).queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
@@ -328,6 +331,21 @@ describe('module frame', () => {
     expect(signOut).not.toHaveBeenCalled()
   })
 
+  it('closes a shell bottom sheet when its handle is dragged down', async () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    const handle = await screen.findByTestId('bottom-sheet-handle')
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 210 })
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 210 })
+
+    expect(screen.queryByRole('dialog', { name: 'Mon compte Loodi' })).not.toBeInTheDocument()
+  })
+
   it('confirms a successful magic-link connection after returning from the email', () => {
     window.history.replaceState({}, '', '/#access_token=token&type=magiclink')
     auth.state = 'authenticated'
@@ -356,6 +374,33 @@ describe('module frame', () => {
     auth.state = 'authenticated'
     auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
     rerender(<App />)
+
+    expect(screen.queryByRole('dialog', { name: 'Connexion Loodi' })).not.toBeInTheDocument()
+  })
+
+  it('closes the sign-in sheet when its handle is dragged down', () => {
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    const handle = screen.getByTestId('auth-sheet-handle')
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 210 })
+    expect(handle.closest('form')).toHaveStyle({ transform: 'translateY(110px)' })
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 210 })
+
+    expect(screen.queryByRole('dialog', { name: 'Connexion Loodi' })).not.toBeInTheDocument()
+  })
+
+  it('closes the sign-in sheet opened from an anonymous Loodi account', () => {
+    shellSettings.open = true
+    shellSettings.page = 'account'
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /j’ai déjà un compte/i }))
+    const handle = screen.getByTestId('auth-sheet-handle')
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 210 })
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 210 })
 
     expect(screen.queryByRole('dialog', { name: 'Connexion Loodi' })).not.toBeInTheDocument()
   })
