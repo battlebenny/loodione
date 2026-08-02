@@ -13,6 +13,26 @@ export async function signInWithMagicLink(client: SupabaseClient, email: string,
   await throwIfError(await client.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } }))
 }
 
+/** Completes a magic-link or OAuth callback received through a native deep link. */
+export async function completeAuthCallback(client: SupabaseClient, callbackUrl: string): Promise<void> {
+  const url = new URL(callbackUrl)
+  const errorDescription = url.searchParams.get('error_description')
+    ?? new URLSearchParams(url.hash.startsWith('#') ? url.hash.slice(1) : url.hash).get('error_description')
+  if (errorDescription) throw new Error(toUserFacingAuthError(errorDescription))
+
+  const code = url.searchParams.get('code')
+  if (code) {
+    await throwIfError(await client.auth.exchangeCodeForSession(code))
+    return
+  }
+
+  const fragment = new URLSearchParams(url.hash.startsWith('#') ? url.hash.slice(1) : url.hash)
+  const accessToken = fragment.get('access_token')
+  const refreshToken = fragment.get('refresh_token')
+  if (!accessToken || !refreshToken) throw new Error('Ce lien de connexion est incomplet ou a expiré.')
+  await throwIfError(await client.auth.setSession({ access_token: accessToken, refresh_token: refreshToken }))
+}
+
 export async function linkGoogleIdentity(client: SupabaseClient, redirectTo: string): Promise<void> {
   await throwIfError(await client.auth.linkIdentity({ provider: 'google', options: { redirectTo } }))
 }

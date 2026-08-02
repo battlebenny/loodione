@@ -21,6 +21,7 @@ const GOOGLE_LINK_RESUME_KEY = 'loodi:resume-after-google-link'
 
 type NoticeTone = 'info' | 'warning' | 'danger'
 type Toast = { tone: 'success' | 'danger'; text: string }
+type AuthPendingAction = 'magic-link' | 'google' | 'handle' | 'signout' | 'abandon'
 
 function readSafeAreaInsets() {
   const styles = window.getComputedStyle(document.documentElement)
@@ -104,6 +105,7 @@ function App() {
   const [email, setEmail] = useState('')
   const [handle, setHandle] = useState('')
   const [authMessage, setAuthMessage] = useState<{ tone: NoticeTone; text: string } | null>(null)
+  const [authPendingAction, setAuthPendingAction] = useState<AuthPendingAction | null>(null)
   const [accountOverlayOpen, setAccountOverlayOpen] = useState(false)
   const [accountSuccessMessage, setAccountSuccessMessage] = useState<string | undefined>()
   const [profileSheet, setProfileSheet] = useState<'menu' | 'signout' | null>(null)
@@ -118,6 +120,11 @@ function App() {
 
   useEffect(() => {
     if (auth.state === 'handle-required') setAuthOpen(true)
+    if (auth.state === 'authenticated') {
+      setAuthOpen(false)
+      setConfirmSignOut(false)
+      setAuthPendingAction(null)
+    }
   }, [auth.state])
   useEffect(() => {
     if (!magicLinkCallback) return
@@ -138,6 +145,15 @@ function App() {
     return () => window.clearTimeout(timer)
   }, [appToast])
   useEffect(() => {
+    const handleNativeAuthResult = (event: Event) => {
+      const detail = (event as CustomEvent<{ success: boolean; error?: unknown }>).detail
+      if (detail.success) setAppToast({ tone: 'success', text: 'Connexion réussie. Heureux de te revoir !' })
+      else setAppToast({ tone: 'danger', text: detail.error instanceof Error ? detail.error.message : 'La connexion n’a pas pu être terminée.' })
+    }
+    window.addEventListener('loodi:native-auth-result', handleNativeAuthResult)
+    return () => window.removeEventListener('loodi:native-auth-result', handleNativeAuthResult)
+  }, [])
+  useEffect(() => {
     if (!auth.session || sessionStorage.getItem(GOOGLE_LINK_RESUME_KEY) !== 'account') return
     sessionStorage.removeItem(GOOGLE_LINK_RESUME_KEY)
     setAccountSuccessMessage('Ton compte Google est maintenant associé.')
@@ -153,6 +169,15 @@ function App() {
       throw error
     }
   }, [auth])
+  const runAuthAction = useCallback(async (action: AuthPendingAction, callback: () => Promise<void>) => {
+    if (authPendingAction) return
+    setAuthPendingAction(action)
+    try {
+      await callback()
+    } finally {
+      setAuthPendingAction(null)
+    }
+  }, [authPendingAction])
   const [moduleFramesReady, setModuleFramesReady] = useState(() => {
     return nativeSafeAreaReady(
       window.location.protocol,
@@ -378,7 +403,7 @@ function App() {
       <BottomSheet open={profileSheet === 'signout'} onClose={() => setProfileSheet(null)} title="Se déconnecter">
         <p className="text-sm text-black/70 dark:text-white/75">Tu veux vraiment changer de compte ? Tu pourras te reconnecter quand tu veux.</p>
         <button type="button" className="mt-5 w-full rounded-lg bg-[#ca4a16] p-3 text-white transition-colors hover:bg-[#b33d0f]" onClick={() => setProfileSheet(null)}>Rester connecté</button>
-        <button type="button" className="mt-3 w-full rounded-lg border border-black/15 bg-white/80 p-3 text-[var(--color-text-light)] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-[var(--color-text-primary-dark)] dark:hover:bg-white/20" onClick={() => void auth.signOut().then(() => setProfileSheet(null)).catch((error: Error) => setAuthMessage({ tone: 'danger', text: error.message }))}>Se déconnecter</button>
+        <button type="button" disabled={authPendingAction !== null} className="mt-3 w-full rounded-lg border border-black/15 bg-white/80 p-3 text-[var(--color-text-light)] transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/10 dark:text-[var(--color-text-primary-dark)] dark:hover:bg-white/20" onClick={() => void runAuthAction('signout', () => auth.signOut()).then(() => setProfileSheet(null)).catch((error: Error) => setAuthMessage({ tone: 'danger', text: error.message }))}>{authPendingAction === 'signout' ? 'Déconnexion…' : 'Se déconnecter'}</button>
       </BottomSheet>
 
       {appToast && <AppToast toast={appToast} />}
@@ -388,39 +413,39 @@ function App() {
           <form className="w-full max-w-md rounded-2xl border border-black/5 bg-white/90 p-5 text-[var(--color-text-light)] shadow-xl dark:border-white/10 dark:bg-[var(--color-bg-dark)] dark:text-[var(--color-text-primary-dark)]" onSubmit={(event) => {
             event.preventDefault()
             if (auth.state === 'handle-required') {
-              void auth.completeHandle(handle)
+              void runAuthAction('handle', () => auth.completeHandle(handle))
                 .then(() => { setAuthOpen(false); setAuthMessage(null) })
                 .catch((error: Error) => setAuthMessage(authFailureNotice(error)))
             } else {
-              void auth.signInWithMagicLink(email)
+              void runAuthAction('magic-link', () => auth.signInWithMagicLink(email))
                 .then(() => setAuthMessage({ tone: 'info', text: 'Le lien est en route : regarde ta boîte e-mail.' }))
                 .catch((error: Error) => setAuthMessage({ tone: 'danger', text: error.message }))
             }
           }}>
             <div className="flex items-start justify-between gap-4">
               <h2 className="font-serif text-xl">{confirmSignOut ? auth.state === 'handle-required' ? 'Annuler l’inscription' : 'Changer de compte' : auth.state === 'handle-required' ? 'Quel nom choisiras-tu ?' : 'Bienvenue dans Loodi'}</h2>
-              <button type="button" className="-mr-1 -mt-1 rounded-full p-1 text-[var(--color-text-secondary)] transition-colors hover:bg-black/5 hover:text-[var(--color-text-light)] dark:text-[var(--color-text-secondary-dark)] dark:hover:bg-white/10 dark:hover:text-[var(--color-text-primary-dark)]" onClick={() => { if (confirmSignOut) { setConfirmSignOut(false); return } if (auth.state === 'handle-required') { setConfirmSignOut(true); return } setAuthOpen(false) }} aria-label="Fermer">
+              <button type="button" disabled={authPendingAction !== null} className="-mr-1 -mt-1 rounded-full p-1 text-[var(--color-text-secondary)] transition-colors hover:bg-black/5 hover:text-[var(--color-text-light)] disabled:cursor-not-allowed disabled:opacity-60 dark:text-[var(--color-text-secondary-dark)] dark:hover:bg-white/10 dark:hover:text-[var(--color-text-primary-dark)]" onClick={() => { if (confirmSignOut) { setConfirmSignOut(false); return } if (auth.state === 'handle-required') { setConfirmSignOut(true); return } setAuthOpen(false) }} aria-label="Fermer">
                 <X size={20} aria-hidden="true" />
               </button>
             </div>
             {confirmSignOut ? <>
               <p className="mt-2 text-sm">{auth.state === 'handle-required' ? 'Ton inscription n’est pas terminée. Si tu l’annules, ce compte provisoire sera supprimé.' : 'Tu pourras te reconnecter avec ce compte quand tu veux.'}</p>
-              <button type="button" className="mt-5 w-full rounded-lg bg-[#ca4a16] p-3 text-white" onClick={() => setConfirmSignOut(false)}>{auth.state === 'handle-required' ? 'Continuer mon inscription' : 'Rester connecté'}</button>
-              <button type="button" className="mt-3 w-full rounded-lg border border-black/15 bg-white/80 p-3 text-[var(--color-text-light)] transition-colors hover:bg-white dark:border-white/10 dark:bg-white/10 dark:text-[var(--color-text-primary-dark)] dark:hover:bg-white/20" onClick={() => void (auth.state === 'handle-required' ? auth.abandonIncompleteAccount() : auth.signOut()).then(() => { setConfirmSignOut(false); setAuthOpen(false) }).catch((error: Error) => setAuthMessage(authFailureNotice(error)))}>{auth.state === 'handle-required' ? 'Annuler l’inscription' : 'Se déconnecter'}</button>
+              <button type="button" disabled={authPendingAction !== null} className="mt-5 w-full rounded-lg bg-[#ca4a16] p-3 text-white disabled:cursor-not-allowed disabled:opacity-60" onClick={() => setConfirmSignOut(false)}>{auth.state === 'handle-required' ? 'Continuer mon inscription' : 'Rester connecté'}</button>
+              <button type="button" disabled={authPendingAction !== null} className="mt-3 w-full rounded-lg border border-black/15 bg-white/80 p-3 text-[var(--color-text-light)] transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/10 dark:text-[var(--color-text-primary-dark)] dark:hover:bg-white/20" onClick={() => void runAuthAction(auth.state === 'handle-required' ? 'abandon' : 'signout', () => auth.state === 'handle-required' ? auth.abandonIncompleteAccount() : auth.signOut()).then(() => { setConfirmSignOut(false); setAuthOpen(false) }).catch((error: Error) => setAuthMessage(authFailureNotice(error)))}>{authPendingAction === 'abandon' ? 'Annulation…' : authPendingAction === 'signout' ? 'Déconnexion…' : auth.state === 'handle-required' ? 'Annuler l’inscription' : 'Se déconnecter'}</button>
             </> : auth.state === 'handle-required' ? <>
               <p className="mt-2 text-sm">C’est le nom sous lequel la communauté te reconnaîtra.</p>
               <label className="mt-4 block text-sm" htmlFor="auth-handle">Nom de joueur</label>
-              <input id="auth-handle" value={handle} onChange={(event) => setHandle(event.target.value)} className="mt-1 w-full rounded-lg border border-black/15 bg-white p-3 dark:bg-white/5" autoComplete="username" />
-              <button type="submit" className="mt-3 w-full rounded-lg bg-[#ca4a16] p-3 text-white">C’est parti</button>
-              <button type="button" className="mt-3 w-full text-sm underline" onClick={() => setConfirmSignOut(true)}>Utiliser un autre compte</button>
+              <input id="auth-handle" disabled={authPendingAction !== null} value={handle} onChange={(event) => setHandle(event.target.value)} className="mt-1 w-full rounded-lg border border-black/15 bg-white p-3 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white/5" autoComplete="username" />
+              <button type="submit" disabled={authPendingAction !== null} className="mt-3 w-full rounded-lg bg-[#ca4a16] p-3 text-white disabled:cursor-not-allowed disabled:opacity-60">{authPendingAction === 'handle' ? 'Enregistrement…' : 'C’est parti'}</button>
+              <button type="button" disabled={authPendingAction !== null} className="mt-3 w-full text-sm underline disabled:cursor-not-allowed disabled:opacity-60" onClick={() => setConfirmSignOut(true)}>Utiliser un autre compte</button>
             </> : <>
-              <button type="button" className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-black/15 bg-white/80 p-3 transition-colors hover:bg-white dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/20" onClick={() => void auth.signInWithGoogle().catch((error: Error) => setAuthMessage({ tone: 'danger', text: error.message }))}><GoogleIcon />Continuer avec Google</button>
+              <button type="button" disabled={authPendingAction !== null} className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg border border-black/15 bg-white/80 p-3 transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/10 dark:bg-white/10 dark:hover:bg-white/20" onClick={() => void runAuthAction('google', () => auth.signInWithGoogle()).catch((error: Error) => setAuthMessage({ tone: 'danger', text: error.message }))}><GoogleIcon />{authPendingAction === 'google' ? 'Connexion…' : 'Continuer avec Google'}</button>
               <label className="mt-4 block text-sm" htmlFor="auth-email">E-mail</label>
-              <input id="auth-email" type="email" required value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-black/15 bg-white p-3 dark:bg-white/5" autoComplete="email" />
-              <button type="submit" className="mt-3 w-full rounded-lg bg-[#ca4a16] p-3 text-white">Recevoir un lien magique</button>
+              <input id="auth-email" type="email" required disabled={authPendingAction !== null} value={email} onChange={(event) => setEmail(event.target.value)} className="mt-1 w-full rounded-lg border border-black/15 bg-white p-3 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white/5" autoComplete="email" />
+              <button type="submit" disabled={authPendingAction !== null} className="mt-3 w-full rounded-lg bg-[#ca4a16] p-3 text-white disabled:cursor-not-allowed disabled:opacity-60">{authPendingAction === 'magic-link' ? 'Envoi…' : 'Recevoir un lien magique'}</button>
             </>}
             {authMessage && <AuthNotice tone={authMessage.tone}>{authMessage.text}</AuthNotice>}
-            {auth.state !== 'handle-required' && <button type="button" className="mt-4 w-full text-sm underline" onClick={() => setAuthOpen(false)}>Fermer</button>}
+            {auth.state !== 'handle-required' && <button type="button" disabled={authPendingAction !== null} className="mt-4 w-full text-sm underline disabled:cursor-not-allowed disabled:opacity-60" onClick={() => setAuthOpen(false)}>Fermer</button>}
           </form>
         </div>
       )}

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { abandonIncompleteAccount, linkGoogleIdentity, refreshSessionUser, signInWithGoogle, signInWithMagicLink, unlinkGoogleIdentity, updateEmail, updateProfileColor } from './auth-service.js'
+import { abandonIncompleteAccount, completeAuthCallback, linkGoogleIdentity, refreshSessionUser, signInWithGoogle, signInWithMagicLink, unlinkGoogleIdentity, updateEmail, updateProfileColor } from './auth-service.js'
 
 describe('auth sign-in actions', () => {
   it('starts Google OAuth with the caller-provided safe redirect URL', async () => {
@@ -12,6 +12,24 @@ describe('auth sign-in actions', () => {
     const signInWithOtp = vi.fn().mockResolvedValue({ error: null })
     await expect(signInWithMagicLink({ auth: { signInWithOtp } } as never, 'player@loodi.app', 'https://one.loodi.test:4001')).resolves.toBeUndefined()
     expect(signInWithOtp).toHaveBeenCalledWith({ email: 'player@loodi.app', options: { emailRedirectTo: 'https://one.loodi.test:4001' } })
+  })
+
+  it('stores a native magic-link session from the callback URL fragment', async () => {
+    const setSession = vi.fn().mockResolvedValue({ error: null })
+
+    await expect(completeAuthCallback({ auth: { setSession } } as never, 'com.loodi.one://auth/callback#access_token=access&refresh_token=refresh'))
+      .resolves.toBeUndefined()
+
+    expect(setSession).toHaveBeenCalledWith({ access_token: 'access', refresh_token: 'refresh' })
+  })
+
+  it('exchanges a native PKCE callback code for a session', async () => {
+    const exchangeCodeForSession = vi.fn().mockResolvedValue({ error: null })
+
+    await expect(completeAuthCallback({ auth: { exchangeCodeForSession } } as never, 'com.loodi.one://auth/callback?code=pkce-code'))
+      .resolves.toBeUndefined()
+
+    expect(exchangeCodeForSession).toHaveBeenCalledWith('pkce-code')
   })
 
   it('links Google to the authenticated account with the caller-provided redirect URL', async () => {

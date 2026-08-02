@@ -20,8 +20,11 @@ const shellApps = vi.hoisted(() => ({
 const shellTabs = vi.hoisted(() => ({ value: [] as { id: string; icon: string; label: string }[] }))
 const showLoodiAccount = vi.hoisted(() => vi.fn())
 const signOut = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const signInWithGoogle = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const signInWithMagicLink = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const completeHandle = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
 const auth = vi.hoisted(() => ({
-  state: 'anonymous' as 'anonymous' | 'authenticated',
+  state: 'anonymous' as 'anonymous' | 'authenticated' | 'handle-required',
   session: null as { userId: string; accessToken: string; expiresAt: number; handle?: string } | null,
   profile: null as { id: string; handle: string } | null,
 }))
@@ -33,13 +36,13 @@ vi.mock('@loodi/auth', () => ({
     hasGoogleIdentity: false,
     error: null,
     signOut,
-    signInWithGoogle: vi.fn(),
-    signInWithMagicLink: vi.fn(),
+    signInWithGoogle,
+    signInWithMagicLink,
     abandonIncompleteAccount: vi.fn(),
     updateEmail: vi.fn(),
     linkGoogleIdentity: vi.fn(),
     unlinkGoogleIdentity: vi.fn(),
-    completeHandle: vi.fn(),
+    completeHandle,
   }),
 }))
 
@@ -97,6 +100,12 @@ describe('module frame', () => {
     toggleLauncher.mockClear()
     showLoodiAccount.mockClear()
     signOut.mockClear()
+    signInWithGoogle.mockReset()
+    signInWithGoogle.mockResolvedValue(undefined)
+    signInWithMagicLink.mockReset()
+    signInWithMagicLink.mockResolvedValue(undefined)
+    completeHandle.mockReset()
+    completeHandle.mockResolvedValue(undefined)
     auth.state = 'anonymous'
     auth.session = null
     auth.profile = null
@@ -336,5 +345,32 @@ describe('module frame', () => {
     render(<App />)
 
     expect(screen.getByRole('status')).toHaveTextContent('Ce lien de connexion a expiré. Demande-en un nouveau.')
+  })
+
+  it('closes the sign-in sheet once authentication completes', () => {
+    const { container, rerender } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    expect(screen.getByRole('dialog', { name: 'Connexion Loodi' })).toBeInTheDocument()
+
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    rerender(<App />)
+
+    expect(screen.queryByRole('dialog', { name: 'Connexion Loodi' })).not.toBeInTheDocument()
+  })
+
+  it('prevents a second magic-link request while the first one is being sent', () => {
+    let resolveRequest!: () => void
+    signInWithMagicLink.mockImplementation(() => new Promise<void>((resolve) => { resolveRequest = resolve }))
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'hello@loodi.test' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Recevoir un lien magique' }))
+
+    expect(screen.getByRole('button', { name: 'Envoi…' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continuer avec Google' })).toBeDisabled()
+    resolveRequest()
   })
 })
