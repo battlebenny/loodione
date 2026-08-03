@@ -107,6 +107,7 @@ function App() {
   const [authMessage, setAuthMessage] = useState<{ tone: NoticeTone; text: string } | null>(null)
   const [authPendingAction, setAuthPendingAction] = useState<AuthPendingAction | null>(null)
   const [accountOverlayOpen, setAccountOverlayOpen] = useState(false)
+  const [accountScrollProgress, setAccountScrollProgress] = useState(0)
   const [accountSuccessMessage, setAccountSuccessMessage] = useState<string | undefined>()
   const [profileSheet, setProfileSheet] = useState<'menu' | 'signout' | null>(null)
   const [magicLinkCallback, setMagicLinkCallback] = useState(() => readMagicLinkCallback(window.location.hash))
@@ -159,6 +160,7 @@ function App() {
     setAccountSuccessMessage('Ton compte Google est maintenant associé.')
     showLoodiAccount()
   }, [auth.session, showLoodiAccount])
+  useEffect(() => { setAccountScrollProgress(0) }, [state.settingsOpen, state.settingsPage])
 
   const linkGoogleIdentity = useCallback(async () => {
     sessionStorage.setItem(GOOGLE_LINK_RESUME_KEY, 'account')
@@ -305,7 +307,7 @@ function App() {
         userInitial={auth.state === 'authenticated' ? playerInitial : undefined}
         userAvatarColor={auth.state === 'authenticated' ? auth.profile?.profileColor ?? defaultProfileColor(playerHandle) : undefined}
         appName={state.apps.find((a) => a.id === state.activeAppId)?.name}
-        scrollProgress={scrollProgress}
+        scrollProgress={state.settingsOpen ? accountScrollProgress : scrollProgress}
         showBack={showBack}
         onBack={handleBack}
         hideActions={hideHeaderActions}
@@ -385,6 +387,7 @@ function App() {
           onLinkGoogleIdentity={linkGoogleIdentity}
           onUnlinkGoogleIdentity={auth.unlinkGoogleIdentity}
           accountSuccessMessage={accountSuccessMessage}
+          onAccountScrollProgress={setAccountScrollProgress}
         />
       )}
 

@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useMemo, useState, type ReactNode
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
 import { resolveAuthState, type AuthProfile, type AuthState } from './auth-state.js'
 import { isValidHandle, normalizeHandle } from './handles.js'
-import { abandonIncompleteAccount, linkGoogleIdentity, refreshSessionUser, signInWithGoogle, signInWithMagicLink, signOut, unlinkGoogleIdentity, updateEmail, updateProfileColor } from './auth-service.js'
+import { abandonIncompleteAccount, deleteAccount, linkGoogleIdentity, refreshSessionUser, signInWithGoogle, signInWithMagicLink, signOut, unlinkGoogleIdentity, updateEmail, updateProfileColor } from './auth-service.js'
 import { toUserFacingAuthError } from './errors.js'
 
 export interface AuthSession {
@@ -23,6 +23,7 @@ export interface AuthContextValue {
   signInWithMagicLink(email: string): Promise<void>
   signOut(): Promise<void>
   abandonIncompleteAccount(): Promise<void>
+  deleteAccount(): Promise<void>
   updateEmail(email: string): Promise<void>
   linkGoogleIdentity(): Promise<void>
   unlinkGoogleIdentity(): Promise<void>
@@ -97,6 +98,7 @@ export function AuthProvider({ client, redirectTo, children }: { client: Supabas
     signInWithMagicLink: (email) => signInWithMagicLink(client, email, redirectUrl(redirectTo)),
     signOut: () => signOut(client),
     abandonIncompleteAccount: () => abandonIncompleteAccount(client),
+    deleteAccount: () => deleteAccount(client),
     updateEmail: (email) => updateEmail(client, email),
     linkGoogleIdentity: () => linkGoogleIdentity(client, redirectUrl(redirectTo)),
     unlinkGoogleIdentity: async () => {
@@ -134,6 +136,7 @@ export function useAuth(): AuthContextValue {
     signInWithMagicLink: unavailable,
     signOut: unavailable,
     abandonIncompleteAccount: unavailable,
+    deleteAccount: unavailable,
     updateEmail: unavailable,
     linkGoogleIdentity: unavailable,
     unlinkGoogleIdentity: unavailable,

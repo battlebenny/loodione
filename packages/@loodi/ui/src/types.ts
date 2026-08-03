@@ -81,6 +81,7 @@ export interface LoodiAccountPageProps {
   onCreateAccount: () => void
   onSignIn: () => void
   onSignOut?: () => Promise<void>
+  onDeleteAccount?: () => Promise<void>
   onUpdateEmail?: (email: string) => Promise<void>
   onLinkGoogleIdentity?: () => Promise<void>
   onUnlinkGoogleIdentity?: () => Promise<void>

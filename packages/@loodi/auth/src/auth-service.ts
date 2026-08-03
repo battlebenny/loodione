@@ -66,6 +66,12 @@ export async function abandonIncompleteAccount(client: SupabaseClient): Promise<
   await throwIfError(await client.auth.signOut({ scope: 'local' }))
 }
 
+/** Deletes the authenticated user after PostgreSQL cascades all owned Loodi data. */
+export async function deleteAccount(client: SupabaseClient): Promise<void> {
+  await throwIfError(await client.functions.invoke('delete-account'))
+  await throwIfError(await client.auth.signOut({ scope: 'local' }))
+}
+
 export async function updateEmail(client: SupabaseClient, email: string): Promise<void> {
   await throwIfError(await client.auth.updateUser({ email }))
 }

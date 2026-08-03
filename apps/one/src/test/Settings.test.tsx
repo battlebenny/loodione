@@ -11,6 +11,7 @@ vi.mock('@loodi/auth', () => ({
     updateEmail: vi.fn(),
     linkGoogleIdentity: vi.fn(),
     unlinkGoogleIdentity: vi.fn(),
+    deleteAccount: vi.fn(),
   }),
 }))
 
@@ -42,6 +43,14 @@ describe('Settings', () => {
     render(<Settings onClose={vi.fn()} apps={[]} favoriteAppId={null} onFavoriteChange={vi.fn()} accountName="battle_benny" initialPage="account" isAuthenticated />)
     expect(screen.getByRole('heading', { name: /mon compte loodi/i })).toBeInTheDocument()
     expect(screen.getByText('@battle_benny')).toBeInTheDocument()
+  })
+
+  it('keeps the account danger zone scrollable above the bottom navigation', () => {
+    render(<Settings onClose={vi.fn()} apps={[]} favoriteAppId={null} onFavoriteChange={vi.fn()} initialPage="account" />)
+
+    expect(screen.getByTestId('loodi-account-scroll-container')).toHaveStyle({
+      paddingBottom: 'calc(6.5rem + var(--safe-area-inset-bottom))',
+    })
   })
 
   it('shows a confirmation toaster after a Google identity is associated', () => {
@@ -168,6 +177,25 @@ describe('Settings', () => {
     expect(onSignOut).not.toHaveBeenCalled()
     fireEvent.click(within(screen.getByRole('dialog')).getByRole('button', { name: /^se déconnecter$/i }))
     expect(onSignOut).toHaveBeenCalledOnce()
+  })
+
+  it('requires an explicit confirmation before deleting the account', () => {
+    const onDeleteAccount = vi.fn().mockResolvedValue(undefined)
+    render(<LoodiAccountPage isAuthenticated onCreateAccount={vi.fn()} onSignIn={vi.fn()} onDeleteAccount={onDeleteAccount} />)
+
+    expect(screen.queryByRole('button', { name: /supprimer le compte/i })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /la fosse des joueurs damnés/i }))
+    expect(screen.getByRole('button', { name: /la fosse des joueurs damnés/i })).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByText('La fosse des joueurs damnés')).toHaveClass('loodi-account__danger-title')
+    expect(screen.getByText('Rien de bon ne t’attend ici.')).toHaveClass('loodi-account__danger-detail')
+    fireEvent.click(screen.getByRole('button', { name: /supprimer le compte/i }))
+    expect(screen.getByRole('heading', { name: /supprimer le compte/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /^supprimer définitivement$/i })).toBeDisabled()
+
+    fireEvent.change(screen.getByLabelText(/écris supprimer/i), { target: { value: 'SUPPRIMER' } })
+    fireEvent.click(screen.getByRole('button', { name: /^supprimer définitivement$/i }))
+
+    expect(onDeleteAccount).toHaveBeenCalledOnce()
   })
 
   it('shows One settings directly when opened from another module', () => {

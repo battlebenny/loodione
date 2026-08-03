@@ -19,6 +19,22 @@ supabase functions deploy abandon-incomplete-account
 La CLI fournit `SUPABASE_URL`, `SUPABASE_ANON_KEY` et
 `SUPABASE_SERVICE_ROLE_KEY` à la fonction : ne crée ni clé ni secret navigateur.
 
+## Suppression définitive d’un compte
+
+La fonction `delete-account` authentifie l’appelant, puis supprime son entrée
+`auth.users`. PostgreSQL efface alors le profil et toutes les données qui y sont
+reliées par une clé étrangère `ON DELETE CASCADE`.
+
+```bash
+supabase functions deploy delete-account
+```
+
+Toute future table métier appartenant à un utilisateur (collection, emprunts,
+sessions, relations d’amis) doit donc référencer `auth.users(id)` directement,
+ou une chaîne de clés étrangères qui y mène, avec `ON DELETE CASCADE`. Les
+relations entre utilisateurs doivent supprimer l’association, jamais l’autre
+compte.
+
 Les handles réservés sont administrables sans modification de l’application :
 
 ```sql

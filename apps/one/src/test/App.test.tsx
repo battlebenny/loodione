@@ -39,6 +39,7 @@ vi.mock('@loodi/auth', () => ({
     signInWithGoogle,
     signInWithMagicLink,
     abandonIncompleteAccount: vi.fn(),
+    deleteAccount: vi.fn(),
     updateEmail: vi.fn(),
     linkGoogleIdentity: vi.fn(),
     unlinkGoogleIdentity: vi.fn(),
@@ -240,6 +241,22 @@ describe('module frame', () => {
 
     expect(within(container).queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
     expect(within(container).queryByRole('button', { name: 'Plus' })).not.toBeInTheDocument()
+  })
+
+  it('fades the MiniHeader glass in as the account page scrolls', () => {
+    shellSettings.open = true
+    shellSettings.page = 'account'
+    const { container } = render(<App />)
+    const glass = container.querySelector('.loodi-mini-header__glass')
+    const accountScrollContainer = screen.getByTestId('loodi-account-scroll-container')
+
+    expect(glass).toHaveStyle({ opacity: '0' })
+    Object.defineProperty(accountScrollContainer, 'scrollTop', { configurable: true, value: 26 })
+    fireEvent.scroll(accountScrollContainer)
+    expect(glass).toHaveStyle({ opacity: '0.5' })
+    Object.defineProperty(accountScrollContainer, 'scrollTop', { configurable: true, value: 52 })
+    fireEvent.scroll(accountScrollContainer)
+    expect(glass).toHaveStyle({ opacity: '1' })
   })
 
   it('keeps the One settings back action unchanged', () => {

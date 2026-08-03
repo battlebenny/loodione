@@ -21,6 +21,7 @@ interface SettingsProps {
   onLinkGoogleIdentity?: () => Promise<void>
   onUnlinkGoogleIdentity?: () => Promise<void>
   accountSuccessMessage?: string
+  onAccountScrollProgress?: (progress: number) => void
 }
 
 function CheckIcon() {
@@ -120,7 +121,7 @@ function PickerOption({ children, active, onClick }: { children: ReactNode; acti
   )
 }
 
-export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, developmentApps, localModuleUrls = {}, onLocalModuleUrlsChange, accountName, accountProfileColor, initialPage = 'settings', onSignIn, isAuthenticated, onOverlayChange, onLinkGoogleIdentity, onUnlinkGoogleIdentity, accountSuccessMessage }: SettingsProps) {
+export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, developmentApps, localModuleUrls = {}, onLocalModuleUrlsChange, accountName, accountProfileColor, initialPage = 'settings', onSignIn, isAuthenticated, onOverlayChange, onLinkGoogleIdentity, onUnlinkGoogleIdentity, accountSuccessMessage, onAccountScrollProgress }: SettingsProps) {
   const auth = useAuth()
   const signedIn = isAuthenticated ?? auth.session !== null
   const [appSheetOpen, setAppSheetOpen] = useState(false)
@@ -149,7 +150,7 @@ export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, devel
     setModuleSheetOpen(false)
   }
 
-  if (accountOpen) return <div className="fixed inset-0 z-20 overflow-y-auto bg-[var(--color-settings-bg)] px-4 pb-8 pt-14 text-[var(--color-text-light)] dark:bg-[var(--color-settings-bg-dark)] dark:text-[var(--color-text-primary-dark)]" style={{ paddingTop: 'calc(3.5rem + var(--safe-area-inset-top))' }}><LoodiAccountPage isAuthenticated={signedIn} playerName={accountName} profileColor={accountProfileColor} email={auth.email} hasGoogleIdentity={auth.hasGoogleIdentity} onCreateAccount={onSignIn ?? (() => {})} onSignIn={onSignIn ?? (() => {})} onSignOut={auth.signOut} onUpdateEmail={auth.updateEmail} onUpdateProfileColor={auth.updateProfileColor} onLinkGoogleIdentity={onLinkGoogleIdentity ?? auth.linkGoogleIdentity} onUnlinkGoogleIdentity={onUnlinkGoogleIdentity ?? auth.unlinkGoogleIdentity} onOverlayChange={onOverlayChange} successMessage={accountSuccessMessage} /></div>
+  if (accountOpen) return <div data-testid="loodi-account-scroll-container" onScroll={(event) => onAccountScrollProgress?.(Math.min(event.currentTarget.scrollTop / 52, 1))} className="fixed inset-0 z-20 overflow-y-auto bg-[var(--color-settings-bg)] px-4 pt-14 text-[var(--color-text-light)] dark:bg-[var(--color-settings-bg-dark)] dark:text-[var(--color-text-primary-dark)]" style={{ paddingTop: 'calc(3.5rem + var(--safe-area-inset-top))', paddingBottom: 'calc(6.5rem + var(--safe-area-inset-bottom))' }}><LoodiAccountPage isAuthenticated={signedIn} playerName={accountName} profileColor={accountProfileColor} email={auth.email} hasGoogleIdentity={auth.hasGoogleIdentity} onCreateAccount={onSignIn ?? (() => {})} onSignIn={onSignIn ?? (() => {})} onSignOut={auth.signOut} onDeleteAccount={auth.deleteAccount} onUpdateEmail={auth.updateEmail} onUpdateProfileColor={auth.updateProfileColor} onLinkGoogleIdentity={onLinkGoogleIdentity ?? auth.linkGoogleIdentity} onUnlinkGoogleIdentity={onUnlinkGoogleIdentity ?? auth.unlinkGoogleIdentity} onOverlayChange={onOverlayChange} successMessage={accountSuccessMessage} /></div>
 
   return (
     <div className="fixed inset-0 z-20 bg-[var(--color-settings-bg)] dark:bg-[var(--color-settings-bg-dark)] text-[var(--color-text-light)] dark:text-[var(--color-text-primary-dark)] flex flex-col">

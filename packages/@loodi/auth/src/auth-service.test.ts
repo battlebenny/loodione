@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { abandonIncompleteAccount, completeAuthCallback, linkGoogleIdentity, refreshSessionUser, signInWithGoogle, signInWithMagicLink, unlinkGoogleIdentity, updateEmail, updateProfileColor } from './auth-service.js'
+import { abandonIncompleteAccount, deleteAccount, completeAuthCallback, linkGoogleIdentity, refreshSessionUser, signInWithGoogle, signInWithMagicLink, unlinkGoogleIdentity, updateEmail, updateProfileColor } from './auth-service.js'
 
 describe('auth sign-in actions', () => {
   it('starts Google OAuth with the caller-provided safe redirect URL', async () => {
@@ -63,6 +63,16 @@ describe('auth sign-in actions', () => {
     await expect(abandonIncompleteAccount({ functions: { invoke }, auth: { signOut } } as never)).resolves.toBeUndefined()
 
     expect(invoke).toHaveBeenCalledWith('abandon-incomplete-account')
+    expect(signOut).toHaveBeenCalledWith({ scope: 'local' })
+  })
+
+  it('deletes a finalized account through the authenticated server function before clearing the local session', async () => {
+    const invoke = vi.fn().mockResolvedValue({ error: null })
+    const signOut = vi.fn().mockResolvedValue({ error: null })
+
+    await expect(deleteAccount({ functions: { invoke }, auth: { signOut } } as never)).resolves.toBeUndefined()
+
+    expect(invoke).toHaveBeenCalledWith('delete-account')
     expect(signOut).toHaveBeenCalledWith({ scope: 'local' })
   })
 
