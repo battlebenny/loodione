@@ -4,6 +4,12 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.8.1] - 2026-08-03
+
+### Added
+
+- `GlobalSettingsSection` peut masquer l’entrée shell « Autres paramètres » avec `showShellSettings={false}`.
+
 ## [0.8.0] - 2026-08-03
 
 ### Added
@@ -11,7 +17,6 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 - Palette de 32 couleurs de profil et aperçu contrasté dans `LoodiAccountPage`.
 - Gestion de la suppression de compte avec fosse accordéon et confirmation d’intention.
 - Fermeture gestuelle partagée des bottom sheets, au doigt comme à la souris.
-- `GlobalSettingsSection` peut masquer l’entrée shell « Autres paramètres » avec `showShellSettings={false}`.
 
 ### Fixed
 
