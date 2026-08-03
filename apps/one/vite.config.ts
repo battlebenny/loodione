@@ -15,6 +15,17 @@ export default defineConfig({
     // dans le cache de pré-bundling de Vite.
     exclude: ['@loodi/ui', '@loodi/auth', '@loodi/bridge'],
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+          supabase: ['@supabase/supabase-js'],
+          icons: ['lucide-react'],
+        },
+      },
+    },
+  },
   server: {
     host: 'one.loodi.test',
     port: 4001,
