@@ -8,6 +8,7 @@ import type { GlobalSettingsSectionProps } from './types.js'
 export function GlobalSettingsSection({
   onOpenShellSettings,
   onOpenLoodiAccount,
+  showShellSettings = true,
   settingDescription = 'Paramètres pour toutes les applications',
 }: GlobalSettingsSectionProps) {
   return (
@@ -27,7 +28,7 @@ export function GlobalSettingsSection({
           </span>
           <ChevronRight className="loodi-global-settings__chevron" size={18} aria-hidden="true" />
         </button>
-        <button
+        {showShellSettings && onOpenShellSettings && <button
           type="button"
           className="loodi-global-settings__row"
           aria-label={`Autres paramètres — ${settingDescription}`}
@@ -39,7 +40,7 @@ export function GlobalSettingsSection({
             <small>{settingDescription}</small>
           </span>
           <ChevronRight className="loodi-global-settings__chevron" size={18} aria-hidden="true" />
-        </button>
+        </button>}
       </div>
     </section>
   )

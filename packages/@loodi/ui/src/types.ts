@@ -66,7 +66,9 @@ export interface SharedPreferencesSectionProps {
 
 /** Presentation-only entry point to the shell-owned settings. */
 export interface GlobalSettingsSectionProps {
-  onOpenShellSettings: () => void
+  /** Shell-owned settings are irrelevant in standalone applications. */
+  showShellSettings?: boolean
+  onOpenShellSettings?: () => void
   onOpenLoodiAccount: () => void
   settingDescription?: string
 }
