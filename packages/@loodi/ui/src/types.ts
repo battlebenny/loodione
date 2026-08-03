@@ -93,3 +93,27 @@ export interface LoodiAccountPageProps {
   /** A one-shot confirmation supplied by the host after an OAuth redirect. */
   successMessage?: string
 }
+
+export type AuthBottomSheetState = 'anonymous' | 'handle-required'
+
+/** Controlled authentication sheet. Authentication, routing and persistence stay in the host. */
+export interface AuthBottomSheetProps {
+  open: boolean
+  state: AuthBottomSheetState
+  onClose: () => void
+  onSignInWithGoogle: () => Promise<void>
+  onSignInWithMagicLink: (email: string) => Promise<void>
+  onCompleteHandle: (handle: string) => Promise<void>
+  onAbandonIncompleteAccount: () => Promise<void>
+  onOverlayChange?: (visible: boolean) => void
+}
+
+/** Controlled sheet for the authenticated player’s entry points. */
+export interface AccountBottomSheetProps {
+  open: boolean
+  playerName?: string
+  onClose: () => void
+  onOpenAccount: () => void
+  onSignOut: () => Promise<void>
+  onOverlayChange?: (visible: boolean) => void
+}

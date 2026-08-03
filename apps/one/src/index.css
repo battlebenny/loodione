@@ -3,6 +3,7 @@
 @import '@loodi/ui/bottom-nav.css';
 @import '@loodi/ui/launcher.css';
 @import '@loodi/ui/account.css';
+@import '@loodi/ui/auth-bottom-sheet.css';
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 

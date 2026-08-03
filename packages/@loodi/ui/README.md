@@ -28,6 +28,36 @@ Les bundles ESM externalisent `react`, `react-dom` et `lucide-react`.
 
 `MiniHeader` attend les assets `/logo.svg`, `/logo-dark.svg`, `/loodi-wordmark.svg` et `/loodi-wordmark-dark.svg` dans l'application hôte. Le logo occupe le même slot que le retour ; le wordmark et le nom de module restent visibles sur les deux types de page.
 
+## AuthBottomSheet et AccountBottomSheet
+
+Les sheets d’authentification sont des composants de présentation contrôlés. Elles n’importent ni Supabase, ni clé, ni routeur et ne persistent aucune donnée personnelle : seuls les brouillons e-mail/pseudo existent pendant leur ouverture.
+
+```tsx
+import { AuthBottomSheet, AccountBottomSheet } from '@loodi/ui/auth-bottom-sheet'
+import '@loodi/ui/auth-bottom-sheet.css'
+
+const auth = useAuth() // fourni par @loodi/auth dans l’application hôte
+
+<AuthBottomSheet
+  open={authOpen}
+  state={auth.state === 'handle-required' ? 'handle-required' : 'anonymous'}
+  onClose={() => setAuthOpen(false)}
+  onSignInWithGoogle={auth.signInWithGoogle}
+  onSignInWithMagicLink={auth.signInWithMagicLink}
+  onCompleteHandle={auth.completeHandle}
+  onAbandonIncompleteAccount={auth.abandonIncompleteAccount}
+/>
+<AccountBottomSheet
+  open={accountOpen}
+  playerName={auth.session?.handle}
+  onClose={() => setAccountOpen(false)}
+  onOpenAccount={() => navigate('/account')}
+  onSignOut={auth.signOut}
+/>
+```
+
+`AuthBottomSheet` couvre Google, lien magique, erreurs, succès et le pseudo requis ; `AccountBottomSheet` couvre l’accès au compte et la confirmation de déconnexion. `onOverlayChange` permet au host de masquer sa navigation pendant une sheet. One relie `onOpenAccount` à sa page partagée ; une app standalone le relie à `/account`. `styles.css` inclut aussi ces styles.
+
 ## BottomNav
 
 Par défaut, `BottomNav` conserve le modèle historique : quatre `tabs` au maximum et le bouton Applications/Loodi. `onAppsTap` reste alors requis.

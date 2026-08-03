@@ -48,10 +48,10 @@ describe('published package manifests', () => {
     expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.8.1 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.8.2 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.8.1')
+    expect(pkg.version).toBe('0.8.2')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -63,6 +63,7 @@ describe('published package manifests', () => {
       './shared-preferences': { types: './dist/shared-preferences.d.ts', import: './dist/shared-preferences.js' },
       './global-settings': { types: './dist/global-settings.d.ts', import: './dist/global-settings.js' },
       './account': { types: './dist/account.d.ts', import: './dist/account.js' },
+      './auth-bottom-sheet': { types: './dist/auth-bottom-sheet.d.ts', import: './dist/auth-bottom-sheet.js' },
       './styles.css': './dist/styles.css',
       './tokens.css': './dist/tokens.css',
       './tokens.dtcg.json': './dist/tokens.dtcg.json',
@@ -72,6 +73,7 @@ describe('published package manifests', () => {
       './shared-preferences.css': './dist/shared-preferences.css',
       './global-settings.css': './dist/global-settings.css',
       './account.css': './dist/account.css',
+      './auth-bottom-sheet.css': './dist/auth-bottom-sheet.css',
     })
     expect(pkg.sideEffects).toEqual([
       './dist/styles.css',
@@ -82,11 +84,19 @@ describe('published package manifests', () => {
       './dist/shared-preferences.css',
       './dist/global-settings.css',
       './dist/account.css',
+      './dist/auth-bottom-sheet.css',
     ])
     expect(pkg.publishConfig).toEqual({ access: 'public' })
     expect(existsSync(resolve(uiDirectory, 'dist/shared-preferences.d.ts'))).toBe(true)
     expect(existsSync(resolve(uiDirectory, 'dist/global-settings.d.ts'))).toBe(true)
     expect(existsSync(resolve(uiDirectory, 'dist/account.d.ts'))).toBe(true)
+    expect(existsSync(resolve(uiDirectory, 'dist/auth-bottom-sheet.d.ts'))).toBe(true)
+  })
+
+  it('loads the shared authentication sheet stylesheet in One', () => {
+    const css = readFileSync(resolve(process.cwd(), 'src/index.css'), 'utf8')
+
+    expect(css).toContain("@import '@loodi/ui/auth-bottom-sheet.css';")
   })
 
   it('derives CSS and DTCG tokens from one canonical source', () => {

@@ -4,11 +4,13 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
-## [0.8.1] - 2026-08-03
+## [0.8.2] - 2026-08-03
 
 ### Added
 
 - `GlobalSettingsSection` peut masquer l’entrée shell « Autres paramètres » avec `showShellSettings={false}`.
+- `AuthBottomSheet` et `AccountBottomSheet`, feuilles contrôlées et agnostiques du fournisseur d’authentification pour les parcours Google, lien magique, pseudo, compte et déconnexion.
+- Sous-export ESM/CSS `@loodi/ui/auth-bottom-sheet` et `@loodi/ui/auth-bottom-sheet.css`.
 
 ## [0.8.0] - 2026-08-03
 

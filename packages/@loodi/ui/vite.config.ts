@@ -13,6 +13,7 @@ export default defineConfig({
         'shared-preferences': resolve(__dirname, 'src/shared-preferences.ts'),
         'global-settings': resolve(__dirname, 'src/global-settings.ts'),
         account: resolve(__dirname, 'src/account.ts'),
+        'auth-bottom-sheet': resolve(__dirname, 'src/auth-bottom-sheet.ts'),
       },
       formats: ['es'],
       fileName: (_format, entryName) => `${entryName}.js`,

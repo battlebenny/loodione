@@ -7,11 +7,11 @@ describe('GlobalSettingsSection', () => {
 
   it('can hide the shell-only settings entry for a standalone application', () => {
     const onOpenShellSettings = vi.fn()
-    render(<GlobalSettingsSection {...({
-      onOpenShellSettings,
-      onOpenLoodiAccount: vi.fn(),
-      showShellSettings: false,
-    } as never)} />)
+    render(<GlobalSettingsSection
+      onOpenShellSettings={onOpenShellSettings}
+      onOpenLoodiAccount={vi.fn()}
+      showShellSettings={false}
+    />)
 
     expect(screen.queryByRole('button', { name: /autres paramètres/i })).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: /mon compte loodi/i })).toBeInTheDocument()
