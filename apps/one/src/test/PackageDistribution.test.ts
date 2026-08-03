@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest'
 
 const uiDirectory = resolve(process.cwd(), '../../packages/@loodi/ui')
 const bridgeDirectory = resolve(process.cwd(), '../../packages/@loodi/bridge')
+const authDirectory = resolve(process.cwd(), '../../packages/@loodi/auth')
 
 function relativeLuminance(hex: string) {
   const channels = hex.slice(1).match(/.{2}/g)?.map((channel) => Number.parseInt(channel, 16) / 255)
@@ -24,7 +25,7 @@ function contrastRatio(first: string, second: string) {
   return (light + 0.05) / (dark + 0.05)
 }
 
-function manifest(packageName: 'bridge' | 'ui') {
+function manifest(packageName: 'auth' | 'bridge' | 'ui') {
   return JSON.parse(readFileSync(
     resolve(process.cwd(), `../../packages/@loodi/${packageName}/package.json`),
     'utf8',
@@ -35,7 +36,7 @@ describe('published package manifests', () => {
   it('exposes the bridge as a typed, publishable ESM package', () => {
     const pkg = manifest('bridge')
 
-    expect(pkg.version).toBe('0.4.0')
+    expect(pkg.version).toBe('0.5.0')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -47,10 +48,10 @@ describe('published package manifests', () => {
     expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.7.0 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.8.0 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.7.0')
+    expect(pkg.version).toBe('0.8.0')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -376,5 +377,23 @@ describe('published package manifests', () => {
     const [pack] = JSON.parse(output) as [{ files: Array<{ path: string }> }]
 
     expect(pack.files.map((file) => file.path)).toContain('CHANGELOG.md')
+  })
+
+  it('publishes @loodi/auth 0.2.0 without compiled tests', () => {
+    const pkg = manifest('auth')
+    const output = execFileSync('npm', [
+      'pack', '--dry-run', '--json', '--ignore-scripts', '-w', '@loodi/auth',
+    ], {
+      cwd: resolve(process.cwd(), '../..'),
+      encoding: 'utf8',
+      env: { ...process.env, npm_config_cache: '/private/tmp/loodi-ui-npm-cache' },
+    })
+    const [pack] = JSON.parse(output) as [{ files: Array<{ path: string }> }]
+
+    expect(pkg.version).toBe('0.2.0')
+    expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
+    expect(existsSync(resolve(authDirectory, 'README.md'))).toBe(true)
+    expect(existsSync(resolve(authDirectory, 'CHANGELOG.md'))).toBe(true)
+    expect(pack.files.map((file) => file.path)).not.toContainEqual(expect.stringMatching(/\.test\./))
   })
 })

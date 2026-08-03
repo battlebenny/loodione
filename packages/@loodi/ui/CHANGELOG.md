@@ -4,6 +4,18 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-08-03
+
+### Added
+
+- Palette de 32 couleurs de profil et aperçu contrasté dans `LoodiAccountPage`.
+- Gestion de la suppression de compte avec fosse accordéon et confirmation d’intention.
+- Fermeture gestuelle partagée des bottom sheets, au doigt comme à la souris.
+
+### Fixed
+
+- Les bottom sheets signalent correctement leur présence au shell et laissent la navigation basse disponible après fermeture.
+
 ## [0.7.0]
 
 ### Added

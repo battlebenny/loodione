@@ -1,6 +1,6 @@
 {
   "name": "@loodi/auth",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Shared Supabase authentication for Loodi modules.",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,11 +11,13 @@
       "import": "./dist/index.js"
     }
   },
-  "files": ["dist", "README.md"],
+  "files": ["dist", "README.md", "CHANGELOG.md"],
   "sideEffects": false,
   "scripts": {
-    "build": "tsc -b",
-    "test:run": "vitest run"
+    "clean": "rm -rf dist",
+    "build": "npm run clean && tsc -b",
+    "prepack": "npm run build",
+    "test:run": "vitest run src"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0"
