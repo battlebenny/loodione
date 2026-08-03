@@ -282,6 +282,8 @@ describe('published package manifests', () => {
     expect(accountCss).toContain('max-height: 82vh;')
     expect(accountCss).toContain('background: var(--color-surface-glass-dark);')
     expect(accountCss).toContain('backdrop-filter: blur(24px);')
+    expect(accountCss).toContain('backdrop-filter: blur(4px);')
+    expect(accountCss).toContain('-webkit-backdrop-filter: blur(4px);')
   })
 
   it('makes One consume only public @loodi/ui entry points', () => {

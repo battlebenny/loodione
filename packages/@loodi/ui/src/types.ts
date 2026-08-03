@@ -28,6 +28,8 @@ export interface MiniHeaderProps {
   menuItems?: MiniHeaderMenuItem[]
   onMenuItemSelect?: (id: string) => void
   hideActions?: boolean
+  /** Keeps the shell chrome below a page-owned modal overlay. */
+  behindOverlay?: boolean
 }
 export interface MiniHeaderMenuItem { id: string; label: string; tone?: 'default' | 'danger' }
 
