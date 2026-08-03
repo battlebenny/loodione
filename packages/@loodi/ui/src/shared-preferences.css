@@ -61,8 +61,11 @@
 
 .loodi-preferences-sheet { position: fixed; z-index: 200; inset: 0; display: flex; align-items: flex-end; justify-content: center; }
 .loodi-preferences-sheet__backdrop { position: absolute; inset: 0; width: 100%; border: 0; background: rgb(0 0 0 / .35); cursor: default; }
-.loodi-preferences-sheet__panel { position: relative; width: min(100%, 480px); padding: 12px 20px calc(24px + var(--safe-area-inset-bottom)); border-radius: 20px 20px 0 0; background: var(--color-theme-surface-base, #fff); box-shadow: var(--shadow-ambient-mid); }
-.loodi-preferences-sheet__handle { width: 36px; height: 4px; margin: 0 auto 16px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-theme-text-primary, var(--color-text-light)) 20%, transparent); }
+.loodi-preferences-sheet__panel { position: relative; width: min(100%, 480px); padding: 12px 20px calc(24px + var(--safe-area-inset-bottom)); border-radius: 20px 20px 0 0; background: var(--color-theme-surface-base, #fff); box-shadow: var(--shadow-ambient-mid); transform: translateY(var(--sheet-drag-offset, 0)); transition: transform 250ms ease-out; }
+.loodi-preferences-sheet__panel--dragging { transition: none; }
+.loodi-preferences-sheet__handle { position: relative; width: 36px; height: 4px; margin: 0 auto 16px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-theme-text-primary, var(--color-text-light)) 20%, transparent); cursor: grab; touch-action: none; }
+.loodi-preferences-sheet__handle:active { cursor: grabbing; }
+.loodi-preferences-sheet__handle::before { position: absolute; inset: -20px -12px; content: ''; }
 .loodi-preferences-sheet__header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .loodi-preferences-sheet__header h2 { margin: 0; color: var(--color-theme-text-primary, var(--color-text-light)); font: var(--typography-display); font-size: 1.25rem; }
 .loodi-preferences-sheet__close { display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; padding: 0; border: 0; border-radius: var(--radius-lg); background: transparent; color: var(--color-theme-text-secondary, var(--color-text-secondary)); cursor: pointer; }

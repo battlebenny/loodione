@@ -1,8 +1,10 @@
 import { useRef, type CSSProperties } from 'react'
 import type { LauncherProps } from './types.js'
+import { useBottomSheetDrag } from './use-bottom-sheet-drag.js'
 
 export function Launcher({ apps, open, onSelect, onClose }: LauncherProps) {
   const ref = useRef<HTMLDivElement>(null)
+  const { dragOffset, isDragging, handleProps } = useBottomSheetDrag(onClose)
 
   return (
     <>
@@ -10,12 +12,13 @@ export function Launcher({ apps, open, onSelect, onClose }: LauncherProps) {
 
       <div
         ref={ref}
-        className={`loodi-launcher ${open ? 'loodi-launcher--open' : ''}`}
+        className={`loodi-launcher ${open ? 'loodi-launcher--open' : ''}${isDragging ? ' loodi-launcher--dragging' : ''}`}
         style={{
           bottom: 'calc(1rem + var(--safe-area-inset-bottom))',
           left: 'calc(50% + (var(--safe-area-inset-left) - var(--safe-area-inset-right)) / 2)',
           width: 'calc(100% - 2rem - var(--safe-area-inset-left) - var(--safe-area-inset-right))',
-        }}
+          '--launcher-drag-offset': `${dragOffset}px`,
+        } as CSSProperties}
       >
         <div className="loodi-launcher__content">
           <div className="loodi-launcher__grid">
@@ -37,7 +40,7 @@ export function Launcher({ apps, open, onSelect, onClose }: LauncherProps) {
           </div>
         </div>
 
-        <div className="loodi-launcher__handle-wrap"><div className="loodi-launcher__handle" /></div>
+        <div className="loodi-launcher__handle-wrap"><div data-testid="launcher-sheet-handle" className="loodi-launcher__handle" {...handleProps} /></div>
       </div>
     </>
   )

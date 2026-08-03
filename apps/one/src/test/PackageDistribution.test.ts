@@ -47,10 +47,10 @@ describe('published package manifests', () => {
     expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.6.3 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.7.0 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.6.3')
+    expect(pkg.version).toBe('0.7.0')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -61,6 +61,7 @@ describe('published package manifests', () => {
       './launcher': { types: './dist/launcher.d.ts', import: './dist/launcher.js' },
       './shared-preferences': { types: './dist/shared-preferences.d.ts', import: './dist/shared-preferences.js' },
       './global-settings': { types: './dist/global-settings.d.ts', import: './dist/global-settings.js' },
+      './account': { types: './dist/account.d.ts', import: './dist/account.js' },
       './styles.css': './dist/styles.css',
       './tokens.css': './dist/tokens.css',
       './tokens.dtcg.json': './dist/tokens.dtcg.json',
@@ -69,6 +70,7 @@ describe('published package manifests', () => {
       './launcher.css': './dist/launcher.css',
       './shared-preferences.css': './dist/shared-preferences.css',
       './global-settings.css': './dist/global-settings.css',
+      './account.css': './dist/account.css',
     })
     expect(pkg.sideEffects).toEqual([
       './dist/styles.css',
@@ -78,10 +80,12 @@ describe('published package manifests', () => {
       './dist/launcher.css',
       './dist/shared-preferences.css',
       './dist/global-settings.css',
+      './dist/account.css',
     ])
     expect(pkg.publishConfig).toEqual({ access: 'public' })
     expect(existsSync(resolve(uiDirectory, 'dist/shared-preferences.d.ts'))).toBe(true)
     expect(existsSync(resolve(uiDirectory, 'dist/global-settings.d.ts'))).toBe(true)
+    expect(existsSync(resolve(uiDirectory, 'dist/account.d.ts'))).toBe(true)
   })
 
   it('derives CSS and DTCG tokens from one canonical source', () => {
@@ -258,6 +262,15 @@ describe('published package manifests', () => {
     expect(styles).toContain('@import "./launcher.css"')
     expect(styles).toContain('@import "./shared-preferences.css"')
     expect(styles).toContain('@import "./global-settings.css"')
+    expect(styles).toContain('@import "./account.css"')
+  })
+
+  it('uses the standard One BottomSheet surface for account actions', () => {
+    const accountCss = readFileSync(resolve(uiDirectory, 'src/account.css'), 'utf8')
+
+    expect(accountCss).toContain('max-height: 82vh;')
+    expect(accountCss).toContain('background: var(--color-surface-glass-dark);')
+    expect(accountCss).toContain('backdrop-filter: blur(24px);')
   })
 
   it('makes One consume only public @loodi/ui entry points', () => {
@@ -272,9 +285,16 @@ describe('published package manifests', () => {
     expect(appCss).toContain("@import '@loodi/ui/mini-header.css';")
     expect(appCss).toContain("@import '@loodi/ui/bottom-nav.css';")
     expect(appCss).toContain("@import '@loodi/ui/launcher.css';")
+    expect(appCss).toContain("@import '@loodi/ui/account.css';")
     expect(appCss).not.toContain('packages/@loodi/ui/src')
     expect(tsconfig).not.toContain('packages/@loodi/ui/src')
     expect(tsconfig).not.toContain('"@loodi/ui"')
+  })
+
+  it('does not prebundle local packages during development', () => {
+    const viteConfig = readFileSync(resolve(process.cwd(), 'vite.config.ts'), 'utf8')
+
+    expect(viteConfig).toContain("exclude: ['@loodi/ui', '@loodi/auth', '@loodi/bridge']")
   })
 
   it('uses UI tokens for exact One and UI component values without changing their visual values', () => {
@@ -301,6 +321,15 @@ describe('published package manifests', () => {
     const pkg = manifest('ui')
 
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
+  })
+
+  it('keeps the native Android project free of unused Firebase configuration', () => {
+    const rootGradle = readFileSync(resolve(process.cwd(), '../../android/build.gradle'), 'utf8')
+    const appGradle = readFileSync(resolve(process.cwd(), '../../android/app/build.gradle'), 'utf8')
+
+    expect(rootGradle).not.toContain('google-services')
+    expect(appGradle).not.toContain('google-services')
+    expect(appGradle).not.toContain('google-services.json')
   })
 
   it('keeps published changelogs for bridge and UI', () => {

@@ -136,6 +136,10 @@ export class BridgeClient {
     return this.call('showShellSettings')
   }
 
+  showLoodiAccount(): Promise<void> {
+    return this.call('showLoodiAccount')
+  }
+
   /** Announces module readiness to One; intentionally a no-op standalone. */
   ready(): void {
     this.postLegacyMessage({ type: 'loodi:ready' })
@@ -153,9 +157,7 @@ export class BridgeClient {
 
   private handleStandalone(_method: string, _args: unknown[]): unknown {
     switch (_method) {
-      case 'getUser':
-        return { id: 'local', name: 'Local', email: 'local@loodi.app' }
-      case 'getToken':
+      case 'getAuthSession':
         return null
       case 'getNetworkStatus':
         return navigator.onLine ? 'online' : 'offline'

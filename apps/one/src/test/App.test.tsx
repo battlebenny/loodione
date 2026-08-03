@@ -1,4 +1,4 @@
-import { fireEvent, render, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -11,13 +11,41 @@ const setActiveTab = vi.hoisted(() => vi.fn())
 const goBack = vi.hoisted(() => vi.fn())
 const registerIframe = vi.hoisted(() => vi.fn())
 const toggleLauncher = vi.hoisted(() => vi.fn())
-const shellSettings = vi.hoisted(() => ({ open: false }))
+const shellSettings = vi.hoisted(() => ({ open: false, page: undefined as 'account' | undefined }))
 const shellHeaderOptions = vi.hoisted(() => ({ hideActions: false, canGoBack: false }))
 const shellActiveApp = vi.hoisted(() => ({ id: 'loodi-dev' }))
 const shellApps = vi.hoisted(() => ({
   value: [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }],
 }))
 const shellTabs = vi.hoisted(() => ({ value: [] as { id: string; icon: string; label: string }[] }))
+const showLoodiAccount = vi.hoisted(() => vi.fn())
+const signOut = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const signInWithGoogle = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const signInWithMagicLink = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const completeHandle = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
+const auth = vi.hoisted(() => ({
+  state: 'anonymous' as 'anonymous' | 'authenticated' | 'handle-required',
+  session: null as { userId: string; accessToken: string; expiresAt: number; handle?: string } | null,
+  profile: null as { id: string; handle: string } | null,
+}))
+
+vi.mock('@loodi/auth', () => ({
+  useAuth: () => ({
+    ...auth,
+    email: null,
+    hasGoogleIdentity: false,
+    error: null,
+    signOut,
+    signInWithGoogle,
+    signInWithMagicLink,
+    abandonIncompleteAccount: vi.fn(),
+    deleteAccount: vi.fn(),
+    updateEmail: vi.fn(),
+    linkGoogleIdentity: vi.fn(),
+    unlinkGoogleIdentity: vi.fn(),
+    completeHandle,
+  }),
+}))
 
 vi.mock('../useShell', () => ({
   shouldRetryModule: () => false,
@@ -30,6 +58,7 @@ vi.mock('../useShell', () => ({
       headerActions: [{ id: 'new-game', label: 'Nouveau jeu' }],
       headerOptions: shellHeaderOptions,
       settingsOpen: shellSettings.open,
+      settingsPage: shellSettings.page,
       launcherOpen: false,
     },
     themeMode: 'auto',
@@ -37,6 +66,7 @@ vi.mock('../useShell', () => ({
     toggleLauncher,
     activateApp: vi.fn(),
     toggleSettings: vi.fn(),
+    showLoodiAccount,
     registerIframe,
     goBack,
     overlayActive: false,
@@ -58,6 +88,7 @@ vi.mock('../useShell', () => ({
 describe('module frame', () => {
   beforeEach(() => {
     shellSettings.open = false
+    shellSettings.page = undefined
     shellHeaderOptions.hideActions = false
     shellHeaderOptions.canGoBack = false
     shellActiveApp.id = 'loodi-dev'
@@ -70,11 +101,24 @@ describe('module frame', () => {
     goBack.mockClear()
     registerIframe.mockClear()
     toggleLauncher.mockClear()
+    showLoodiAccount.mockClear()
+    signOut.mockClear()
+    signInWithGoogle.mockReset()
+    signInWithGoogle.mockResolvedValue(undefined)
+    signInWithMagicLink.mockReset()
+    signInWithMagicLink.mockResolvedValue(undefined)
+    completeHandle.mockReset()
+    completeHandle.mockResolvedValue(undefined)
+    auth.state = 'anonymous'
+    auth.session = null
+    auth.profile = null
     document.documentElement.style.setProperty('--safe-area-inset-top', '24px')
     document.documentElement.style.setProperty('--safe-area-inset-bottom', '16px')
   })
 
   afterEach(() => {
+    cleanup()
+    window.history.replaceState({}, '', '/')
     document.documentElement.style.removeProperty('--safe-area-inset-top')
     document.documentElement.style.removeProperty('--safe-area-inset-bottom')
   })
@@ -192,10 +236,27 @@ describe('module frame', () => {
 
   it('hides profile and more actions while settings are open', () => {
     shellSettings.open = true
+    shellSettings.page = 'account'
     const { container } = render(<App />)
 
     expect(within(container).queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
     expect(within(container).queryByRole('button', { name: 'Plus' })).not.toBeInTheDocument()
+  })
+
+  it('fades the MiniHeader glass in as the account page scrolls', () => {
+    shellSettings.open = true
+    shellSettings.page = 'account'
+    const { container } = render(<App />)
+    const glass = container.querySelector('.loodi-mini-header__glass')
+    const accountScrollContainer = screen.getByTestId('loodi-account-scroll-container')
+
+    expect(glass).toHaveStyle({ opacity: '0' })
+    Object.defineProperty(accountScrollContainer, 'scrollTop', { configurable: true, value: 26 })
+    fireEvent.scroll(accountScrollContainer)
+    expect(glass).toHaveStyle({ opacity: '0.5' })
+    Object.defineProperty(accountScrollContainer, 'scrollTop', { configurable: true, value: 52 })
+    fireEvent.scroll(accountScrollContainer)
+    expect(glass).toHaveStyle({ opacity: '1' })
   })
 
   it('keeps the One settings back action unchanged', () => {
@@ -236,5 +297,142 @@ describe('module frame', () => {
     rerender(<App />)
 
     expect(within(container).queryByRole('button', { name: 'Retour' })).not.toBeInTheDocument()
+  })
+
+  it('opens the connected profile sheet instead of signing out immediately', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+
+    expect(screen.getByText('Mon compte Loodi')).toBeInTheDocument()
+    expect(signOut).not.toHaveBeenCalled()
+  })
+
+  it('hides the bottom navigation while the connected profile sheet is open', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    shellTabs.value = [{ id: 'home', icon: 'home', label: 'Accueil' }]
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+
+    expect(within(container).getByRole('navigation')).toHaveClass('loodi-bottom-nav--hidden')
+  })
+
+  it('opens account management from the connected profile sheet', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Gérer mon compte' }))
+
+    expect(showLoodiAccount).toHaveBeenCalledOnce()
+  })
+
+  it('requires confirmation before signing out from the connected profile sheet', () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Se déconnecter' }))
+
+    expect(screen.getByText('Tu veux vraiment changer de compte ? Tu pourras te reconnecter quand tu veux.')).toBeInTheDocument()
+    expect(signOut).not.toHaveBeenCalled()
+  })
+
+  it('closes a shell bottom sheet when its handle is dragged down', async () => {
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    const handle = await screen.findByTestId('bottom-sheet-handle')
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 210 })
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 210 })
+
+    expect(screen.queryByRole('dialog', { name: 'Mon compte Loodi' })).not.toBeInTheDocument()
+  })
+
+  it('confirms a successful magic-link connection after returning from the email', () => {
+    window.history.replaceState({}, '', '/#access_token=token&type=magiclink')
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    auth.profile = { id: 'user-1', handle: 'battle_benny' }
+
+    render(<App />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Connexion réussie. Heureux de te revoir !')
+  })
+
+  it('explains when a magic-link connection has expired', () => {
+    window.history.replaceState({}, '', '/#error=access_denied&error_code=otp_expired&error_description=Email+link+is+invalid+or+has+expired')
+
+    render(<App />)
+
+    expect(screen.getByRole('status')).toHaveTextContent('Ce lien de connexion a expiré. Demande-en un nouveau.')
+  })
+
+  it('closes the sign-in sheet once authentication completes', () => {
+    const { container, rerender } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    expect(screen.getByRole('dialog', { name: 'Connexion Loodi' })).toBeInTheDocument()
+
+    auth.state = 'authenticated'
+    auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }
+    rerender(<App />)
+
+    expect(screen.queryByRole('dialog', { name: 'Connexion Loodi' })).not.toBeInTheDocument()
+  })
+
+  it('closes the sign-in sheet when its handle is dragged down', () => {
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    const handle = screen.getByTestId('auth-sheet-handle')
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 210 })
+    expect(handle.closest('form')).toHaveStyle({ transform: 'translateY(110px)' })
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 210 })
+
+    expect(screen.queryByRole('dialog', { name: 'Connexion Loodi' })).not.toBeInTheDocument()
+  })
+
+  it('closes the sign-in sheet opened from an anonymous Loodi account', () => {
+    shellSettings.open = true
+    shellSettings.page = 'account'
+    render(<App />)
+
+    fireEvent.click(screen.getByRole('button', { name: /j’ai déjà un compte/i }))
+    const handle = screen.getByTestId('auth-sheet-handle')
+    fireEvent.pointerDown(handle, { pointerId: 1, clientY: 100 })
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 210 })
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 210 })
+
+    expect(screen.queryByRole('dialog', { name: 'Connexion Loodi' })).not.toBeInTheDocument()
+  })
+
+  it('prevents a second magic-link request while the first one is being sent', () => {
+    let resolveRequest!: () => void
+    signInWithMagicLink.mockImplementation(() => new Promise<void>((resolve) => { resolveRequest = resolve }))
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+    fireEvent.change(screen.getByLabelText('E-mail'), { target: { value: 'hello@loodi.test' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Recevoir un lien magique' }))
+
+    expect(screen.getByRole('button', { name: 'Envoi…' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Continuer avec Google' })).toBeDisabled()
+    resolveRequest()
   })
 })

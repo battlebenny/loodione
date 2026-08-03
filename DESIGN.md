@@ -251,6 +251,15 @@ L'élévation se lit à trois niveaux :
 - **Swipe:** `onSwipeUp` est un callback présentationnel optionnel pour un glissement vers le haut d’au moins 40px ; il ne déclenche aucune navigation implicite.
 - **Indicator:** barre coulissante, `bg-black/5` (clair) ou `bg-white/10` (sombre), `rounded-lg`, transition 300ms avec spring easing `cubic-bezier(0.34, 1.56, 0.64, 1)`
 
+### Bottom sheets et toasters avec navigation basse
+
+Règle de fonctionnement obligatoire dans One et dans toute PWA embarquée :
+
+- Toute BottomSheet, dès son ouverture, signale `onOverlayChange(true)` (ou `loodi:overlaychange` via le bridge) afin de masquer la BottomNav. À sa fermeture — bouton, backdrop, validation, annulation ou démontage — elle signale systématiquement `false`.
+- Un toaster ne masque jamais la BottomNav. Il est affiché visuellement juste au-dessus d’elle, hors de la safe area basse : `bottom = safe-area-inset-bottom + hauteur de BottomNav + espacement` ; son z-index reste supérieur à celui de la navigation.
+- Les BottomSheets respectent `--safe-area-inset-bottom` pour que leurs actions restent atteignables sur appareil natif.
+- Les messages de succès sont courts ; les erreurs restent visibles plus longtemps. Ils utilisent le composant toaster partagé et les tokens de statut, jamais un message persistant dans la page.
+
 ### Launcher
 - **Backdrop:** `bg-black/20 backdrop-blur-sm`, tap pour fermer
 - **Sheet:** flottante, centrée, `max-width: 448px`, marge basse 16px, rayon 28px, fond `white/60` (clair) ou `gray-900/70` (sombre), `backdrop-blur-md`, bordure subtile et `shadow-lg`.

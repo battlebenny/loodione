@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Check, ChevronRight, Globe, Monitor, Moon, Sun, X } from 'lucide-react'
 import type { SharedPreferencesSectionProps, SharedPreferencesThemeMode } from './types.js'
+import { useBottomSheetDrag } from './use-bottom-sheet-drag.js'
 
 const entries: Array<{
   value: SharedPreferencesThemeMode
@@ -46,6 +47,7 @@ export function SharedPreferencesSection({
     onThemeModeChange(nextThemeMode)
     setThemeSheet(false)
   }
+  const { dragOffset, isDragging, handleProps } = useBottomSheetDrag(() => setThemeSheet(false))
 
   const themeDetail = themeMode === 'system'
     ? `Système (${resolvedTheme === 'dark' ? 'sombre' : 'clair'})`
@@ -87,8 +89,8 @@ export function SharedPreferencesSection({
       {themeSheetOpen && (
         <div className="loodi-preferences-sheet" role="dialog" aria-modal="true" aria-labelledby="loodi-theme-sheet-title">
           <button type="button" className="loodi-preferences-sheet__backdrop" aria-label="Fermer le choix du thème" onClick={() => setThemeSheet(false)} />
-          <div className="loodi-preferences-sheet__panel">
-            <div className="loodi-preferences-sheet__handle" aria-hidden="true" />
+          <div className={`loodi-preferences-sheet__panel${isDragging ? ' loodi-preferences-sheet__panel--dragging' : ''}`} style={{ '--sheet-drag-offset': `${dragOffset}px` } as CSSProperties}>
+            <div className="loodi-preferences-sheet__handle" aria-hidden="true" {...handleProps} />
             <div className="loodi-preferences-sheet__header">
               <h2 id="loodi-theme-sheet-title">Thème</h2>
               <button type="button" aria-label="Fermer" className="loodi-preferences-sheet__close" onClick={() => setThemeSheet(false)}><X size={20} aria-hidden="true" /></button>

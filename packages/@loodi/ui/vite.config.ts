@@ -12,6 +12,7 @@ export default defineConfig({
         launcher: resolve(__dirname, 'src/launcher-entry.ts'),
         'shared-preferences': resolve(__dirname, 'src/shared-preferences.ts'),
         'global-settings': resolve(__dirname, 'src/global-settings.ts'),
+        account: resolve(__dirname, 'src/account.ts'),
       },
       formats: ['es'],
       fileName: (_format, entryName) => `${entryName}.js`,

@@ -2,6 +2,7 @@
 @import '@loodi/ui/mini-header.css';
 @import '@loodi/ui/bottom-nav.css';
 @import '@loodi/ui/launcher.css';
+@import '@loodi/ui/account.css';
 @import "tailwindcss";
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -36,11 +37,24 @@
 .animate-exit-back  { animation: loodi-exit-back  200ms ease-out both; }
 .animate-enter-back { animation: loodi-enter-back 220ms ease-out both; }
 
+@keyframes toastSlideIn {
+  from { opacity: 0; transform: translateY(calc(100% + 1rem)); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toastSlideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(calc(100% + 1rem)); }
+}
+.animate-toast-in { animation: toastSlideIn 220ms ease-out both; }
+.animate-toast-out { animation: toastSlideOut 220ms ease-in both; }
+
 @media (prefers-reduced-motion: reduce) {
   .animate-exit-fwd,
   .animate-enter-fwd,
   .animate-exit-back,
-  .animate-enter-back {
+  .animate-enter-back,
+  .animate-toast-in,
+  .animate-toast-out {
     animation: none;
   }
 }

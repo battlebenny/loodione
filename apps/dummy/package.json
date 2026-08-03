@@ -10,6 +10,7 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "@loodi/auth": "*",
     "@loodi/bridge": "*",
     "@loodi/ui": "*",
     "lucide-react": "^1.24.0",

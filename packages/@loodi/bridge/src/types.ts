@@ -30,6 +30,13 @@ export interface SharedPreferencesUpdate {
   themeMode: SharedThemeMode
 }
 
+export interface AuthSession {
+  userId: string
+  accessToken: string
+  expiresAt: number
+  handle?: string
+}
+
 export type NavigationDirection = 'back' | 'forward'
 export type NavigationRequestSource = 'gesture' | 'system'
 
@@ -76,8 +83,7 @@ export interface BridgeClientOptions {
 }
 
 export interface BridgeMethods {
-  getUser(): { id: string; name: string; email: string; avatar?: string }
-  getToken(): string | null
+  getAuthSession(): AuthSession | null
   getCollection(): unknown[]
   getNetworkStatus(): 'online' | 'offline'
   openApp(appId: string, path?: string): void
@@ -91,11 +97,13 @@ export interface BridgeMethods {
   getSharedPreferences(): SharedPreferences
   updateSharedPreferences(update: SharedPreferencesUpdate): SharedPreferences
   showShellSettings(): void
+  showLoodiAccount(): void
   queueAction(action: unknown): void
   requestPermission(kind: 'camera' | 'geolocation'): 'granted' | 'denied'
 }
 
 export interface BridgeEvents {
+  'loodi:authchange': AuthSession | null
   'loodi:themechange': { theme: 'dark' | 'light' }
   'loodi:tabtap': { tabId: string }
   'loodi:navigate': { path: string; direction?: string }

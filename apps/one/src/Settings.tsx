@@ -1,4 +1,6 @@
 import { type ReactNode, useEffect, useState } from 'react'
+import { useAuth } from '@loodi/auth'
+import { LoodiAccountPage } from '@loodi/ui'
 import type { AppEntry, LocalModuleUrls } from './apps'
 import { BottomSheet } from './BottomSheet'
 
@@ -10,6 +12,16 @@ interface SettingsProps {
   developmentApps?: AppEntry[]
   localModuleUrls?: LocalModuleUrls
   onLocalModuleUrlsChange?: (urls: LocalModuleUrls) => void
+  accountName?: string
+  accountProfileColor?: string
+  initialPage?: 'settings' | 'account'
+  onSignIn?: () => void
+  isAuthenticated?: boolean
+  onOverlayChange?: (visible: boolean) => void
+  onLinkGoogleIdentity?: () => Promise<void>
+  onUnlinkGoogleIdentity?: () => Promise<void>
+  accountSuccessMessage?: string
+  onAccountScrollProgress?: (progress: number) => void
 }
 
 function CheckIcon() {
@@ -109,10 +121,13 @@ function PickerOption({ children, active, onClick }: { children: ReactNode; acti
   )
 }
 
-export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, developmentApps, localModuleUrls = {}, onLocalModuleUrlsChange }: SettingsProps) {
+export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, developmentApps, localModuleUrls = {}, onLocalModuleUrlsChange, accountName, accountProfileColor, initialPage = 'settings', onSignIn, isAuthenticated, onOverlayChange, onLinkGoogleIdentity, onUnlinkGoogleIdentity, accountSuccessMessage, onAccountScrollProgress }: SettingsProps) {
+  const auth = useAuth()
+  const signedIn = isAuthenticated ?? auth.session !== null
   const [appSheetOpen, setAppSheetOpen] = useState(false)
   const [moduleSheetOpen, setModuleSheetOpen] = useState(false)
   const [localModuleUrlDrafts, setLocalModuleUrlDrafts] = useState<LocalModuleUrls>(localModuleUrls)
+  const [accountOpen] = useState(initialPage === 'account')
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
@@ -135,6 +150,8 @@ export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, devel
     setModuleSheetOpen(false)
   }
 
+  if (accountOpen) return <div data-testid="loodi-account-scroll-container" onScroll={(event) => onAccountScrollProgress?.(Math.min(event.currentTarget.scrollTop / 52, 1))} className="fixed inset-0 z-20 overflow-y-auto bg-[var(--color-settings-bg)] px-4 pt-14 text-[var(--color-text-light)] dark:bg-[var(--color-settings-bg-dark)] dark:text-[var(--color-text-primary-dark)]" style={{ paddingTop: 'calc(3.5rem + var(--safe-area-inset-top))', paddingBottom: 'calc(6.5rem + var(--safe-area-inset-bottom))' }}><LoodiAccountPage isAuthenticated={signedIn} playerName={accountName} profileColor={accountProfileColor} email={auth.email} hasGoogleIdentity={auth.hasGoogleIdentity} onCreateAccount={onSignIn ?? (() => {})} onSignIn={onSignIn ?? (() => {})} onSignOut={auth.signOut} onDeleteAccount={auth.deleteAccount} onUpdateEmail={auth.updateEmail} onUpdateProfileColor={auth.updateProfileColor} onLinkGoogleIdentity={onLinkGoogleIdentity ?? auth.linkGoogleIdentity} onUnlinkGoogleIdentity={onUnlinkGoogleIdentity ?? auth.unlinkGoogleIdentity} onOverlayChange={onOverlayChange} successMessage={accountSuccessMessage} /></div>
+
   return (
     <div className="fixed inset-0 z-20 bg-[var(--color-settings-bg)] dark:bg-[var(--color-settings-bg-dark)] text-[var(--color-text-light)] dark:text-[var(--color-text-primary-dark)] flex flex-col">
       <div
@@ -145,7 +162,7 @@ export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, devel
           paddingRight: 'calc(1rem + var(--safe-area-inset-right))',
         }}
       >
-        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', textWrap: 'balance' }}>Paramètres</h1>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'clamp(1.25rem, 4vw, 1.75rem)', textWrap: 'balance' }}>Paramètres généraux</h1>
       </div>
 
       <div

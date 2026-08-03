@@ -12,6 +12,14 @@ function isThemeDetail(detail: unknown): boolean {
   return isRecord(detail) && (detail.theme === 'dark' || detail.theme === 'light')
 }
 
+function isAuthSession(detail: unknown): boolean {
+  return isRecord(detail)
+    && typeof detail.userId === 'string' && detail.userId.length > 0
+    && typeof detail.accessToken === 'string' && detail.accessToken.length > 0
+    && isFiniteNumber(detail.expiresAt)
+    && (detail.handle === undefined || typeof detail.handle === 'string')
+}
+
 function isSharedPreferences(detail: unknown): boolean {
   return isRecord(detail)
     && (detail.themeMode === 'system' || detail.themeMode === 'light' || detail.themeMode === 'dark')
@@ -35,6 +43,8 @@ function isNavigationResult(detail: unknown): boolean {
 
 function isEventDetail(event: BridgeEventType, detail: unknown): boolean {
   switch (event) {
+    case 'loodi:authchange':
+      return detail === null || isAuthSession(detail)
     case 'loodi:themechange':
       return isThemeDetail(detail)
     case 'loodi:tabtap':
@@ -73,6 +83,7 @@ function isEventDetail(event: BridgeEventType, detail: unknown): boolean {
 }
 
 const eventTypes = new Set<BridgeEventType>([
+  'loodi:authchange',
   'loodi:themechange',
   'loodi:tabtap',
   'loodi:navigate',

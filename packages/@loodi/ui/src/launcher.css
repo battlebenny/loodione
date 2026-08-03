@@ -31,10 +31,11 @@
 
 .loodi-launcher--open {
   opacity: 1;
-  transform: translateX(-50%) translateY(0) scale(1);
+  transform: translateX(-50%) translateY(var(--launcher-drag-offset, 0)) scale(1);
   pointer-events: auto;
   transition-timing-function: cubic-bezier(.34, 1.56, .64, 1);
 }
+.loodi-launcher--dragging { transition: none; }
 
 .loodi-launcher__content { padding: var(--spacing-lg); padding-bottom: calc(var(--spacing-xl) + var(--spacing-lg)); }
 .loodi-launcher__grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--spacing-md); padding-bottom: var(--spacing-lg); }
@@ -75,7 +76,8 @@
 .loodi-launcher__app-image { width: 28px; height: 28px; object-fit: contain; }
 .loodi-launcher__app-name { width: 100%; overflow: hidden; font: var(--typography-caption); line-height: 1.2; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .loodi-launcher__handle-wrap { display: flex; justify-content: center; padding-bottom: var(--spacing-lg); }
-.loodi-launcher__handle { width: 36px; height: 4px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-text-light) 20%, transparent); }
+.loodi-launcher__handle { position: relative; width: 36px; height: 4px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-text-light) 20%, transparent); cursor: grab; touch-action: none; }
+.loodi-launcher__handle::before { position: absolute; inset: -20px -12px; content: ''; }.loodi-launcher__handle:active { cursor: grabbing; }
 
 :where(.dark) .loodi-launcher__backdrop { background: color-mix(in srgb, var(--color-text-primary-dark) 20%, transparent); }
 :where(.dark) .loodi-launcher { border-color: var(--color-border-subtle-dark); background: var(--color-surface-glass-dark); }

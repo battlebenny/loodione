@@ -4,6 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 export default defineConfig({
+  envDir: path.resolve(__dirname, '../..'),
   plugins: [react()],
   publicDir: path.resolve(__dirname, '../one/public'),
   server: {

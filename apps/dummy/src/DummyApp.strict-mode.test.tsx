@@ -12,6 +12,7 @@ const generatedBridge = vi.hoisted(() => ({
   getSharedPreferences: vi.fn().mockResolvedValue({ themeMode: 'system', resolvedTheme: 'light', revision: 0 }),
   updateSharedPreferences: vi.fn().mockResolvedValue({ themeMode: 'system', resolvedTheme: 'light', revision: 0 }),
   showShellSettings: vi.fn().mockResolvedValue(undefined),
+  showLoodiAccount: vi.fn().mockResolvedValue(undefined),
   emit: vi.fn(),
   on: vi.fn(() => vi.fn()),
 }))

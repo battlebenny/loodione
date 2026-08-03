@@ -77,4 +77,26 @@ describe('MiniHeader', () => {
     expect(within(container).queryByRole('button', { name: 'Profil' })).not.toBeInTheDocument()
     expect(within(container).queryByRole('button', { name: 'Plus' })).not.toBeInTheDocument()
   })
+
+  it('uses the player initial in a glass avatar for an authenticated profile', () => {
+    const onUser = vi.fn()
+    const { container } = render(
+      <MiniHeader onSettings={vi.fn()} onUser={onUser} userInitial="B" userAvatarColor="#ca4a16" />,
+    )
+
+    const profile = within(container).getByRole('button', { name: 'Profil' })
+    expect(profile).toHaveClass('loodi-mini-header__avatar-button')
+    expect(profile).toHaveTextContent('B')
+    expect(profile.querySelector('.lucide-user')).not.toBeInTheDocument()
+    fireEvent.click(profile)
+    expect(onUser).toHaveBeenCalledOnce()
+  })
+
+  it('keeps a readable monogram on a light profile colour', () => {
+    const { container } = render(
+      <MiniHeader onSettings={vi.fn()} onUser={vi.fn()} userInitial="B" userAvatarColor="#F5F5F0" />,
+    )
+
+    expect(within(container).getByRole('button', { name: 'Profil' })).toHaveStyle({ '--user-avatar-text': '#1A1A18' })
+  })
 })

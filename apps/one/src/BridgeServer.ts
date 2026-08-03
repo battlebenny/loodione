@@ -3,6 +3,7 @@ import type {
   BridgeSecurityOptions,
   HeaderAction,
   HeaderOptions,
+  AuthSession,
   NavigationDirection,
   NavigationRequestSource,
   SharedPreferences,
@@ -20,6 +21,7 @@ export interface ModuleInfo {
 }
 
 export interface BridgeServerCallbacks {
+  onRequestAuthSession?(appId: string): AuthSession | null
   onReady(appId: string): void
   onBadgeCount(appId: string, count: number): void
   onError(appId: string, code: string, recoverable: boolean): void
@@ -37,6 +39,7 @@ export interface BridgeServerCallbacks {
   onRequestSharedPreferences(appId: string): SharedPreferences
   onRequestSharedPreferencesUpdate(appId: string, update: SharedPreferencesUpdate): SharedPreferences
   onRequestShowShellSettings(callerId: string): void
+  onRequestShowLoodiAccount(callerId: string): void
 }
 
 export interface BridgeServerOptions {
@@ -150,6 +153,10 @@ export class BridgeServer {
     this.postMessage(appId, { type: 'loodi:event', event: 'loodi:themechange', detail: { theme } })
   }
 
+  sendAuthChange(appId: string, session: AuthSession | null): void {
+    this.postMessage(appId, { type: 'loodi:event', event: 'loodi:authchange', detail: session })
+  }
+
   sendTabTap(appId: string, tabId: string): void {
     this.postMessage(appId, { type: 'loodi:event', event: 'loodi:tabtap', detail: { tabId } })
   }
@@ -231,11 +238,8 @@ export class BridgeServer {
 
     try {
       switch (msg.method) {
-        case 'getUser':
-          respond({ id: 'user-1', name: 'Moi', email: 'moi@loodi.app' })
-          break
-        case 'getToken':
-          respond('mock-token-loodi-001')
+        case 'getAuthSession':
+          respond(this.callbacks.onRequestAuthSession?.(appId) ?? null)
           break
         case 'getCollection':
           respond([])
@@ -286,6 +290,10 @@ export class BridgeServer {
         }
         case 'showShellSettings':
           this.callbacks.onRequestShowShellSettings(appId)
+          respond(undefined)
+          break
+        case 'showLoodiAccount':
+          this.callbacks.onRequestShowLoodiAccount(appId)
           respond(undefined)
           break
         case 'setBottomNav': {
@@ -413,14 +421,14 @@ function isSharedPreferencesUpdate(value: unknown): value is SharedPreferencesUp
 
 function hasValidCallArguments(method: string, args: unknown[]): boolean {
   switch (method) {
-    case 'getUser':
-    case 'getToken':
+    case 'getAuthSession':
     case 'getCollection':
     case 'getNetworkStatus':
     case 'closeApp':
     case 'showAppSwitcher':
     case 'getSharedPreferences':
     case 'showShellSettings':
+    case 'showLoodiAccount':
       return args.length === 0
     case 'openApp':
       return (args.length === 1 || args.length === 2)

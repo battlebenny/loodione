@@ -1,5 +1,6 @@
 # ─── Secrets / signing material ───────────────────────────────
 # Never commit. These are local-only.
+.oAuth2/
 .certs/
 *.pem
 *.p8

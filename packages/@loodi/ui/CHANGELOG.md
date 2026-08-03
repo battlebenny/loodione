@@ -4,6 +4,12 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.7.0]
+
+### Added
+
+- `LoodiAccountPage`, écran de compte indépendant du fournisseur d’authentification, réutilisable dans One et les modules standalone avec son export ESM et CSS dédié.
+
 ## [0.6.3]
 
 ### Fixed

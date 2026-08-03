@@ -1,6 +1,7 @@
 export { BridgeClient } from './BridgeClient.js'
 export { isBridgeProtocolMessage } from './protocol.js'
 export type {
+  AuthSession,
   BridgeCall,
   BridgeClientOptions,
   BridgeEventType,

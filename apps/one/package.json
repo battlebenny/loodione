@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui",
+    "prebuild": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui && npm run build -w @loodi/auth",
     "build": "tsc -b && vite build",
     "build:local": "tsc -b && vite build --mode development",
     "build:android-emulator": "tsc -b && vite build --mode android-emulator",
@@ -14,15 +14,17 @@
     "build:ios-device": "tsc -b && node scripts/build-device.mjs ios-device",
     "build:recette": "tsc -b && vite build --mode recette",
     "preview": "vite preview",
-    "pretest": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui",
+    "pretest": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui && npm run build -w @loodi/auth",
     "test": "vitest",
-    "pretest:run": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui",
+    "pretest:run": "npm run build -w @loodi/bridge && npm run build -w @loodi/ui && npm run build -w @loodi/auth",
     "test:run": "vitest run"
   },
   "dependencies": {
     "@capacitor/app": "^8.1.1",
     "@loodi/bridge": "*",
+    "@loodi/auth": "*",
     "@loodi/ui": "*",
+    "lucide-react": "^1.24.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

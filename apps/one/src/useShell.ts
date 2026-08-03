@@ -18,7 +18,7 @@ import { App as CapacitorApp } from '@capacitor/app'
 import { installNavigationRuntime, type NavigationPlatform } from './navigation'
 import { syncStatusBarTheme } from './statusBar'
 import type { ThemeMode } from './theme'
-import type { HeaderAction, HeaderOptions, SharedPreferences, SharedPreferencesUpdate } from '@loodi/bridge'
+import type { AuthSession, HeaderAction, HeaderOptions, SharedPreferences, SharedPreferencesUpdate } from '@loodi/bridge'
 import type { Tab } from '@loodi/ui/bottom-nav'
 import type { AppEntry } from './apps'
 
@@ -31,6 +31,7 @@ export interface ShellState {
   apps: AppEntry[]
   launcherOpen: boolean
   settingsOpen: boolean
+  settingsPage: 'settings' | 'account'
   history: string[]
 }
 
@@ -88,7 +89,9 @@ export function getActiveTabForPath(path: string): string {
   return 'home'
 }
 
-export function useShell() {
+export function useShell(authSession: AuthSession | null = null) {
+  const authSessionRef = useRef<AuthSession | null>(authSession)
+  useEffect(() => { authSessionRef.current = authSession }, [authSession])
   const [localModuleUrls, setLocalModuleUrlsState] = useState<LocalModuleUrls>(() => loadLocalModuleUrls())
   const [readyAppIds, setReadyAppIds] = useState<ReadonlySet<string>>(() => new Set())
   const [state, setState] = useState<ShellState>(() => {
@@ -104,6 +107,7 @@ export function useShell() {
       apps,
       launcherOpen: false,
       settingsOpen: false,
+      settingsPage: 'settings',
       history: [],
     }
   })
@@ -166,7 +170,15 @@ export function useShell() {
     clearSettingsOpenTimeout()
     setState((s) => {
       if (!s.settingsOpen) history.pushState({ settings: true }, '')
-      return { ...s, settingsOpen: true }
+      return { ...s, settingsOpen: true, settingsPage: 'settings' }
+    })
+  }, [clearSettingsOpenTimeout])
+
+  const showLoodiAccount = useCallback(() => {
+    clearSettingsOpenTimeout()
+    setState((s) => {
+      if (!s.settingsOpen) history.pushState({ settings: true }, '')
+      return { ...s, settingsOpen: true, settingsPage: 'account' }
     })
   }, [clearSettingsOpenTimeout])
 
@@ -183,7 +195,9 @@ export function useShell() {
         })
         bridge.sendThemeChange(appId, themeRef.current)
         bridge.sendSharedPreferencesChange(appId, sharedPreferencesRef.current)
+        bridge.sendAuthChange(appId, authSessionRef.current)
       },
+      onRequestAuthSession: () => authSessionRef.current,
       onBadgeCount: (id, count) => console.log('[Loodi] badge', id, count),
       onError: (id, code, rec) => console.error('[Loodi] error', id, code, rec),
       onTabsChange: (appId, tabs) => {
@@ -253,6 +267,7 @@ export function useShell() {
         return next
       },
       onRequestShowShellSettings: showOneSettings,
+      onRequestShowLoodiAccount: showLoodiAccount,
     }, {
       security: {
         mode: 'strict',
@@ -265,6 +280,10 @@ export function useShell() {
     registerRenderedModules(bridge)
     return () => bridge.destroy()
   }, [])
+
+  useEffect(() => {
+    state.apps.forEach((app) => bridgeRef.current?.sendAuthChange(app.id, authSession))
+  }, [authSession, state.apps])
 
   // Apply the theme to One, then notify registered modules through the strict
   // bridge so every postMessage uses the iframe's exact configured origin.
@@ -473,6 +492,7 @@ export function useShell() {
     setFavoriteAppId,
     toggleLauncher,
     toggleSettings,
+    showLoodiAccount,
     goBack,
     setTabs,
     setActiveTab,
