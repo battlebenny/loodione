@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { ChevronDown, ChevronRight, LogOut, Mail, Palette, Trash2, UserRound, X } from 'lucide-react'
 import { defaultProfileColor, PROFILE_COLORS, profileColorText } from './profile-colors.js'
 import type { LoodiAccountPageProps } from './types.js'
@@ -21,14 +22,14 @@ function Row({ icon, label, detail, onClick, last = false, className, detailClas
 
 function Sheet({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
   const { dragOffset, isDragging, handleProps } = useBottomSheetDrag(onClose)
-  return <div className="loodi-account-sheet" role="dialog" aria-modal="true" aria-labelledby="loodi-account-sheet-title">
+  return createPortal(<div className="loodi-account-sheet" role="dialog" aria-modal="true" aria-labelledby="loodi-account-sheet-title">
     <button type="button" className="loodi-account-sheet__backdrop" aria-label="Fermer" onClick={onClose} />
     <div className={`loodi-account-sheet__panel${isDragging ? ' loodi-account-sheet__panel--dragging' : ''}`} style={{ '--sheet-drag-offset': `${dragOffset}px` } as CSSProperties}>
       <div data-testid="account-sheet-handle" className="loodi-account-sheet__handle" {...handleProps} />
       <header><h2 id="loodi-account-sheet-title">{title}</h2><button type="button" aria-label="Fermer" onClick={onClose}><X size={20} /></button></header>
       <div className="loodi-account-sheet__content">{children}</div>
     </div>
-  </div>
+  </div>, document.body)
 }
 
 export function LoodiAccountPage({ isAuthenticated, playerName, profileColor, email, hasGoogleIdentity = false, onCreateAccount, onSignIn, onSignOut, onDeleteAccount, onUpdateEmail, onUpdateProfileColor, onLinkGoogleIdentity, onUnlinkGoogleIdentity, onOverlayChange, successMessage }: LoodiAccountPageProps) {

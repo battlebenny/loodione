@@ -131,6 +131,15 @@ describe('Settings', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
+  it('renders account sheets outside the settings stacking context', () => {
+    render(<LoodiAccountPage isAuthenticated onCreateAccount={vi.fn()} onSignIn={vi.fn()} onLinkGoogleIdentity={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /associer un compte google/i }))
+
+    const sheet = screen.getByRole('dialog')
+    expect(sheet.parentElement).toBe(document.body)
+  })
+
   it('lets a player unlink Google without removing their e-mail identity', () => {
     const onUnlinkGoogleIdentity = vi.fn().mockResolvedValue(undefined)
     render(<LoodiAccountPage isAuthenticated hasGoogleIdentity onCreateAccount={vi.fn()} onSignIn={vi.fn()} onUnlinkGoogleIdentity={onUnlinkGoogleIdentity} />)

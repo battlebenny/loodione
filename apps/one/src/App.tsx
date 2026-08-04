@@ -257,7 +257,6 @@ function App() {
         showBack={showBack}
         onBack={handleBack}
         hideActions={hideHeaderActions}
-        behindOverlay={accountOverlayOpen}
         menuItems={headerMenuItems}
         onMenuItemSelect={sendHeaderAction}
       />

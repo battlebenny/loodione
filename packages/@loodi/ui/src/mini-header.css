@@ -14,8 +14,6 @@
   font: var(--typography-body);
 }
 
-.loodi-mini-header--behind-overlay { z-index: 10; }
-
 .loodi-mini-header__glass {
   position: absolute;
   inset: 0;

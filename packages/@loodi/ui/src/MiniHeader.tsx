@@ -12,7 +12,7 @@ const MENU_ICONS: Record<string, LucideIcon> = {
   settings: Settings,
 }
 
-export function MiniHeader({ onSettings, onUser, userInitial, userAvatarColor, appName, scrollProgress = 0, showBack = false, onBack, menuItems, onMenuItemSelect, hideActions = false, behindOverlay = false }: MiniHeaderProps) {
+export function MiniHeader({ onSettings, onUser, userInitial, userAvatarColor, appName, scrollProgress = 0, showBack = false, onBack, menuItems, onMenuItemSelect, hideActions = false }: MiniHeaderProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -29,7 +29,7 @@ export function MiniHeader({ onSettings, onUser, userInitial, userAvatarColor, a
   return (
     <header
       ref={ref}
-      className={`loodi-mini-header${behindOverlay ? ' loodi-mini-header--behind-overlay' : ''}`}
+      className="loodi-mini-header"
       style={{
         height: `calc(${HEADER_H}px + var(--safe-area-inset-top))`,
         paddingTop: 'var(--safe-area-inset-top)',
