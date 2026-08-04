@@ -18,6 +18,7 @@ const shellApps = vi.hoisted(() => ({
   value: [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }],
 }))
 const shellTabs = vi.hoisted(() => ({ value: [] as { id: string; icon: string; label: string }[] }))
+const shellOverlay = vi.hoisted(() => ({ value: false }))
 const showLoodiAccount = vi.hoisted(() => vi.fn())
 const signOut = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
 const signInWithGoogle = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
@@ -69,7 +70,7 @@ vi.mock('../useShell', () => ({
     showLoodiAccount,
     registerIframe,
     goBack,
-    overlayActive: false,
+    overlayActive: shellOverlay.value,
     scrollProgress: 0,
     lastUsedAppId: { current: 'loodi-dev' },
     favoriteAppId: null,
@@ -94,6 +95,7 @@ describe('module frame', () => {
     shellActiveApp.id = 'loodi-dev'
     shellApps.value = [{ id: 'loodi-dev', name: 'Dev', icon: '⚙️', color: '#6B7280', url: 'https://dummy.loodi.test:4000' }]
     shellTabs.value = []
+    shellOverlay.value = false
     sendHeaderAction.mockClear()
     sendBack.mockClear()
     sendTabTap.mockClear()
@@ -178,6 +180,17 @@ describe('module frame', () => {
     rerender(<App />)
 
     expect(registerIframe).toHaveBeenCalledTimes(registrationsAfterMount)
+  })
+
+  it('keeps the shell header in place behind an active module overlay', () => {
+    shellOverlay.value = true
+    const { container } = render(<App />)
+    const header = container.querySelector('header.loodi-mini-header')!
+    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi-dev"]')!
+
+    expect(header).toHaveClass('loodi-mini-header--behind-overlay')
+    expect(frame).toHaveClass('z-0')
+    expect(within(container).getByTestId('module-overlay-header-backdrop')).toBeInTheDocument()
   })
 
   it('lets the dev dummy persist and apply both shell clearances without moving its full-screen background', () => {

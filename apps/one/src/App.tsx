@@ -281,7 +281,7 @@ function App() {
                 motion-reduce:transition-none
                 ${isExiting ? `${exitClass} z-0 pointer-events-none` : ''}
                 ${isEntering ? `${enterClass} z-10` : ''}
-                ${isActive ? 'z-10 opacity-100' : ''}
+                ${isActive ? `${overlayActive ? 'z-0' : 'z-10'} opacity-100` : ''}
                 ${isInactive ? 'z-0 pointer-events-none opacity-0' : ''}
                 ${!isExiting && !isEntering ? 'transition-[opacity,transform] duration-200 ease-out' : ''}
               `}
@@ -292,6 +292,14 @@ function App() {
           )
         })}
       </div>
+
+      {overlayActive && (
+        <div
+          data-testid="module-overlay-header-backdrop"
+          className="pointer-events-auto fixed inset-x-0 top-0 z-20 h-[calc(52px+var(--safe-area-inset-top))] bg-black/20 backdrop-blur-sm"
+          aria-hidden="true"
+        />
+      )}
 
       <BottomNav
         tabs={state.tabs}
