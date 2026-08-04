@@ -78,10 +78,10 @@ describe('MiniHeader', () => {
     expect(within(container).queryByRole('button', { name: 'Plus' })).not.toBeInTheDocument()
   })
 
-  it('keeps the shell header at its normal stacking level', () => {
-    const { container } = render(<MiniHeader onSettings={vi.fn()} onUser={vi.fn()} />)
+  it('places the shell header behind an active module overlay', () => {
+    const { container } = render(<MiniHeader onSettings={vi.fn()} onUser={vi.fn()} behindOverlay />)
 
-    expect(within(container).getByRole('banner')).not.toHaveClass('loodi-mini-header--behind-overlay')
+    expect(within(container).getByRole('banner')).toHaveClass('loodi-mini-header--behind-overlay')
   })
 
   it('uses the player initial in a glass avatar for an authenticated profile', () => {

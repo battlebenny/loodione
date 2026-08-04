@@ -4,6 +4,14 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.8.5] - 2026-08-04
+
+### Fixed
+
+- Les bottom sheets du compte sont rendues hors du stacking context des paramètres.
+- Le backdrop du compte conserve le `backdrop-filter` standard dans les bundles Android WebView.
+- Le MiniHeader passe sous les overlays rendus dans les modules iframe.
+
 ## [0.8.2] - 2026-08-03
 
 ### Added

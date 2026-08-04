@@ -23,7 +23,16 @@ function Row({ icon, label, detail, onClick, last = false, className, detailClas
 function Sheet({ title, children, onClose }: { title: string; children: ReactNode; onClose: () => void }) {
   const { dragOffset, isDragging, handleProps } = useBottomSheetDrag(onClose)
   return createPortal(<div className="loodi-account-sheet" role="dialog" aria-modal="true" aria-labelledby="loodi-account-sheet-title">
-    <button type="button" className="loodi-account-sheet__backdrop" aria-label="Fermer" onClick={onClose} />
+    <div
+      className="loodi-account-sheet__backdrop"
+      role="button"
+      tabIndex={0}
+      aria-label="Fermer"
+      onClick={onClose}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') onClose()
+      }}
+    />
     <div className={`loodi-account-sheet__panel${isDragging ? ' loodi-account-sheet__panel--dragging' : ''}`} style={{ '--sheet-drag-offset': `${dragOffset}px` } as CSSProperties}>
       <div data-testid="account-sheet-handle" className="loodi-account-sheet__handle" {...handleProps} />
       <header><h2 id="loodi-account-sheet-title">{title}</h2><button type="button" aria-label="Fermer" onClick={onClose}><X size={20} /></button></header>

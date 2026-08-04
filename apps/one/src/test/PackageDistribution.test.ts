@@ -48,10 +48,10 @@ describe('published package manifests', () => {
     expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.8.2 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.8.5 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.8.2')
+    expect(pkg.version).toBe('0.8.5')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -283,7 +283,8 @@ describe('published package manifests', () => {
     expect(accountCss).toContain('background: var(--color-surface-glass-dark);')
     expect(accountCss).toContain('backdrop-filter: blur(24px);')
     expect(accountCss).toContain('backdrop-filter: blur(4px);')
-    expect(accountCss).toContain('-webkit-backdrop-filter: blur(4px);')
+    expect(accountCss).toMatch(/\.loodi-account-sheet \{[^}]*color: var\(--color-theme-text-primary, var\(--color-text-light\)\);/)
+    expect(accountCss).not.toContain('isolation: isolate;')
   })
 
   it('makes One consume only public @loodi/ui entry points', () => {
@@ -323,6 +324,7 @@ describe('published package manifests', () => {
     expect(settings).toContain('hover:bg-[var(--color-brand-primary-hover)]')
     expect(bottomSheet).toContain('dark:bg-[var(--color-surface-glass-dark)]')
     expect(miniHeaderCss).toContain('color: var(--color-text-primary-dark);')
+    expect(miniHeaderCss).toContain('.loodi-mini-header--behind-overlay { z-index: 10; }')
     expect(bottomNavCss).toContain('var(--color-text-primary-dark)')
     expect(launcherCss).toContain('var(--color-text-primary-dark)')
 

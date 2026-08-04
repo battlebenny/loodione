@@ -28,6 +28,8 @@ export interface MiniHeaderProps {
   menuItems?: MiniHeaderMenuItem[]
   onMenuItemSelect?: (id: string) => void
   hideActions?: boolean
+  /** Places shell chrome below an overlay rendered inside a module iframe. */
+  behindOverlay?: boolean
 }
 export interface MiniHeaderMenuItem { id: string; label: string; tone?: 'default' | 'danger' }
 
