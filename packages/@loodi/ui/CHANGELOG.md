@@ -4,6 +4,13 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.8.6] - 2026-08-07
+
+### Fixed
+
+- Le launcher affiche les variantes claire et sombre des icônes SVG distantes.
+- Les paramètres affichent les icônes de modules référencées par une URL HTTPS.
+
 ## [0.8.5] - 2026-08-04
 
 ### Fixed
