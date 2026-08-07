@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<svg fill="#E67E22" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" aria-label="Billet">
+        <path transform="translate(0 -3) matrix(0.36 0.257 -0.429 0.216 67.5 14)" fill="#E67E22" d="M7 0H93A7 7 0 0 1 100 7V93A7 7 0 0 1 93 100H7A7 7 0 0 1 0 93V7A7 7 0 0 1 7 0Z"></path>
+        <path d="M28.6 41.5 L28.6 85.5 L56.5 105.4" fill="none" stroke="#E67E22" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(-3.6 1.8)"></path>
+        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill="#E67E22" d="M7 0H93A7 7 0 0 1 100 7V101.3A7 7 0 0 1 93 108.3H7A7 7 0 0 1 0 101.3V7A7 7 0 0 1 7 0Z"></path>
+        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill-rule="evenodd" fill="#FFFFFF" d="M23 30.15H77A7 7 0 0 1 84 37.15V46.15A8 8 0 0 0 84 62.15V71.15A7 7 0 0 1 77 78.15H23A7 7 0 0 1 16 71.15V62.15A8 8 0 0 0 16 46.15V37.15A7 7 0 0 1 23 30.15ZM60 36.15H65V42.15H60ZM60 46.15H65V52.15H60ZM60 56.15H65V62.15H60ZM60 66.15H65V72.15H60Z"></path>
+      </svg>

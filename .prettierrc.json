@@ -1,0 +1,17 @@
+{
+  "trailingComma": "all",
+  "singleQuote": true,
+  "printWidth": 120,
+  "objectWrap": "collapse",
+  "overrides": [
+    {
+      "files": [
+        "apps/one/src/config/*.json",
+        "public/config.json"
+      ],
+      "options": {
+        "printWidth": 500
+      }
+    }
+  ]
+}

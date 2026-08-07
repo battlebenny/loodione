@@ -30,9 +30,16 @@ export function Launcher({ apps, open, onSelect, onClose }: LauncherProps) {
                 style={{ transitionDelay: open ? `${index * 30}ms` : '0ms' }}
               >
                 <div className="loodi-launcher__app-icon" style={{ '--app-color': app.color } as CSSProperties}>
-                  {app.icon.startsWith('http') || app.icon.startsWith('/')
+                  {app.icon.startsWith('http')
                     ? <img src={app.icon} alt={app.name} className="loodi-launcher__app-image" />
-                    : app.icon}
+                    : app.icon.startsWith('/')
+                      ? (
+                          <>
+                            <img src={app.icon} alt={app.name} className="loodi-launcher__app-image loodi-launcher__app-image--light" />
+                            <img src={app.icon.replace(/\.svg$/, '-dark.svg')} alt="" className="loodi-launcher__app-image loodi-launcher__app-image--dark" />
+                          </>
+                        )
+                      : app.icon}
                 </div>
                 <span className="loodi-launcher__app-name">{app.name}</span>
               </button>

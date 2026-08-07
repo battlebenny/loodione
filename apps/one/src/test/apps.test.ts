@@ -1,4 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { existsSync, readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 import {
   BRIDGE_ALLOWED_ORIGINS,
   applyLocalUrlOverrides,
@@ -53,6 +55,53 @@ afterEach(() => {
 })
 
 describe('module configuration', () => {
+  it('registers Friends across the local development environments', () => {
+    expect(getAppsForEnvironment('development').find((app) => app.id === 'loodi-friends')).toMatchObject({
+      name: 'Friends',
+      icon: '/icons/loodi-friends.svg',
+      color: '#D84A77',
+      url: 'https://friends.loodi.test:4008',
+    })
+    expect(getAppsForEnvironment('android-emulator').find((app) => app.id === 'loodi-friends')?.url).toBe('https://10.0.2.2:4008')
+    expect(getAppsForEnvironment('ios-simulator').find((app) => app.id === 'loodi-friends')?.url).toBe('https://localhost:4008')
+    expect(getAppsForEnvironment('android-device').find((app) => app.id === 'loodi-friends')?.url).toBe('https://192.168.0.109:4008')
+    expect(getAppsForEnvironment('ios-device').find((app) => app.id === 'loodi-friends')?.url).toBe('https://192.168.0.109:4008')
+  })
+
+  it('uses the accessible module palette for Mag and Sessions in every registry', () => {
+    for (const mode of ['development', 'android-device', 'ios-device', 'recette', 'production']) {
+      const apps = getAppsForEnvironment(mode)
+      expect(apps.find((app) => app.id === 'loodi-mag')?.color).toBe('#3570A8')
+      expect(apps.find((app) => app.id === 'loodi-sessions')?.color).toBe('#007C91')
+    }
+  })
+
+  it('keeps Friends absent from recette and production until its HTTPS deployment exists', () => {
+    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi-friends')).toBeUndefined()
+    expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi-friends')).toBeUndefined()
+  })
+
+  it('allowlists the Friends origin in every local development environment', () => {
+    expect(getBridgeAllowedOrigins('development')).toContain('https://friends.loodi.test:4008')
+    expect(getBridgeAllowedOrigins('android-emulator')).toContain('https://10.0.2.2:4008')
+    expect(getBridgeAllowedOrigins('ios-simulator')).toContain('https://localhost:4008')
+    expect(getBridgeAllowedOrigins('android-device')).toContain('https://192.168.0.109:4008')
+    expect(getBridgeAllowedOrigins('ios-device')).toContain('https://192.168.0.109:4008')
+  })
+
+  it('ships the Friends icon variants generated from the design asset', () => {
+    const iconDir = resolve(process.cwd(), 'public/icons')
+    const light = readFileSync(resolve(iconDir, 'loodi-friends.svg'), 'utf8')
+    const dark = readFileSync(resolve(iconDir, 'loodi-friends-dark.svg'), 'utf8')
+
+    expect(existsSync(resolve(iconDir, 'loodi-friends.svg'))).toBe(true)
+    expect(existsSync(resolve(iconDir, 'loodi-friends-dark.svg'))).toBe(true)
+    expect(light).toContain('fill="#D84A77"')
+    expect(light).toContain('stroke="#D84A77"')
+    expect(dark).toContain('fill="#D84A77"')
+    expect(dark).toContain('fill="#FFFFFF"')
+  })
+
   it('maps Vite modes to their module configuration environment', () => {
     expect(getConfigEnvironment('development')).toBe('local')
     expect(getConfigEnvironment('android-emulator')).toBe('emulator')
@@ -89,11 +138,13 @@ describe('module configuration', () => {
     expect(getBridgeAllowedOrigins('android-emulator')).toEqual([
       'https://10.0.2.2:4000',
       'https://10.0.2.2:4002',
+      'https://10.0.2.2:4008',
     ])
     expect(getBridgeAllowedOrigins('android-device')).toContain('https://192.168.0.109:4002')
     expect(getBridgeAllowedOrigins('ios-simulator')).toEqual([
       'https://localhost:4000',
       'https://localhost:4002',
+      'https://localhost:4008',
     ])
     expect(getBridgeAllowedOrigins('ios-device')).toContain('https://192.168.0.109:4002')
     expect(getBridgeAllowedOrigins('recette')).toEqual([COLLEC_URL])
@@ -210,7 +261,7 @@ describe('module configuration', () => {
     const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({
       apps: [
         ...acceptedManifest.apps,
-        { id: 'loodi-mag', name: 'Mag', icon: '📰', url: 'https://loodi-mag.vercel.app/', color: '#4A90D9' },
+        { id: 'loodi-mag', name: 'Mag', icon: '📰', url: 'https://loodi-mag.vercel.app/', color: '#3570A8' },
       ],
     }))
 

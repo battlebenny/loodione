@@ -212,6 +212,22 @@ describe('Settings', () => {
     expect(screen.getByRole('button', { name: /application préférée/i })).toBeInTheDocument()
   })
 
+  it('renders path-based module icons as images in the favourite picker', () => {
+    render(
+      <Settings
+        onClose={vi.fn()}
+        apps={[{ id: 'loodi', name: 'collec', icon: '/icons/loodi.svg', color: '#ca4a16', url: 'https://loodi.vercel.app' }]}
+        favoriteAppId={null}
+        onFavoriteChange={vi.fn()}
+      />,
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: /application préférée/i }))
+    const img = screen.getByAltText(/^collec$/i)
+    expect(img.tagName).toBe('IMG')
+    expect(img).toHaveAttribute('src', '/icons/loodi.svg')
+  })
+
   it('shows editable local module URLs in a development build', async () => {
     render(
       <Settings

@@ -52,6 +52,7 @@ Chaque serveur local utilise une URL fixe `https://<module>.loodi.test:<port>`. 
 | Places | `https://places.loodi.test:4005` |
 | Fest | `https://fest.loodi.test:4006` |
 | Sessions | `https://sessions.loodi.test:4007` |
+| Friends | `https://friends.loodi.test:4008` |
 
 Le premier module de test est lancé avec `npm run dev:dummy`. Ajouter les noms utilisés dans ce tableau à `/etc/hosts`, puis installer la CA mkcert et générer un certificat local couvrant `*.loodi.test` et `10.0.2.2` avant le premier lancement.
 
@@ -66,7 +67,7 @@ Utiliser `Ctrl+C` dans le terminal qui a lancé le serveur. `kill <PID>` ne doit
 
 ## Émulateur Android
 
-La build `npm run build:android-emulator` utilise `apps.emulator.json`. Le dummy est alors préconfiguré sur `https://10.0.2.2:4000` ; les autres modules utilisent les ports `4002–4007` à la même adresse.
+La build `npm run build:android-emulator` utilise `apps.emulator.json`. Le dummy est alors préconfiguré sur `https://10.0.2.2:4000` ; les autres modules utilisent les ports `4002–4008` à la même adresse.
 
 ```bash
 npm run dev:dummy
@@ -81,7 +82,7 @@ La build `npm run build:android-device` utilise `apps.android-device.json` et l�
 
 ## Simulateur iOS
 
-La build `npm run build:ios-simulator` utilise `apps.ios-simulator.json`. Le simulateur iOS partage le loopback du Mac : le dummy est donc préconfiguré sur `https://localhost:4000` et les modules sur les ports `4002–4007`.
+La build `npm run build:ios-simulator` utilise `apps.ios-simulator.json`. Le simulateur iOS partage le loopback du Mac : le dummy est donc préconfiguré sur `https://localhost:4000` et les modules sur les ports `4002–4008`.
 
 ```bash
 npm run dev:dummy
@@ -95,3 +96,14 @@ Les modules doivent demander la caméra avec `navigator.mediaDevices.getUserMedi
 One conserve `allow="camera"` sur chaque iframe ; Capacitor relaie ensuite la demande au système.
 Les builds Android et iOS déclarent respectivement `android.permission.CAMERA` et `NSCameraUsageDescription`.
 Les URLs de modules doivent rester en HTTPS, notamment pour les tests locaux avec le certificat mkcert.
+
+Pour intégrer une nouvelle PWA, suivre le guide complet [`docs/13_GUIDE_AJOUT_APPLICATION.md`](../../../../docs/13_GUIDE_AJOUT_APPLICATION.md). Friends utilise actuellement le domaine local `friends.loodi.test` et le port réservé `4008`.
+
+## Formatage des registres
+
+Les registres JSON sont formatés avec Prettier, utilisable directement dans VSCodium via l’extension **Prettier - Code formatter** :
+
+```bash
+npx prettier --check apps/one/src/config/*.json
+npx prettier --write apps/one/src/config/*.json
+```

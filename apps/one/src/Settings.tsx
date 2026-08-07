@@ -222,7 +222,9 @@ export function Settings({ onClose, apps, favoriteAppId, onFavoriteChange, devel
               onClick={() => { onFavoriteChange(app.id); setAppSheetOpen(false) }}
             >
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-black/5 dark:bg-white/10">
-                <span className="text-lg">{app.icon}</span>
+                {app.icon.startsWith('/')
+                  ? <img src={app.icon} alt={app.name} className="h-6 w-6" />
+                  : <span className="text-lg">{app.icon}</span>}
               </div>
               <div className="flex-1">
                 <p className="text-[15px] font-medium text-black/80 dark:text-white/80">{app.name}</p>

@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<svg fill="#9B59B6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" aria-label="Lieu">
+        <path transform="translate(0 -3) matrix(0.36 0.257 -0.429 0.216 67.5 14)" fill="#9B59B6" d="M7 0H93A7 7 0 0 1 100 7V93A7 7 0 0 1 93 100H7A7 7 0 0 1 0 93V7A7 7 0 0 1 7 0Z"></path>
+        <path d="M28.6 41.5 L28.6 85.5 L56.5 105.4" fill="none" stroke="#9B59B6" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(-3.6 1.8)"></path>
+        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill="#9B59B6" d="M7 0H93A7 7 0 0 1 100 7V101.3A7 7 0 0 1 93 108.3H7A7 7 0 0 1 0 101.3V7A7 7 0 0 1 7 0Z"></path>
+        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill-rule="evenodd" fill="#FFFFFF" d="M50 92.15C34 69.15 26 59.15 26 46.15A24 24 0 0 1 74 46.15C74 59.15 66 69.15 50 92.15ZM41 46.15A9 9 0 1 0 59 46.15A9 9 0 1 0 41 46.15Z"></path>
+      </svg>

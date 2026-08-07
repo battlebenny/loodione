@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
-<svg fill="#ca4a16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" aria-label="Dé">
+<svg fill="#ca4a16" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" aria-label="Jeux">
         <path transform="translate(0 -3) matrix(0.36 0.257 -0.429 0.216 67.5 14)" fill="#ca4a16" d="M7 0H93A7 7 0 0 1 100 7V93A7 7 0 0 1 93 100H7A7 7 0 0 1 0 93V7A7 7 0 0 1 7 0Z"></path>
         <path d="M28.6 41.5 L28.6 85.5 L56.5 105.4" fill="none" stroke="#ca4a16" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(-3.6 1.8)"></path>
         <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill="#ca4a16" d="M7 0H93A7 7 0 0 1 100 7V101.3A7 7 0 0 1 93 108.3H7A7 7 0 0 1 0 101.3V7A7 7 0 0 1 7 0Z"></path>
-        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill-rule="evenodd" fill="#F5C842" d="M31 58.15A19 19 0 1 0 69 58.15A19 19 0 1 0 31 58.15Z"></path>
+        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill-rule="evenodd" fill="#FFFFFF" d="M18.01 22.65H30.61A1.05 1.05 0 0 1 31.66 23.7V84.6A1.05 1.05 0 0 1 30.61 85.65H18.01A1.05 1.05 0 0 1 16.96 84.6V23.7A1.05 1.05 0 0 1 18.01 22.65ZM35.51 22.65H48.11A1.05 1.05 0 0 1 49.16 23.7V84.6A1.05 1.05 0 0 1 48.11 85.65H35.51A1.05 1.05 0 0 1 34.46 84.6V23.7A1.05 1.05 0 0 1 35.51 22.65ZM49.16 29.65L63.41 24.5L83.01 78.75L68.76 83.9Z"></path>
       </svg>

@@ -295,7 +295,7 @@
     },
     "module-mag": {
       "$type": "color",
-      "$value": "#4a90d9"
+      "$value": "#3570a8"
     },
     "module-places": {
       "$type": "color",
@@ -307,7 +307,11 @@
     },
     "module-sessions": {
       "$type": "color",
-      "$value": "#1abc9c"
+      "$value": "#007c91"
+    },
+    "module-friends": {
+      "$type": "color",
+      "$value": "#d84a77"
     },
     "module-dev": {
       "$type": "color",

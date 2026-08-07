@@ -7,7 +7,7 @@ const sourcePath = resolve(root, 'src/tokens.source.json')
 const source = JSON.parse(await readFile(sourcePath, 'utf8'))
 
 const expectedCounts = {
-  color: 78,
+  color: 79,
   theme: 30,
   spacing: 5,
   radius: 4,

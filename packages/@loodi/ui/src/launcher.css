@@ -68,12 +68,15 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--app-color) 12.5%, transparent);
+  background: color-mix(in srgb, var(--app-color) 18.5%, transparent);
   box-shadow: var(--shadow-ambient-low);
   font-size: 1.25rem;
 }
 
-.loodi-launcher__app-image { width: 28px; height: 28px; object-fit: contain; }
+.loodi-launcher__app-image { width: 48px; height: 48px; object-fit: contain; }
+.loodi-launcher__app-image--dark { display: none; }
+:where(.dark) .loodi-launcher__app-image--light { display: none; }
+:where(.dark) .loodi-launcher__app-image--dark { display: block; }
 .loodi-launcher__app-name { width: 100%; overflow: hidden; font: var(--typography-caption); line-height: 1.2; text-align: center; text-overflow: ellipsis; white-space: nowrap; }
 .loodi-launcher__handle-wrap { display: flex; justify-content: center; padding-bottom: var(--spacing-lg); }
 .loodi-launcher__handle { position: relative; width: 36px; height: 4px; border-radius: var(--radius-pill); background: color-mix(in srgb, var(--color-text-light) 20%, transparent); cursor: grab; touch-action: none; }

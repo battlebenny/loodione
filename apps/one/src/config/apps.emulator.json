@@ -1,4 +1,5 @@
 [
-  { "id": "loodi", "name": "collec", "icon": "📚", "url": "https://10.0.2.2:4002", "color": "#ca4a16" },
-  { "id": "loodi-dev", "name": "Dev", "icon": "🚧", "url": "https://10.0.2.2:4000", "color": "#6B7280" }
+  { "id": "loodi", "name": "collec", "icon": "/icons/loodi.svg", "url": "https://10.0.2.2:4002", "color": "#ca4a16" },
+  { "id": "loodi-dev", "name": "Dev", "icon": "🚧", "url": "https://10.0.2.2:4000", "color": "#6B7280" },
+  { "id": "loodi-friends", "name": "Friends", "icon": "/icons/loodi-friends.svg", "url": "https://10.0.2.2:4008", "color": "#D84A77" }
 ]

@@ -73,10 +73,11 @@
     "settings-bg-dark": "#161615",
     "module-loodi": "#ca4a16",
     "module-mate": "#2e8b57",
-    "module-mag": "#4a90d9",
+    "module-mag": "#3570a8",
     "module-places": "#9b59b6",
     "module-fest": "#e67e22",
-    "module-sessions": "#1abc9c",
+    "module-sessions": "#007c91",
+    "module-friends": "#d84a77",
     "module-dev": "#6b7280"
   },
   "theme": {

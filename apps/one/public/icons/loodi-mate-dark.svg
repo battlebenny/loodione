@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+<svg fill="#2E8B57" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" aria-label="Robot">
+        <path transform="translate(0 -3) matrix(0.36 0.257 -0.429 0.216 67.5 14)" fill="#2E8B57" d="M7 0H93A7 7 0 0 1 100 7V93A7 7 0 0 1 93 100H7A7 7 0 0 1 0 93V7A7 7 0 0 1 7 0Z"></path>
+        <path d="M28.6 41.5 L28.6 85.5 L56.5 105.4" fill="none" stroke="#2E8B57" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" transform="translate(-3.6 1.8)"></path>
+        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill="#2E8B57" d="M7 0H93A7 7 0 0 1 100 7V101.3A7 7 0 0 1 93 108.3H7A7 7 0 0 1 0 101.3V7A7 7 0 0 1 7 0Z"></path>
+        <path transform="translate(2.4 1.75) matrix(0.429 -0.216 0 0.48 60.6 61.3)" fill-rule="evenodd" fill="#FFFFFF" d="M32 34.15H68A12 12 0 0 1 80 46.15V72.15A12 12 0 0 1 68 84.15H32A12 12 0 0 1 20 72.15V46.15A12 12 0 0 1 32 34.15ZM47 23.15H53V34.15H47ZM44 17.15A6 6 0 1 0 56 17.15A6 6 0 1 0 44 17.15ZM16 48.15H16A4 4 0 0 1 20 52.15V62.15A4 4 0 0 1 16 66.15H16A4 4 0 0 1 12 62.15V52.15A4 4 0 0 1 16 48.15ZM84 48.15H84A4 4 0 0 1 88 52.15V62.15A4 4 0 0 1 84 66.15H84A4 4 0 0 1 80 62.15V52.15A4 4 0 0 1 84 48.15ZM29.5 53.15A7.5 7.5 0 1 0 44.5 53.15A7.5 7.5 0 1 0 29.5 53.15ZM55.5 53.15A7.5 7.5 0 1 0 70.5 53.15A7.5 7.5 0 1 0 55.5 53.15ZM39.5 67.15H60.5A3.5 3.5 0 0 1 64 70.65V70.65A3.5 3.5 0 0 1 60.5 74.15H39.5A3.5 3.5 0 0 1 36 70.65V70.65A3.5 3.5 0 0 1 39.5 67.15Z"></path>
+      </svg>

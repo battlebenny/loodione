@@ -88,7 +88,7 @@
   font: 600 .875rem/1 var(--font-brand, var(--typography-body));
 }
 
-.loodi-mini-header__brand-slot { width: 36px; height: 36px; flex: 0 0 36px; padding: 0 4px; }
+.loodi-mini-header__brand-slot { width: 36px; height: 36px; flex: 0 0 36px; }
 .loodi-mini-header__logo { display: block; width: 36px; height: 36px; }
 .loodi-mini-header__logo--dark { display: none; }
 .loodi-mini-header__wordmark { display: block; width: auto; height: 20px; }

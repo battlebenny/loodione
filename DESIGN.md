@@ -24,10 +24,11 @@ colors:
   settings-bg-dark: "#161615"
   module-loodi: "#ca4a16"
   module-mate: "#2E8B57"
-  module-mag: "#4A90D9"
+  module-mag: "#3570A8"
   module-places: "#9B59B6"
   module-fest: "#E67E22"
-  module-sessions: "#1ABC9C"
+  module-sessions: "#007C91"
+  module-friends: "#D84A77"
   module-dev: "#6B7280"
 typography:
   display:
@@ -191,10 +192,13 @@ Chaque paire est notée `clair / sombre`. Les contrastes vérifiés au minimum s
 Chaque module PWA possède sa propre couleur d'accent, utilisée comme fond d'icône dans le launcher et comme ring de sélection :
 - **Loodi** `#ca4a16` (orange brûlé)
 - **Mate** `#2E8B57` (vert forêt)
-- **Mag** `#4A90D9` (bleu ciel)
+- **Mag** `#3570A8` (bleu ciel profond)
 - **Places** `#9B59B6` (violet)
 - **Fest** `#E67E22` (orange feu)
-- **Sessions** `#1ABC9C` (turquoise)
+- **Sessions** `#007C91` (turquoise cyan)
+- **Friends** `#D84A77` (rose framboise)
+
+La couleur Friends est réservée aux icônes, fonds teintés et rings de sélection. Elle ne doit pas être utilisée seule comme couleur de texte sur fond clair : son contraste est inférieur à WCAG AA.
 
 ### Named Rules
 **La Règle de la Transparence.** Les surfaces du shell sont toujours partiellement transparentes (60–90% d'opacité) avec `backdrop-blur`. La transparence signale « ceci est le cadre » — les modules, eux, sont pleins et opaques.
