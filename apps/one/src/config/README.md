@@ -34,6 +34,7 @@ Le manifeste public est `https://battlebenny.github.io/loodione/config.json`. Ch
 2. Le workflow `.github/workflows/deploy-public-pages.yml` publie uniquement `public/` à chaque push de ce dossier sur `main`.
 3. Modifier `public/config.json`, pousser sur `main` et attendre la fin du workflow **Deploy public assets to GitHub Pages**.
 4. Vérifier que `https://battlebenny.github.io/loodione/config.json` répond `200` et contient uniquement des URLs HTTPS de modules livrables.
+   Les icônes du registre public doivent utiliser `https://battlebenny.github.io/loodione/icons/<module>.svg` ; elles sont générées dans `public/icons/` par `node apps/one/scripts/colorize-icons.mjs`.
 5. Installer ou relancer la build recette/production : le registre est téléchargé puis appliqué au lancement suivant.
 
 `allowNavigation` autorise `https://*.vercel.app` dans Capacitor afin qu’un nouveau module Vercel puisse être chargé sans livraison store. Ajouter un module sur un autre hébergeur exigera une nouvelle version native, ou un domaine commun stabilisé. Ne mettre dans le registre que des déploiements Vercel destinés à rester accessibles.
