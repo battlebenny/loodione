@@ -39,6 +39,7 @@ export interface BridgeServerCallbacks {
   onRequestSharedPreferences(appId: string): SharedPreferences
   onRequestSharedPreferencesUpdate(appId: string, update: SharedPreferencesUpdate): SharedPreferences
   onRequestShowShellSettings(callerId: string): void
+  onRequestShowAuth(callerId: string): void
   onRequestShowLoodiAccount(callerId: string): void
 }
 
@@ -292,6 +293,10 @@ export class BridgeServer {
           this.callbacks.onRequestShowShellSettings(appId)
           respond(undefined)
           break
+        case 'showAuth':
+          this.callbacks.onRequestShowAuth(appId)
+          respond(undefined)
+          break
         case 'showLoodiAccount':
           this.callbacks.onRequestShowLoodiAccount(appId)
           respond(undefined)
@@ -428,6 +433,7 @@ function hasValidCallArguments(method: string, args: unknown[]): boolean {
     case 'showAppSwitcher':
     case 'getSharedPreferences':
     case 'showShellSettings':
+    case 'showAuth':
     case 'showLoodiAccount':
       return args.length === 0
     case 'openApp':

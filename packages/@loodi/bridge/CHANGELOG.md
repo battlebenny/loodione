@@ -4,6 +4,14 @@ Toutes les évolutions notables de `@loodi/bridge` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-08
+
+### Added
+
+- `BridgeClient.showAuth()` ouvre la bottom sheet globale de connexion et
+  d'inscription de Loodi One depuis un module embarqué.
+- `showLoodiAccount()` conserve son parcours vers la page « Mon compte Loodi ».
+
 ## [0.5.0] - 2026-08-03
 
 ### Changed

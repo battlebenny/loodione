@@ -136,6 +136,10 @@ export class BridgeClient {
     return this.call('showShellSettings')
   }
 
+  showAuth(): Promise<void> {
+    return this.call('showAuth')
+  }
+
   showLoodiAccount(): Promise<void> {
     return this.call('showLoodiAccount')
   }

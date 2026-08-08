@@ -1,5 +1,5 @@
 import { useCallback, useRef, type PointerEvent, type ReactNode } from 'react'
-import { Grid2X2, Settings, LibraryBig, User, Users, type LucideIcon } from 'lucide-react'
+import { Grid2X2, Settings, LibraryBig, User, Users, QrCode, type LucideIcon } from 'lucide-react'
 import type { BottomNavProps } from './types.js'
 
 const LUCIDE: Record<string, LucideIcon> = {
@@ -7,6 +7,7 @@ const LUCIDE: Record<string, LucideIcon> = {
   settings: Settings,
   users: Users,
   user: User,
+  'qr-code': QrCode,
 }
 
 const LOODI_NAVIGATION_ICONS = new Set(['home', 'search', 'scan', 'rss'])

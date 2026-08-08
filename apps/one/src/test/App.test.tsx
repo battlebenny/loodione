@@ -324,6 +324,14 @@ describe('module frame', () => {
     expect(signOut).not.toHaveBeenCalled()
   })
 
+  it('opens the global authentication sheet from the disconnected avatar', () => {
+    const { container } = render(<App />)
+
+    fireEvent.click(within(container).getByRole('button', { name: 'Profil' }))
+
+    expect(screen.getByRole('heading', { name: 'Connexion Loodi' })).toBeInTheDocument()
+  })
+
   it('hides the bottom navigation while the connected profile sheet is open', () => {
     auth.state = 'authenticated'
     auth.session = { userId: 'user-1', accessToken: 'token', expiresAt: 0, handle: 'battle_benny' }

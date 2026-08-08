@@ -30,6 +30,11 @@ Depuis une iframe, ils les envoient au shell. En standalone, ils sont volontaire
 
 Les événements et appels legacy restent pris en charge pendant la migration : header (`setHeaderActions`, `setHeaderOptions`, `loodi:headeraction`), retour (`loodi:back`), thème, onglets, scroll et `loodi:overlaychange`.
 
+En mode shell, `await bridge.showAuth()` ouvre la bottom sheet globale de
+connexion/inscription de One. `await bridge.showLoodiAccount()` conserve son
+comportement et ouvre la page « Mon compte Loodi ». En standalone, le module
+utilise sa propre `AuthBottomSheet`.
+
 ## Gestes de navigation
 
 Un module qui sait traiter les gestes de navigation le déclare explicitement ; sans cette déclaration, One conserve le geste. Cette capacité est indépendante de `setHeaderOptions({ canGoBack })`.
