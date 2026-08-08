@@ -24,6 +24,7 @@ function callbacks(): BridgeServerCallbacks {
     onRequestSharedPreferencesUpdate: vi.fn(() => updatedPreferences),
     onRequestShowShellSettings: vi.fn(),
     onRequestShowLoodiAccount: vi.fn(),
+    onRequestShowAuth: vi.fn(),
   }
 }
 
@@ -154,6 +155,50 @@ describe('BridgeServer embedded settings', () => {
     }))
 
     expect(cb.onRequestShowLoodiAccount).toHaveBeenCalledWith('loodi-dev')
+    bridge.destroy()
+  })
+})
+
+describe('BridgeServer authentication sheet', () => {
+  it('delegates showAuth to One without changing the account action', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb)
+    const iframe = document.createElement('iframe')
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi-dev', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:call', method: 'showAuth', args: [], id: 1 },
+    }))
+
+    expect(cb.onRequestShowAuth).toHaveBeenCalledWith('loodi-dev')
+    expect(cb.onRequestShowLoodiAccount).not.toHaveBeenCalled()
+    bridge.destroy()
+  })
+
+  it('accepts showAuth in strict mode and answers on the iframe origin', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb, {
+      security: { mode: 'strict', allowedOrigins: ['https://dummy.loodi.test:4000'] },
+    })
+    const iframe = document.createElement('iframe')
+    iframe.src = 'https://dummy.loodi.test:4000/dev/dummy.html'
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi-dev', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      origin: 'https://dummy.loodi.test:4000',
+      data: { type: 'loodi:call', method: 'showAuth', args: [], id: 2 },
+    }))
+
+    expect(cb.onRequestShowAuth).toHaveBeenCalledWith('loodi-dev')
+    expect(child.postMessage).toHaveBeenCalledWith({
+      type: 'loodi:response', id: 2, result: undefined, error: undefined,
+    }, 'https://dummy.loodi.test:4000')
     bridge.destroy()
   })
 })

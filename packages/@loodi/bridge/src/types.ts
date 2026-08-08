@@ -97,6 +97,7 @@ export interface BridgeMethods {
   getSharedPreferences(): SharedPreferences
   updateSharedPreferences(update: SharedPreferencesUpdate): SharedPreferences
   showShellSettings(): void
+  showAuth(): void
   showLoodiAccount(): void
   queueAction(action: unknown): void
   requestPermission(kind: 'camera' | 'geolocation'): 'granted' | 'denied'

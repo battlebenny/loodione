@@ -1,10 +1,10 @@
 [
+  { "id": "loodi-dev", "name": "Dev", "icon": "🚧", "url": "https://{{DEVICE_HOST}}:4000", "color": "#6B7280" },
   { "id": "loodi", "name": "collec", "icon": "/icons/loodi.svg", "url": "https://{{DEVICE_HOST}}:4002", "color": "#ca4a16" },
   { "id": "loodi-mate", "name": "Mate", "icon": "/icons/loodi-mate.svg", "url": "https://{{DEVICE_HOST}}:4003", "color": "#2E8B57" },
   { "id": "loodi-mag", "name": "Mag", "icon": "/icons/loodi-mag.svg", "url": "https://{{DEVICE_HOST}}:4004", "color": "#3570A8" },
   { "id": "loodi-places", "name": "Places", "icon": "/icons/loodi-places.svg", "url": "https://{{DEVICE_HOST}}:4005", "color": "#9B59B6" },
   { "id": "loodi-fest", "name": "Fest", "icon": "/icons/loodi-fest.svg", "url": "https://{{DEVICE_HOST}}:4006", "color": "#E67E22" },
   { "id": "loodi-sessions", "name": "Sessions", "icon": "/icons/loodi-sessions.svg", "url": "https://{{DEVICE_HOST}}:4007", "color": "#007C91" },
-  { "id": "loodi-dev", "name": "Dev", "icon": "🚧", "url": "https://{{DEVICE_HOST}}:4000", "color": "#6B7280" },
   { "id": "loodi-friends", "name": "Friends", "icon": "/icons/loodi-friends.svg", "url": "https://{{DEVICE_HOST}}:4008", "color": "#D84A77" }
 ]

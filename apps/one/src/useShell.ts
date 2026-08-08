@@ -89,7 +89,7 @@ export function getActiveTabForPath(path: string): string {
   return 'home'
 }
 
-export function useShell(authSession: AuthSession | null = null) {
+export function useShell(authSession: AuthSession | null = null, onRequestShowAuth?: () => void) {
   const authSessionRef = useRef<AuthSession | null>(authSession)
   useEffect(() => { authSessionRef.current = authSession }, [authSession])
   const [localModuleUrls, setLocalModuleUrlsState] = useState<LocalModuleUrls>(() => loadLocalModuleUrls())
@@ -267,6 +267,7 @@ export function useShell(authSession: AuthSession | null = null) {
         return next
       },
       onRequestShowShellSettings: showOneSettings,
+      onRequestShowAuth: () => onRequestShowAuth?.(),
       onRequestShowLoodiAccount: showLoodiAccount,
     }, {
       security: {

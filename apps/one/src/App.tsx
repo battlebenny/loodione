@@ -67,8 +67,9 @@ function AppToast({ toast }: { toast: Toast }) {
 
 function App() {
   const auth = useAuth()
-  const { state, toggleLauncher, activateApp, toggleSettings, showLoodiAccount, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, setActiveTab, sendHeaderAction, sendBack, sendTabTap } = useShell(auth.session)
   const [authOpen, setAuthOpen] = useState(false)
+  const showAuth = useCallback(() => setAuthOpen(true), [])
+  const { state, toggleLauncher, activateApp, toggleSettings, showLoodiAccount, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, setActiveTab, sendHeaderAction, sendBack, sendTabTap } = useShell(auth.session, showAuth)
   const [accountOverlayOpen, setAccountOverlayOpen] = useState(false)
   const [accountScrollProgress, setAccountScrollProgress] = useState(0)
   const [accountSuccessMessage, setAccountSuccessMessage] = useState<string | undefined>()
@@ -248,7 +249,7 @@ function App() {
         onUser={() => {
           if (auth.state === 'authenticated') {
             setProfileSheetOpen(true)
-          } else setAuthOpen(true)
+          } else showAuth()
         }}
         userInitial={auth.state === 'authenticated' ? playerInitial : undefined}
         userAvatarColor={auth.state === 'authenticated' ? auth.profile?.profileColor ?? defaultProfileColor(playerHandle) : undefined}
