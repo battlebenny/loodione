@@ -82,7 +82,7 @@ export function LoodiAccountPage({ isAuthenticated, playerName, profileColor, em
     {onSignOut && <section className="loodi-account__card loodi-account__connection" style={{ marginTop: 'var(--spacing-xl, 20px)' }}><h2>Connexion</h2><Row icon={<LogOut size={18} />} label="Se déconnecter" detail="Quitter cette session" onClick={() => setSheet('signout')} last /></section>}
     {onDeleteAccount && <section className="loodi-account__card loodi-account__danger" style={{ marginTop: 'var(--spacing-xl, 20px)' }}>
       <button type="button" className="loodi-account__danger-toggle" aria-expanded={dangerOpen} aria-controls="loodi-account-danger-actions" onClick={() => setDangerOpen((open) => !open)}>
-        <span><strong className="loodi-account__danger-title uppercase">La fosse des joueurs damnés</strong><small className="loodi-account__danger-detail">Rien de bon ne t’attend ici.</small></span><ChevronDown aria-hidden="true" />
+        <span><strong className="loodi-account__danger-title">La fosse des joueurs damnés</strong><small className="loodi-account__danger-detail">Rien de bon ne t’attend ici.</small></span><ChevronDown aria-hidden="true" />
       </button>
       {dangerOpen && <div id="loodi-account-danger-actions" className="loodi-account__danger-actions"><Row icon={<Trash2 size={18} />} iconClassName="loodi-account__icon--danger" className="loodi-account__danger-row" detailClassName="loodi-account__danger-detail" label="Supprimer le compte" detail="Effacer définitivement mes données Loodi" onClick={() => { setDeleteConfirmation(''); setSheet('delete') }} last /></div>}
     </section>}

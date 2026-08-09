@@ -4,6 +4,12 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.8.8] - 2026-08-09
+
+### Fixed
+
+- La danger zone du compte reprend la typographie, les espacements et les tokens de surface et de statut de Loodi Collec, en clair comme en sombre.
+
 ## [0.8.7] - 2026-08-09
 
 ### Fixed

@@ -51,7 +51,7 @@ describe('published package manifests', () => {
   it('publishes @loodi/ui 0.8.7 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.8.7')
+    expect(pkg.version).toBe('0.8.8')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -130,6 +130,26 @@ describe('published package manifests', () => {
     expect(css).toContain('--color-text-secondary: #6B6B60;')
     expect(css).toContain('--color-text-secondary-dark: #A3A39A;')
     expect(dtcg.color['text-primary-dark'].$value).toBe('{color.text-dark}')
+  })
+
+  it('keeps the account danger zone aligned with the Collec typography and spacing contract', () => {
+    const accountCss = readFileSync(resolve(uiDirectory, 'src/account.css'), 'utf8')
+
+    expect(accountCss).toMatch(
+      /\.loodi-account__danger-toggle\s*\{[^}]*gap:\s*var\(--spacing-md\)[^}]*padding:\s*var\(--spacing-md\)\s+var\(--spacing-lg\)/,
+    )
+    expect(accountCss).toMatch(
+      /\.loodi-account__danger-toggle strong\s*\{[^}]*color:\s*var\(--color-theme-status-danger-text[^}]*font-size:\s*12px/,
+    )
+    expect(accountCss).toMatch(
+      /\.loodi-account__danger-toggle small\s*\{[^}]*color:\s*var\(--color-theme-text-primary[^}]*font-size:\s*11px/,
+    )
+    expect(accountCss).toMatch(
+      /\.loodi-account__danger-row \.loodi-account__copy strong\s*\{[^}]*color:\s*var\(--color-theme-status-danger-text[^}]*font-size:\s*12px/,
+    )
+    expect(accountCss).toMatch(
+      /\.loodi-account__danger-row \.loodi-account__copy small\s*\{[^}]*color:\s*var\(--color-theme-text-primary[^}]*font-size:\s*11px/,
+    )
   })
 
   it('ships the Collec page backgrounds without changing the dark value', () => {
