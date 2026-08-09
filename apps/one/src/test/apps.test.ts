@@ -76,8 +76,11 @@ describe('module configuration', () => {
     }
   })
 
-  it('keeps Friends absent from recette and production until its HTTPS deployment exists', () => {
-    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi-friends')).toBeUndefined()
+  it('registers Friends in recette while keeping it absent from production', () => {
+    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi-friends')).toMatchObject({
+      name: 'Friends',
+      url: 'https://loodifriends.vercel.app',
+    })
     expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi-friends')).toBeUndefined()
   })
 
@@ -147,7 +150,7 @@ describe('module configuration', () => {
       'https://localhost:4008',
     ])
     expect(getBridgeAllowedOrigins('ios-device')).toContain('https://192.168.0.109:4002')
-    expect(getBridgeAllowedOrigins('recette')).toEqual([COLLEC_URL])
+    expect(getBridgeAllowedOrigins('recette')).toEqual([COLLEC_URL, 'https://loodifriends.vercel.app'])
     expect(getBridgeAllowedOrigins('production')).toEqual([COLLEC_URL])
     expect(Object.values(BRIDGE_ALLOWED_ORIGINS).flat()).not.toContain('*')
   })
