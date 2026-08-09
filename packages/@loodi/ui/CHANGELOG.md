@@ -4,6 +4,17 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.8.7] - 2026-08-09
+
+### Fixed
+
+- Le fond du MiniHeader atteint son opacité maximale après une hauteur de header (52 px), de façon cohérente entre les modules et les pages One.
+- `BottomNav` rend l’icône Lucide `user-plus` utilisée par Friends au lieu de l’identifiant texte brut.
+
+### Added
+
+- `PlayerQrCodeSection`, section de paramètres présentationnelle avec export ESM et feuille CSS dédiés.
+
 ## [0.8.6] - 2026-08-07
 
 ### Fixed

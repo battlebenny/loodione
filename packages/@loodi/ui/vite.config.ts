@@ -12,6 +12,7 @@ export default defineConfig({
         launcher: resolve(__dirname, 'src/launcher-entry.ts'),
         'shared-preferences': resolve(__dirname, 'src/shared-preferences.ts'),
         'global-settings': resolve(__dirname, 'src/global-settings.ts'),
+        'player-qr-code': resolve(__dirname, 'src/player-qr-code.ts'),
         account: resolve(__dirname, 'src/account.ts'),
         'auth-bottom-sheet': resolve(__dirname, 'src/auth-bottom-sheet.ts'),
       },

@@ -1,6 +1,16 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getActiveTabForPath, getInitialAppId, getModuleHeaderOptions, getModuleTabs, registerRenderedModules, useShell } from '../useShell'
+import { getActiveTabForPath, getInitialAppId, getModuleHeaderOptions, getModuleTabs, headerScrollProgress, registerRenderedModules, useShell } from '../useShell'
+
+describe('headerScrollProgress', () => {
+  it('reaches full opacity after one MiniHeader height for every module', () => {
+    expect(headerScrollProgress(0)).toBe(0)
+    expect(headerScrollProgress(26)).toBe(0.5)
+    expect(headerScrollProgress(39)).toBe(0.75)
+    expect(headerScrollProgress(52)).toBe(1)
+    expect(headerScrollProgress(80)).toBe(1)
+  })
+})
 
 describe('registerRenderedModules', () => {
   it('re-registers mounted iframes when the bridge is recreated', () => {

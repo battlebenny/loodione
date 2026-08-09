@@ -1,6 +1,6 @@
 {
   "name": "@loodi/ui",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "description": "Presentation-only React design system for the Loodi ecosystem.",
   "type": "module",
   "main": "./dist/index.js",
@@ -30,6 +30,10 @@
       "types": "./dist/global-settings.d.ts",
       "import": "./dist/global-settings.js"
     },
+    "./player-qr-code": {
+      "types": "./dist/player-qr-code.d.ts",
+      "import": "./dist/player-qr-code.js"
+    },
     "./account": {
       "types": "./dist/account.d.ts",
       "import": "./dist/account.js"
@@ -46,6 +50,7 @@
     "./launcher.css": "./dist/launcher.css",
     "./shared-preferences.css": "./dist/shared-preferences.css",
     "./global-settings.css": "./dist/global-settings.css",
+    "./player-qr-code.css": "./dist/player-qr-code.css",
     "./account.css": "./dist/account.css",
     "./auth-bottom-sheet.css": "./dist/auth-bottom-sheet.css",
     "./package.json": "./package.json"
@@ -66,6 +71,7 @@
     "./dist/launcher.css",
     "./dist/shared-preferences.css",
     "./dist/global-settings.css",
+    "./dist/player-qr-code.css",
     "./dist/account.css",
     "./dist/auth-bottom-sheet.css"
   ],

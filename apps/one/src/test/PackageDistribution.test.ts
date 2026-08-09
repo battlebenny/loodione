@@ -48,10 +48,10 @@ describe('published package manifests', () => {
     expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.8.6 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.8.7 as modular typed ESM with individual styles', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.8.6')
+    expect(pkg.version).toBe('0.8.7')
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
@@ -62,6 +62,7 @@ describe('published package manifests', () => {
       './launcher': { types: './dist/launcher.d.ts', import: './dist/launcher.js' },
       './shared-preferences': { types: './dist/shared-preferences.d.ts', import: './dist/shared-preferences.js' },
       './global-settings': { types: './dist/global-settings.d.ts', import: './dist/global-settings.js' },
+      './player-qr-code': { types: './dist/player-qr-code.d.ts', import: './dist/player-qr-code.js' },
       './account': { types: './dist/account.d.ts', import: './dist/account.js' },
       './auth-bottom-sheet': { types: './dist/auth-bottom-sheet.d.ts', import: './dist/auth-bottom-sheet.js' },
       './styles.css': './dist/styles.css',
@@ -72,6 +73,7 @@ describe('published package manifests', () => {
       './launcher.css': './dist/launcher.css',
       './shared-preferences.css': './dist/shared-preferences.css',
       './global-settings.css': './dist/global-settings.css',
+      './player-qr-code.css': './dist/player-qr-code.css',
       './account.css': './dist/account.css',
       './auth-bottom-sheet.css': './dist/auth-bottom-sheet.css',
     })
@@ -83,12 +85,14 @@ describe('published package manifests', () => {
       './dist/launcher.css',
       './dist/shared-preferences.css',
       './dist/global-settings.css',
+      './dist/player-qr-code.css',
       './dist/account.css',
       './dist/auth-bottom-sheet.css',
     ])
     expect(pkg.publishConfig).toEqual({ access: 'public' })
     expect(existsSync(resolve(uiDirectory, 'dist/shared-preferences.d.ts'))).toBe(true)
     expect(existsSync(resolve(uiDirectory, 'dist/global-settings.d.ts'))).toBe(true)
+    expect(existsSync(resolve(uiDirectory, 'dist/player-qr-code.d.ts'))).toBe(true)
     expect(existsSync(resolve(uiDirectory, 'dist/account.d.ts'))).toBe(true)
     expect(existsSync(resolve(uiDirectory, 'dist/auth-bottom-sheet.d.ts'))).toBe(true)
   })
@@ -273,6 +277,7 @@ describe('published package manifests', () => {
     expect(styles).toContain('@import "./launcher.css"')
     expect(styles).toContain('@import "./shared-preferences.css"')
     expect(styles).toContain('@import "./global-settings.css"')
+    expect(styles).toContain('@import "./player-qr-code.css"')
     expect(styles).toContain('@import "./account.css"')
   })
 

@@ -18,6 +18,12 @@ import { App as CapacitorApp } from '@capacitor/app'
 import { installNavigationRuntime, type NavigationPlatform } from './navigation'
 import { syncStatusBarTheme } from './statusBar'
 import type { ThemeMode } from './theme'
+
+const MINI_HEADER_HEIGHT = 52
+
+export function headerScrollProgress(scrollY: number) {
+  return Math.min(Math.max(scrollY, 0) / MINI_HEADER_HEIGHT, 1)
+}
 import type { AuthSession, HeaderAction, HeaderOptions, SharedPreferences, SharedPreferencesUpdate } from '@loodi/bridge'
 import type { Tab } from '@loodi/ui/bottom-nav'
 import type { AppEntry } from './apps'
@@ -182,8 +188,7 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
     })
   }, [clearSettingsOpenTimeout])
 
-  const HEADER_H = 52
-  const scrollProgress = Math.min(scrollY / (HEADER_H * 1.5), 1)
+  const scrollProgress = headerScrollProgress(scrollY)
   const overlayActive = openOverlayAppIds.has(state.activeAppId)
 
   useEffect(() => {
@@ -308,7 +313,7 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
       const we = e as WheelEvent
       setScrollY(prev => {
         const next = prev + we.deltaY * 0.15
-        return Math.max(0, Math.min(HEADER_H * 1.5, next))
+        return Math.max(0, Math.min(MINI_HEADER_HEIGHT, next))
       })
     }) as EventListener
     const el = document.getElementById('module-container')

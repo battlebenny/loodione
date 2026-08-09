@@ -126,6 +126,22 @@ describe('BottomNav', () => {
     expect(loans?.querySelector('circle')).toBeInTheDocument()
   })
 
+  it('renders the user-plus icon sent by Friends instead of the raw identifier', () => {
+    render(
+      <BottomNav
+        showApps={false}
+        tabs={[{ id: 'add', icon: 'user-plus', label: 'Ajouter un ami' }]}
+        onTabTap={vi.fn()}
+      />,
+    )
+
+    const addFriend = screen.getByRole('button', { name: 'Ajouter un ami' })
+
+    expect(addFriend).toHaveTextContent('Ajouter un ami')
+    expect(addFriend.querySelector('svg')).toHaveClass('lucide-user-plus')
+    expect(addFriend).not.toHaveTextContent('user-plus')
+  })
+
   it('uses the Loodi brand color for the active tab', () => {
     const { container } = render(
       <BottomNav

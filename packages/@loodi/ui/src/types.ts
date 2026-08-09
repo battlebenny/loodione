@@ -75,6 +75,12 @@ export interface GlobalSettingsSectionProps {
   settingDescription?: string
 }
 
+/** Presentation-only entry point to the module-owned player QR code page. */
+export interface PlayerQrCodeSectionProps {
+  onOpenQrCode: () => void
+  disabled?: boolean
+}
+
 /** Auth-provider agnostic account management screen for embedded and standalone apps. */
 export interface LoodiAccountPageProps {
   isAuthenticated: boolean

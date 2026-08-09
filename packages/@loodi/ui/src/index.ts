@@ -7,6 +7,7 @@ export type {
   SharedPreferencesSectionProps,
   SharedPreferencesThemeMode,
   GlobalSettingsSectionProps,
+  PlayerQrCodeSectionProps,
   LoodiAccountPageProps,
   AuthBottomSheetProps,
   AuthBottomSheetState,
@@ -18,6 +19,7 @@ export { MiniHeader } from './MiniHeader.js'
 export { BottomNav } from './BottomNav.js'
 export { SharedPreferencesSection } from './SharedPreferencesSection.js'
 export { GlobalSettingsSection } from './GlobalSettingsSection.js'
+export { PlayerQrCodeSection } from './PlayerQrCodeSection.js'
 export { LoodiAccountPage } from './LoodiAccountPage.js'
 export { AuthBottomSheet } from './AuthBottomSheet.js'
 export { AccountBottomSheet } from './AccountBottomSheet.js'
