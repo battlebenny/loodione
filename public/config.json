@@ -4,5 +4,6 @@
   { "id": "loodi-mag", "name": "Mag", "icon": "https://battlebenny.github.io/loodione/icons/loodi-mag.svg", "url": null, "color": "#3570A8" },
   { "id": "loodi-places", "name": "Places", "icon": "https://battlebenny.github.io/loodione/icons/loodi-places.svg", "url": null, "color": "#9B59B6" },
   { "id": "loodi-fest", "name": "Fest", "icon": "https://battlebenny.github.io/loodione/icons/loodi-fest.svg", "url": null, "color": "#E67E22" },
-  { "id": "loodi-sessions", "name": "Sessions", "icon": "https://battlebenny.github.io/loodione/icons/loodi-sessions.svg", "url": null, "color": "#007C91" }
+  { "id": "loodi-sessions", "name": "Sessions", "icon": "https://battlebenny.github.io/loodione/icons/loodi-sessions.svg", "url": null, "color": "#007C91" },
+  { "id": "loodi-friends", "name": "Friends", "icon": "https://battlebenny.github.io/loodione/icons/loodi-friends.svg", "url": null, "color": "#D84A77" }
 ]
