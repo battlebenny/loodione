@@ -197,7 +197,7 @@ describe('module configuration', () => {
 
     await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(true)
 
-    expect(fetchManifest).toHaveBeenCalledWith(REMOTE_REGISTRY_URL)
+    expect(fetchManifest).toHaveBeenCalledWith(REMOTE_REGISTRY_URL, { cache: 'no-store' })
     expect(firstLaunchApps).toEqual(getAppsForEnvironment('production'))
     expect(getRuntimeApps({}, 'production', NOW + 1)).toEqual(acceptedManifest.apps)
   })

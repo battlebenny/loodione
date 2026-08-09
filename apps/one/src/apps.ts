@@ -16,7 +16,7 @@ export interface AppEntry {
 
 export type ConfigEnvironment = 'local' | 'emulator' | 'android-device' | 'ios-simulator' | 'ios-device' | 'recette' | 'production'
 export type LocalModuleUrls = Record<string, string>
-export type RegistryFetcher = (url: string) => Promise<{ ok: boolean; json(): Promise<unknown> }>
+export type RegistryFetcher = (url: string, options?: RequestInit) => Promise<{ ok: boolean; json(): Promise<unknown> }>
 
 const LOCAL_MODULE_URLS_KEY = 'loodi:localModuleUrls'
 export const REGISTRY_CACHE_KEY = 'loodi:remoteRegistry'
@@ -188,11 +188,11 @@ export function loadRemoteRegistryCache(now = Date.now()): AppEntry[] | null {
 
 /** Fetches and validates the next registry without changing the running shell. */
 export async function refreshRemoteRegistry(
-  fetcher: RegistryFetcher = (url) => fetch(url),
+  fetcher: RegistryFetcher = (url, options) => fetch(url, options),
   now = Date.now(),
 ): Promise<boolean> {
   try {
-    const response = await fetcher(REMOTE_REGISTRY_URL)
+    const response = await fetcher(REMOTE_REGISTRY_URL, { cache: 'no-store' })
     if (!response.ok) return false
     const apps = parseRemoteRegistry(await response.json())
     if (!apps) return false
