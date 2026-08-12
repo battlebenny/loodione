@@ -10,7 +10,7 @@ export interface LoodiPwaProps {
   development?: boolean
 }
 
-const VITE_DEVELOPMENT_SERVICE_WORKER = `${import.meta.env.BASE_URL}dev-sw.js?dev-sw`
+const VITE_DEVELOPMENT_SERVICE_WORKER = 'dev-sw.js?dev-sw'
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -107,8 +107,8 @@ function OfflineBanner() {
 
 export function LoodiPwa({ appName, standalone = true, serviceWorkerPath = '/sw.js', development = false }: LoodiPwaProps) {
   if (!standalone) return null
-  const resolvedServiceWorkerPath = import.meta.env.DEV && development
-    ? VITE_DEVELOPMENT_SERVICE_WORKER
+  const resolvedServiceWorkerPath = development
+    ? `${import.meta.env.BASE_URL}${VITE_DEVELOPMENT_SERVICE_WORKER}`
     : serviceWorkerPath
   return <><OfflineBanner /><UpdatePrompt appName={appName} development={development} serviceWorkerPath={resolvedServiceWorkerPath} /><InstallPrompt appName={appName} /></>
 }

@@ -25,4 +25,10 @@ describe('package distribution', () => {
     expect(css).toContain('bottom: calc(1rem + var(--loodi-pwa-bottom-nav-height) + 1rem + var(--loodi-pwa-safe-bottom))')
     expect(css).toContain('.loodi-pwa-install-prompt {\n  z-index: 60;')
   })
+
+  it('keeps the Vite development service worker endpoint in the published runtime', () => {
+    const runtime = readFileSync(resolve(packageRoot, 'dist/index.js'), 'utf8')
+
+    expect(runtime).toContain('dev-sw.js?dev-sw')
+  })
 })

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- Conserve la sélection automatique du service worker Vite de développement dans le bundle publié.
+
 ## 0.1.2
 
 - Ajoute le mode développement PWA opt-in pour le helper Vite et le runtime React.
