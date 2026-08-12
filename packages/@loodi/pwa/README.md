@@ -18,3 +18,5 @@ createLoodiPwaPlugin({ appName: 'Friends', themeColor: '#D84A77' })
 ```
 
 Les couleurs de module peuvent servir aux icônes et fonds teintés. Les textes et actions utilisent l’orange Loodi lorsque le contraste du module n’atteint pas WCAG AA.
+
+Le prompt d’installation réserve par défaut la place de la `BottomNav` Loodi (56 px). Une application sans navigation basse peut surcharger `--loodi-pwa-bottom-nav-height: 0px`.

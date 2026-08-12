@@ -1,6 +1,6 @@
 {
   "name": "@loodi/pwa",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Shared installable PWA runtime for the Loodi ecosystem.",
   "type": "module",
   "main": "./dist/index.js",

@@ -6,7 +6,8 @@
   --loodi-pwa-text-muted: #6b6b60;
   --loodi-pwa-surface: rgb(255 255 255 / 88%);
   --loodi-pwa-border: rgb(0 0 0 / 8%);
-  --loodi-pwa-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --loodi-pwa-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --loodi-pwa-bottom-nav-height: 56px;
 }
 
 .dark {
@@ -41,8 +42,9 @@
 }
 
 .loodi-pwa-install-prompt {
+  z-index: 60;
   right: 16px;
-  bottom: calc(16px + var(--loodi-pwa-safe-bottom));
+  bottom: calc(1rem + var(--loodi-pwa-bottom-nav-height) + 1rem + var(--loodi-pwa-safe-bottom));
   left: 16px;
   display: flex;
   align-items: center;
