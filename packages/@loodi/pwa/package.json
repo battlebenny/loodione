@@ -1,0 +1,56 @@
+{
+  "name": "@loodi/pwa",
+  "version": "0.1.0",
+  "description": "Shared installable PWA runtime for the Loodi ecosystem.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
+  },
+  "files": ["dist", "README.md", "CHANGELOG.md"],
+  "publishConfig": {"access": "public"},
+  "sideEffects": ["./dist/styles.css"],
+  "scripts": {
+    "build": "vite build && tsc -b --force && cp src/styles.css dist/styles.css",
+    "watch": "npm run build && vite build --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "prepack": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0 <20.0.0",
+    "react-dom": ">=18.0.0 <20.0.0",
+    "lucide-react": ">=1.0.0 <2.0.0",
+    "vite": ">=5.0.0 <8.0.0",
+    "vite-plugin-pwa": ">=1.0.0 <2.0.0"
+  },
+  "dependencies": {
+    "workbox-window": "^7.4.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "lucide-react": "^1.24.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.0",
+    "vite": "^7.0.0",
+    "vite-plugin-pwa": "^1.3.0",
+    "vitest": "^4.1.9",
+    "jsdom": "^29.1.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2"
+  }
+}
