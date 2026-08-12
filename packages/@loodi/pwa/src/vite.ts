@@ -7,6 +7,8 @@ export interface LoodiPwaPluginOptions {
   themeColor?: string
   includeAssets?: string[]
   runtimeCaching?: NonNullable<NonNullable<VitePWAOptions['workbox']>['runtimeCaching']>
+  /** Enable the Vite PWA manifest and development service worker. Disabled by default. */
+  development?: boolean
 }
 
 const standardIcons = [72, 96, 120, 144, 152, 180, 192, 384, 512].map((size) => ({
@@ -22,6 +24,9 @@ export function createLoodiPwaPlugin(options: LoodiPwaPluginOptions) {
   return VitePWA({
     registerType: 'prompt',
     injectRegister: null,
+    devOptions: {
+      enabled: options.development ?? false,
+    },
     includeAssets: options.includeAssets ?? ['icons/*.png'],
     manifest: {
       name: `${options.appName} — Loodi`,

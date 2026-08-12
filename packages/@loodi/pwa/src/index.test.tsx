@@ -1,5 +1,18 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
+const workbox = vi.hoisted(() => {
+  const register = vi.fn().mockResolvedValue(undefined)
+  const addEventListener = vi.fn()
+  const messageSW = vi.fn().mockResolvedValue(undefined)
+  const Workbox = vi.fn(function MockWorkbox() {
+    return { addEventListener, messageSW, register }
+  })
+  return { Workbox, addEventListener, messageSW, register }
+})
+
+vi.mock('workbox-window', () => ({ Workbox: workbox.Workbox }))
+
 import { LoodiPwa } from './index.js'
 
 describe('LoodiPwa', () => {
@@ -9,7 +22,12 @@ describe('LoodiPwa', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks()
+    workbox.Workbox.mockClear()
+    workbox.addEventListener.mockClear()
+    workbox.messageSW.mockClear()
+    workbox.register.mockClear()
     Object.defineProperty(window.navigator, 'onLine', { configurable: true, value: true })
+    Object.defineProperty(window.navigator, 'serviceWorker', { configurable: true, value: {} })
   })
 
   it('renders no PWA runtime when embedded in One', () => {
@@ -40,5 +58,22 @@ describe('LoodiPwa', () => {
     fireEvent(window, new Event('offline'))
 
     expect(screen.getByRole('status')).toHaveTextContent('Tu es hors ligne')
+  })
+
+  it('does not register a service worker in development without opt-in', async () => {
+    render(<LoodiPwa appName="Collec" />)
+
+    await Promise.resolve()
+
+    expect(workbox.Workbox).not.toHaveBeenCalled()
+  })
+
+  it('registers the Vite PWA development worker without exposing its path to the application', async () => {
+    render(<LoodiPwa appName="Collec" development />)
+
+    await waitFor(() => expect(workbox.Workbox).toHaveBeenCalled())
+
+    expect(workbox.Workbox).toHaveBeenCalledWith('/dev-sw.js?dev-sw')
+    expect(workbox.register).toHaveBeenCalledOnce()
   })
 })

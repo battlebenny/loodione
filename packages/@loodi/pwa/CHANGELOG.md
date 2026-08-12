@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.2
+
+- Ajoute le mode développement PWA opt-in pour le helper Vite et le runtime React.
+
 ## 0.1.1
 
 - Corrige la position du prompt d’installation au-dessus de la BottomNav locale et de la safe area.

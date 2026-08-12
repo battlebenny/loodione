@@ -6,7 +6,11 @@ export interface LoodiPwaProps {
   appName: string
   standalone?: boolean
   serviceWorkerPath?: string
+  /** Register Vite's development service worker when the helper enables it. */
+  development?: boolean
 }
+
+const VITE_DEVELOPMENT_SERVICE_WORKER = `${import.meta.env.BASE_URL}dev-sw.js?dev-sw`
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
@@ -61,10 +65,10 @@ function InstallPrompt({ appName }: { appName: string }) {
   )
 }
 
-function UpdatePrompt({ appName, serviceWorkerPath }: { appName: string; serviceWorkerPath: string }) {
+function UpdatePrompt({ appName, development, serviceWorkerPath }: { appName: string; development: boolean; serviceWorkerPath: string }) {
   const [waitingWorker, setWaitingWorker] = useState<Workbox | null>(null)
   useEffect(() => {
-    if (import.meta.env.DEV || !('serviceWorker' in navigator)) return
+    if ((import.meta.env.DEV && !development) || !('serviceWorker' in navigator)) return
     let active = true
     let workbox: Workbox | undefined
     void import('workbox-window').then(({ Workbox }) => {
@@ -74,7 +78,7 @@ function UpdatePrompt({ appName, serviceWorkerPath }: { appName: string; service
       void workbox.register()
     })
     return () => { active = false }
-  }, [serviceWorkerPath])
+  }, [development, serviceWorkerPath])
   if (!waitingWorker) return null
   const update = async () => {
     waitingWorker.addEventListener('controlling', () => window.location.reload())
@@ -101,7 +105,10 @@ function OfflineBanner() {
   return <div className="loodi-pwa-offline-banner" role="status"><WifiOff size={16} aria-hidden="true" /><span>Tu es hors ligne</span></div>
 }
 
-export function LoodiPwa({ appName, standalone = true, serviceWorkerPath = '/sw.js' }: LoodiPwaProps) {
+export function LoodiPwa({ appName, standalone = true, serviceWorkerPath = '/sw.js', development = false }: LoodiPwaProps) {
   if (!standalone) return null
-  return <><OfflineBanner /><UpdatePrompt appName={appName} serviceWorkerPath={serviceWorkerPath} /><InstallPrompt appName={appName} /></>
+  const resolvedServiceWorkerPath = import.meta.env.DEV && development
+    ? VITE_DEVELOPMENT_SERVICE_WORKER
+    : serviceWorkerPath
+  return <><OfflineBanner /><UpdatePrompt appName={appName} development={development} serviceWorkerPath={resolvedServiceWorkerPath} /><InstallPrompt appName={appName} /></>
 }
