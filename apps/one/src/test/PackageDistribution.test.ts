@@ -4,6 +4,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 const uiDirectory = resolve(process.cwd(), '../../packages/@loodi/ui')
+const assetsDirectory = resolve(process.cwd(), '../../packages/@loodi/assets')
 const bridgeDirectory = resolve(process.cwd(), '../../packages/@loodi/bridge')
 const authDirectory = resolve(process.cwd(), '../../packages/@loodi/auth')
 
@@ -25,7 +26,7 @@ function contrastRatio(first: string, second: string) {
   return (light + 0.05) / (dark + 0.05)
 }
 
-function manifest(packageName: 'auth' | 'bridge' | 'ui') {
+function manifest(packageName: 'assets' | 'auth' | 'bridge' | 'ui') {
   return JSON.parse(readFileSync(
     resolve(process.cwd(), `../../packages/@loodi/${packageName}/package.json`),
     'utf8',
@@ -33,6 +34,19 @@ function manifest(packageName: 'auth' | 'bridge' | 'ui') {
 }
 
 describe('published package manifests', () => {
+  it('publishes @loodi/assets 0.1.0 as a typed ESM package', () => {
+    const pkg = manifest('assets')
+
+    expect(pkg.version).toBe('0.1.0')
+    expect(pkg.private).toBeUndefined()
+    expect(pkg.exports).toMatchObject({
+      '.': { types: './dist/index.d.ts', import: './dist/index.js' },
+      './brand': { types: './dist/brand.d.ts', import: './dist/brand.js' },
+    })
+    expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])
+    expect(readFileSync(resolve(assetsDirectory, 'dist/brand.d.ts'), 'utf8')).toContain('resolveAssetUrl')
+  })
+
   it('exposes the bridge as a typed, publishable ESM package', () => {
     const pkg = manifest('bridge')
 
@@ -48,10 +62,11 @@ describe('published package manifests', () => {
     expect(readFileSync(resolve(bridgeDirectory, 'dist/BridgeClient.d.ts'), 'utf8')).toContain('navigate(path: string): void')
   })
 
-  it('publishes @loodi/ui 0.8.7 as modular typed ESM with individual styles', () => {
+  it('publishes @loodi/ui 0.9.0 with shared-assets support', () => {
     const pkg = manifest('ui')
 
-    expect(pkg.version).toBe('0.8.8')
+    expect(pkg.version).toBe('0.9.0')
+    expect(pkg.dependencies).toMatchObject({ '@loodi/assets': '^0.1.0' })
     expect(pkg.private).toBeUndefined()
     expect(pkg.types).toBe('./dist/index.d.ts')
     expect(pkg.files).toEqual(['dist', 'README.md', 'CHANGELOG.md'])

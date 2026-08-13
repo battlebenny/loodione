@@ -4,6 +4,8 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-08-13
+
 ### Changed
 
 - `MiniHeader` utilise désormais `@loodi/assets` et accepte `assetBaseUrl` pour les PWA standalone.
