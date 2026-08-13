@@ -1,0 +1,132 @@
+:root {
+  --loodi-pwa-brand: #ca4a16;
+  --loodi-pwa-brand-hover: #b33d0f;
+  --loodi-pwa-bg: #fafaf8;
+  --loodi-pwa-text: #353533;
+  --loodi-pwa-text-muted: #6b6b60;
+  --loodi-pwa-surface: rgb(255 255 255 / 88%);
+  --loodi-pwa-border: rgb(0 0 0 / 8%);
+  --loodi-pwa-safe-bottom: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --loodi-pwa-bottom-nav-height: 56px;
+}
+
+.dark {
+  --loodi-pwa-bg: #1a1a18;
+  --loodi-pwa-text: #e8e7e4;
+  --loodi-pwa-text-muted: #a3a39a;
+  --loodi-pwa-surface: rgb(17 24 39 / 88%);
+  --loodi-pwa-border: rgb(255 255 255 / 12%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --loodi-pwa-bg: #1a1a18;
+    --loodi-pwa-text: #e8e7e4;
+    --loodi-pwa-text-muted: #a3a39a;
+    --loodi-pwa-surface: rgb(17 24 39 / 88%);
+    --loodi-pwa-border: rgb(255 255 255 / 12%);
+  }
+}
+
+.loodi-pwa-install-prompt,
+.loodi-pwa-offline-banner {
+  position: fixed;
+  z-index: 50;
+  font-family: 'DM Sans', Inter, system-ui, sans-serif;
+  color: var(--loodi-pwa-text);
+  background: var(--loodi-pwa-surface);
+  border: 1px solid var(--loodi-pwa-border);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 10px 25px rgb(0 0 0 / 10%);
+}
+
+.loodi-pwa-install-prompt {
+  z-index: 60;
+  right: 16px;
+  bottom: calc(1rem + var(--loodi-pwa-bottom-nav-height) + 1rem + var(--loodi-pwa-safe-bottom));
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 560px;
+  margin-inline: auto;
+  padding: 12px 14px;
+  border-radius: 16px;
+  animation: loodi-pwa-slide-up 260ms ease-out both;
+}
+
+.loodi-pwa-install-prompt__icon {
+  display: grid;
+  flex: 0 0 40px;
+  width: 40px;
+  height: 40px;
+  color: white;
+  background: var(--loodi-pwa-brand);
+  border-radius: 12px;
+  place-items: center;
+}
+
+.loodi-pwa-install-prompt__copy {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  font-size: 0.875rem;
+  line-height: 1.35;
+}
+
+.loodi-pwa-install-prompt__copy span { color: var(--loodi-pwa-text-muted); font-size: 0.75rem; }
+.loodi-pwa-primary-button,
+.loodi-pwa-secondary-button,
+.loodi-pwa-icon-button {
+  min-height: 40px;
+  border: 0;
+  border-radius: 9999px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.loodi-pwa-primary-button {
+  padding: 0 16px;
+  color: #fff;
+  background: var(--loodi-pwa-brand);
+  font-weight: 600;
+}
+
+.loodi-pwa-primary-button:hover { background: var(--loodi-pwa-brand-hover); }
+.loodi-pwa-primary-button:focus-visible,
+.loodi-pwa-secondary-button:focus-visible,
+.loodi-pwa-icon-button:focus-visible { outline: 3px solid color-mix(in srgb, var(--loodi-pwa-brand) 55%, transparent); outline-offset: 2px; }
+
+.loodi-pwa-secondary-button { width: 100%; color: var(--loodi-pwa-brand); background: transparent; font-weight: 600; }
+.loodi-pwa-icon-button { display: grid; flex: 0 0 36px; width: 36px; color: var(--loodi-pwa-text-muted); background: transparent; place-items: center; }
+
+.loodi-pwa-offline-banner {
+  top: 12px;
+  right: 16px;
+  left: 16px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  color: #fff;
+  background: #92400e;
+  border-color: transparent;
+  border-radius: 9999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.loodi-pwa-update-sheet { position: fixed; inset: 0; z-index: 60; display: grid; place-items: end center; padding: 16px; padding-bottom: calc(16px + var(--loodi-pwa-safe-bottom)); font-family: 'DM Sans', Inter, system-ui, sans-serif; }
+.loodi-pwa-update-sheet__backdrop { position: absolute; inset: 0; background: rgb(0 0 0 / 30%); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
+.loodi-pwa-update-sheet__panel { position: relative; width: min(100%, 448px); padding: 24px; color: var(--loodi-pwa-text); background: var(--loodi-pwa-surface); border: 1px solid var(--loodi-pwa-border); border-radius: 20px; box-shadow: 0 20px 30px rgb(0 0 0 / 18%); animation: loodi-pwa-slide-up 280ms ease-out both; }
+.loodi-pwa-update-sheet__icon { color: var(--loodi-pwa-brand); }
+.loodi-pwa-update-sheet__panel h2 { margin: 12px 0 8px; font-family: 'Playfair Display', Georgia, serif; font-size: 1.4rem; font-weight: 400; line-height: 1.2; text-wrap: balance; }
+.loodi-pwa-update-sheet__panel p { margin: 0 0 20px; color: var(--loodi-pwa-text-muted); line-height: 1.5; }
+.loodi-pwa-update-sheet__panel .loodi-pwa-primary-button,
+.loodi-pwa-update-sheet__panel .loodi-pwa-secondary-button { display: block; width: 100%; }
+
+@keyframes loodi-pwa-slide-up { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .loodi-pwa-install-prompt, .loodi-pwa-update-sheet__panel { animation: none; } }
+@media (max-width: 480px) { .loodi-pwa-install-prompt { align-items: flex-start; } .loodi-pwa-install-prompt .loodi-pwa-primary-button { align-self: center; padding-inline: 12px; } }
