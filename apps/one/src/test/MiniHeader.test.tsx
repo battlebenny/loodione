@@ -3,6 +3,15 @@ import { describe, expect, it, vi } from 'vitest'
 import { MiniHeader } from '@loodi/ui'
 
 describe('MiniHeader', () => {
+  it('uses the configured shared-asset base instead of a host root path', () => {
+    const { container } = render(<MiniHeader onSettings={vi.fn()} onUser={vi.fn()} assetBaseUrl="https://assets.example.test/loodi/v1" />)
+
+    expect(within(container).getByRole('img', { name: 'Logo Loodi' }))
+      .toHaveAttribute('src', 'https://assets.example.test/loodi/v1/brand/logo.svg')
+    expect(within(container).getByRole('img', { name: 'Loodi' }))
+      .toHaveAttribute('src', 'https://assets.example.test/loodi/v1/brand/loodi-wordmark.svg')
+  })
+
   it('keeps its controls outside every safe-area inset', () => {
     const { container } = render(
       <MiniHeader
@@ -24,8 +33,10 @@ describe('MiniHeader', () => {
   it('shows the logo and wordmark at the start of a root page', () => {
     const { container } = render(<MiniHeader onSettings={vi.fn()} onUser={vi.fn()} />)
 
-    expect(within(container).getByRole('img', { name: 'Logo Loodi' })).toHaveAttribute('src', '/logo.svg')
-    expect(within(container).getByRole('img', { name: 'Loodi' })).toHaveAttribute('src', '/loodi-wordmark.svg')
+    expect(within(container).getByRole('img', { name: 'Logo Loodi' })).not.toHaveAttribute('src', '/logo.svg')
+    expect(within(container).getByRole('img', { name: 'Logo Loodi' }).getAttribute('src')).toContain('svg')
+    expect(within(container).getByRole('img', { name: 'Loodi' })).not.toHaveAttribute('src', '/loodi-wordmark.svg')
+    expect(within(container).getByRole('img', { name: 'Loodi' }).getAttribute('src')).toContain('svg')
     expect(within(container).queryByRole('button', { name: 'Retour' })).not.toBeInTheDocument()
   })
 
@@ -35,7 +46,8 @@ describe('MiniHeader', () => {
 
     expect(within(container).getByRole('button', { name: 'Retour' })).toBeInTheDocument()
     expect(within(container).queryByRole('img', { name: 'Logo Loodi' })).not.toBeInTheDocument()
-    expect(within(container).getByRole('img', { name: 'Loodi' })).toHaveAttribute('src', '/loodi-wordmark.svg')
+    expect(within(container).getByRole('img', { name: 'Loodi' })).not.toHaveAttribute('src', '/loodi-wordmark.svg')
+    expect(within(container).getByRole('img', { name: 'Loodi' }).getAttribute('src')).toContain('svg')
   })
 
   it('presents the active module as a raised pion-yellow tile', () => {

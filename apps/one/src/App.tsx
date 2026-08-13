@@ -219,6 +219,8 @@ function App() {
       id: a.id,
       name: a.name,
       icon: a.icon,
+      iconLightUrl: a.iconLightUrl,
+      iconDarkUrl: a.iconDarkUrl,
       color: a.color,
       active: state.activeAppId === a.id,
       badgeCount: 0,

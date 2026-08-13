@@ -202,6 +202,23 @@ describe('module configuration', () => {
     expect(getRuntimeApps({}, 'production', NOW + 1)).toEqual(acceptedManifest.apps)
   })
 
+  it('retains explicit light and dark launcher icon URLs from the remote registry', async () => {
+    const manifest = {
+      apps: [{
+        ...acceptedManifest.apps[0],
+        iconLightUrl: 'https://assets.example.test/loodi-light.svg',
+        iconDarkUrl: 'https://assets.example.test/loodi-dark.svg',
+      }],
+    }
+
+    await expect(refreshRemoteRegistry(vi.fn().mockResolvedValue(successfulResponse(manifest)), NOW)).resolves.toBe(true)
+
+    expect(getRuntimeApps({}, 'production', NOW + 1)[0]).toMatchObject({
+      iconLightUrl: 'https://assets.example.test/loodi-light.svg',
+      iconDarkUrl: 'https://assets.example.test/loodi-dark.svg',
+    })
+  })
+
   it('falls back to the compiled registry when the cached manifest is expired', () => {
     localStorage.setItem(REGISTRY_CACHE_KEY, JSON.stringify({
       version: 1,

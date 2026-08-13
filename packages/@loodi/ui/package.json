@@ -63,6 +63,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "@loodi/assets": "*"
+  },
   "sideEffects": [
     "./dist/styles.css",
     "./dist/tokens.css",
@@ -76,6 +79,7 @@
     "./dist/auth-bottom-sheet.css"
   ],
   "scripts": {
+    "prebuild": "npm run build -w @loodi/assets",
     "generate:tokens": "node scripts/generate-tokens.mjs",
     "build:css": "node scripts/build-css.mjs",
     "build": "npm run generate:tokens && vite build && tsc -b --force && npm run build:css",

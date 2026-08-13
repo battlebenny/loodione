@@ -41,6 +41,25 @@ describe('Launcher', () => {
     );
   });
 
+  it('prefers explicit launcher icon variants over the historical suffix convention', () => {
+    const explicitApps = [{
+      ...apps[0],
+      icon: 'https://legacy.example.test/loodi.svg',
+      iconLightUrl: 'https://assets.example.test/friends-light.svg',
+      iconDarkUrl: 'https://assets.example.test/friends-dark.svg',
+    }];
+    const { container } = render(<Launcher apps={explicitApps} open onSelect={vi.fn()} onClose={vi.fn()} />);
+
+    expect(container.querySelector('.loodi-launcher__app-image--light')).toHaveAttribute(
+      'src',
+      'https://assets.example.test/friends-light.svg',
+    );
+    expect(container.querySelector('.loodi-launcher__app-image--dark')).toHaveAttribute(
+      'src',
+      'https://assets.example.test/friends-dark.svg',
+    );
+  });
+
   it('toggles the image variants via the .dark class', () => {
     const css = readFileSync(resolve(process.cwd(), '../../packages/@loodi/ui/src/launcher.css'), 'utf8');
 

@@ -14,6 +14,7 @@
   },
   "include": ["src"],
   "references": [
+    { "path": "../../packages/@loodi/assets" },
     { "path": "../../packages/@loodi/ui" },
     { "path": "../../packages/@loodi/bridge" }
   ]

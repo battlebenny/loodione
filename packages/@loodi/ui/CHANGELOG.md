@@ -4,6 +4,11 @@ Toutes les évolutions notables de `@loodi/ui` sont documentées ici.
 
 ## [Unreleased]
 
+### Changed
+
+- `MiniHeader` utilise désormais `@loodi/assets` et accepte `assetBaseUrl` pour les PWA standalone.
+- `LauncherApp` accepte les variantes explicites `iconLightUrl` et `iconDarkUrl`, avec compatibilité du champ historique `icon`.
+
 ## [0.8.8] - 2026-08-09
 
 ### Fixed

@@ -333,7 +333,7 @@ describe('published package manifests', () => {
   it('does not prebundle local packages during development', () => {
     const viteConfig = readFileSync(resolve(process.cwd(), 'vite.config.ts'), 'utf8')
 
-    expect(viteConfig).toContain("exclude: ['@loodi/ui', '@loodi/auth', '@loodi/bridge']")
+    expect(viteConfig).toContain("exclude: ['@loodi/assets', '@loodi/ui', '@loodi/auth', '@loodi/bridge']")
   })
 
   it('uses UI tokens for exact One and UI component values without changing their visual values', () => {

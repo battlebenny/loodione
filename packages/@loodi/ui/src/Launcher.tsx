@@ -32,15 +32,15 @@ export function Launcher({ apps, open, onSelect, onClose }: LauncherProps) {
                 style={{ transitionDelay: open ? `${index * 30}ms` : '0ms' }}
               >
                 <div className="loodi-launcher__app-icon" style={{ '--app-color': app.color } as CSSProperties}>
-                  {app.icon.toLowerCase().endsWith('.svg') ? (
+                  {(app.iconLightUrl ?? app.icon).toLowerCase().endsWith('.svg') ? (
                     <>
                       <img
-                        src={app.icon}
+                        src={app.iconLightUrl ?? app.icon}
                         alt={app.name}
                         className="loodi-launcher__app-image loodi-launcher__app-image--light"
                       />
                       <img
-                        src={app.icon.replace(/\.svg$/i, '-dark.svg')}
+                        src={app.iconDarkUrl ?? app.icon.replace(/\.svg$/i, '-dark.svg')}
                         alt=""
                         className="loodi-launcher__app-image loodi-launcher__app-image--dark"
                       />

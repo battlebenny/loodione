@@ -9,6 +9,9 @@ export interface LauncherApp {
   id: string
   name: string
   icon: string
+  /** Explicit icon variants supersede the temporary icon + -dark.svg convention. */
+  iconLightUrl?: string
+  iconDarkUrl?: string
   color: string
   badgeCount: number
   active: boolean
@@ -30,6 +33,8 @@ export interface MiniHeaderProps {
   hideActions?: boolean
   /** Places shell chrome below an overlay rendered inside a module iframe. */
   behindOverlay?: boolean
+  /** Overrides the default bundled shared-asset URLs in a standalone PWA. */
+  assetBaseUrl?: string
 }
 export interface MiniHeaderMenuItem { id: string; label: string; tone?: 'default' | 'danger' }
 

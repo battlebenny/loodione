@@ -13,7 +13,7 @@ export default defineConfig({
   optimizeDeps: {
     // Les packages workspace changent pendant le développement : ne pas les figer
     // dans le cache de pré-bundling de Vite.
-    exclude: ['@loodi/ui', '@loodi/auth', '@loodi/bridge'],
+    exclude: ['@loodi/assets', '@loodi/ui', '@loodi/auth', '@loodi/bridge'],
   },
   build: {
     rollupOptions: {
