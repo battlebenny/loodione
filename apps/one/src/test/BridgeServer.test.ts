@@ -28,6 +28,30 @@ function callbacks(): BridgeServerCallbacks {
   }
 }
 
+describe('BridgeServer badges', () => {
+  it('forwards the optional target tab while accepting legacy count-only events', () => {
+    const cb = callbacks()
+    const bridge = new BridgeServer(cb)
+    const iframe = document.createElement('iframe')
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+    bridge.registerModule('loodi', iframe)
+
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:event', event: 'loodi:badgecount', detail: { count: 2, tabId: 'loans' } },
+    }))
+    window.dispatchEvent(new MessageEvent('message', {
+      source: child,
+      data: { type: 'loodi:event', event: 'loodi:badgecount', detail: { count: 0 } },
+    }))
+
+    expect(cb.onBadgeCount).toHaveBeenNthCalledWith(1, 'loodi', 2, 'loans')
+    expect(cb.onBadgeCount).toHaveBeenNthCalledWith(2, 'loodi', 0, undefined)
+    bridge.destroy()
+  })
+})
+
 describe('BridgeServer navigation gestures', () => {
   it('delegates only after the module declares the capability and accepts only its correlated result', async () => {
     const bridge = new BridgeServer(callbacks())

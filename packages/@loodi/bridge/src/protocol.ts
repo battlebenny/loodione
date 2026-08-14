@@ -59,6 +59,7 @@ function isEventDetail(event: BridgeEventType, detail: unknown): boolean {
         && Object.values(detail.cssVars).every((value) => typeof value === 'string')
     case 'loodi:badgecount':
       return isRecord(detail) && isFiniteNumber(detail.count)
+        && (detail.tabId === undefined || (typeof detail.tabId === 'string' && detail.tabId.trim() !== ''))
     case 'loodi:error':
       return isRecord(detail) && typeof detail.code === 'string'
         && (detail.recoverable === undefined || typeof detail.recoverable === 'boolean')

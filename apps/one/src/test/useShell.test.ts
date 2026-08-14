@@ -294,6 +294,81 @@ describe('strict bridge runtime', () => {
   })
 })
 
+describe('module navigation badges', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('updates only the targeted tab, clears it at zero, and retains it while the module is inactive', () => {
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+    })
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      matches: false,
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })))
+    const { result } = renderHook(() => useShell())
+    const iframe = document.createElement('iframe')
+    const child = { postMessage: vi.fn() } as unknown as WindowProxy
+    iframe.src = 'https://collec.loodi.test:4002/catalog'
+    Object.defineProperty(iframe, 'contentWindow', { value: child })
+
+    act(() => {
+      result.current.registerIframe('loodi', iframe)
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: {
+          type: 'loodi:call',
+          method: 'setBottomNav',
+          args: [[
+            { id: 'catalog', icon: 'search', label: 'Collection' },
+            { id: 'loans', icon: 'rss', label: 'Prêts' },
+          ]],
+          id: 1,
+        },
+      }))
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:event', event: 'loodi:badgecount', detail: { count: 5, tabId: 'catalog' } },
+      }))
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:event', event: 'loodi:badgecount', detail: { count: 2, tabId: 'loans' } },
+      }))
+    })
+
+    expect(result.current.state.tabs).toEqual([
+      { id: 'catalog', icon: 'search', label: 'Collection', badgeCount: 5 },
+      { id: 'loans', icon: 'rss', label: 'Prêts', badgeCount: 2 },
+    ])
+
+    act(() => {
+      result.current.activateApp('loodi-mate')
+      result.current.activateApp('loodi')
+    })
+    expect(result.current.state.tabs.find((tab) => tab.id === 'loans')?.badgeCount).toBe(2)
+
+    act(() => {
+      window.dispatchEvent(new MessageEvent('message', {
+        source: child,
+        origin: 'https://collec.loodi.test:4002',
+        data: { type: 'loodi:event', event: 'loodi:badgecount', detail: { count: 0, tabId: 'loans' } },
+      }))
+    })
+
+    expect(result.current.state.tabs.find((tab) => tab.id === 'loans')).toEqual({
+      id: 'loans', icon: 'rss', label: 'Prêts',
+    })
+    expect(result.current.state.tabs.find((tab) => tab.id === 'catalog')?.badgeCount).toBe(5)
+  })
+})
+
 describe('global settings navigation', () => {
   afterEach(() => {
     vi.unstubAllGlobals()

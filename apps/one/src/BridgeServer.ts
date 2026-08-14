@@ -15,7 +15,6 @@ export interface ModuleInfo {
   tabs: Tab[]
   headerActions: HeaderAction[]
   headerOptions: HeaderOptions
-  badgeCount: number
   supportsEmbeddedSettings: boolean
   supportsNavigationGestures: boolean
 }
@@ -23,7 +22,7 @@ export interface ModuleInfo {
 export interface BridgeServerCallbacks {
   onRequestAuthSession?(appId: string): AuthSession | null
   onReady(appId: string): void
-  onBadgeCount(appId: string, count: number): void
+  onBadgeCount(appId: string, count: number, tabId?: string): void
   onError(appId: string, code: string, recoverable: boolean): void
   onTabsChange(appId: string, tabs: Tab[]): void
   onHeaderActionsChange(appId: string, actions: HeaderAction[]): void
@@ -96,7 +95,6 @@ export class BridgeServer {
       tabs: [],
       headerActions: [],
       headerOptions: { hideActions: false, canGoBack: false },
-      badgeCount: 0,
       supportsEmbeddedSettings: false,
       supportsNavigationGestures: false,
     })
@@ -351,7 +349,10 @@ export class BridgeServer {
     const d = msg.detail
     switch (msg.event) {
       case 'loodi:badgecount':
-        if (typeof d?.count === 'number') this.callbacks.onBadgeCount(appId, d.count)
+        if (typeof d?.count === 'number' && Number.isFinite(d.count)
+          && (d.tabId === undefined || isNonEmptyString(d.tabId))) {
+          this.callbacks.onBadgeCount(appId, d.count, d.tabId as string | undefined)
+        }
         break
       case 'loodi:error':
         this.callbacks.onError(appId, (d?.code as string) || 'ERR_UNKNOWN', (d?.recoverable as boolean) ?? true)
@@ -383,7 +384,6 @@ function defaultModuleInfo(): ModuleInfo {
     tabs: [],
     headerActions: [],
     headerOptions: { hideActions: false, canGoBack: false },
-    badgeCount: 0,
     supportsEmbeddedSettings: false,
     supportsNavigationGestures: false,
   }
