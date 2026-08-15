@@ -30,6 +30,18 @@ Depuis une iframe, ils les envoient au shell. En standalone, ils sont volontaire
 
 Les événements et appels legacy restent pris en charge pendant la migration : header (`setHeaderActions`, `setHeaderOptions`, `loodi:headeraction`), retour (`loodi:back`), thème, onglets, scroll et `loodi:overlaychange`.
 
+## Badges de navigation
+
+Un module signale le badge d'un onglet avec `loodi:badgecount`. Les modules à
+plusieurs onglets doivent toujours fournir `tabId`; `count: 0` retire le badge.
+L'absence de `tabId` reste acceptée pour les modules legacy à un seul onglet,
+mais est ignorée par One lorsqu'il y a plusieurs onglets afin d'éviter toute
+affectation implicite.
+
+```ts
+bridge.emit('loodi:badgecount', { tabId: 'loans', count: activeLoanCount })
+```
+
 En mode shell, `await bridge.showAuth()` ouvre la bottom sheet globale de
 connexion/inscription de One. `await bridge.showLoodiAccount()` conserve son
 comportement et ouvre la page « Mon compte Loodi ». En standalone, le module

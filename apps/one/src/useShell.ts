@@ -203,7 +203,27 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
         bridge.sendAuthChange(appId, authSessionRef.current)
       },
       onRequestAuthSession: () => authSessionRef.current,
-      onBadgeCount: (id, count) => console.log('[Loodi] badge', id, count),
+      onBadgeCount: (appId, count, tabId) => {
+        const tabs = tabsByApp.current.get(appId) ?? []
+        // Events sent before a navigation declaration, or legacy events from a
+        // multi-tab module, cannot safely be assigned to a tab.
+        const targetTabId = tabId ?? (tabs.length === 1 ? tabs[0].id : undefined)
+        if (!targetTabId) return
+
+        const badgeCount = Math.max(0, Math.floor(count))
+        let found = false
+        const updatedTabs = tabs.map((tab) => {
+          if (tab.id !== targetTabId) return tab
+          found = true
+          if (badgeCount > 0) return { ...tab, badgeCount }
+          const { badgeCount: _badgeCount, ...tabWithoutBadge } = tab
+          return tabWithoutBadge
+        })
+        if (!found) return
+
+        tabsByApp.current.set(appId, updatedTabs)
+        setState((s) => s.activeAppId === appId ? { ...s, tabs: updatedTabs } : s)
+      },
       onError: (id, code, rec) => console.error('[Loodi] error', id, code, rec),
       onTabsChange: (appId, tabs) => {
         tabsByApp.current.set(appId, tabs)

@@ -4,6 +4,14 @@ Toutes les évolutions notables de `@loodi/bridge` sont documentées ici.
 
 ## [Unreleased]
 
+## [0.6.1] - 2026-08-14
+
+### Added
+
+- `loodi:badgecount` accepte désormais `tabId` optionnel. Les modules avec
+  plusieurs onglets doivent le renseigner ; l'absence reste compatible pour
+  une navigation à un seul onglet.
+
 ## [0.6.0] - 2026-08-08
 
 ### Added

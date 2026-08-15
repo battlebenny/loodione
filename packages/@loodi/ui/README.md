@@ -26,7 +26,13 @@ Les tokens sont disponibles sans React via `@loodi/ui/tokens.css`. Le fichier `@
 
 Les bundles ESM externalisent `react`, `react-dom` et `lucide-react`.
 
-`MiniHeader` attend les assets `/logo.svg`, `/logo-dark.svg`, `/loodi-wordmark.svg` et `/loodi-wordmark-dark.svg` dans l'application hôte. Le logo occupe le même slot que le retour ; le wordmark et le nom de module restent visibles sur les deux types de page.
+`MiniHeader` consomme les SVG versionnés de `@loodi/assets`. Il n’attend aucun chemin à la racine de l’application hôte. Une PWA standalone peut sélectionner une base d’assets explicite :
+
+```tsx
+<MiniHeader assetBaseUrl="https://assets.example.com/loodi/v1" {...props} />
+```
+
+Sans `assetBaseUrl`, les assets sont inclus dans le livrable du consommateur. Le logo occupe le même slot que le retour ; le wordmark et le nom de module restent visibles sur les deux types de page.
 
 ## AuthBottomSheet et AccountBottomSheet
 

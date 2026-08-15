@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { ArrowLeft, EllipsisVertical, Pencil, Plus, Settings, Trash2, User, type LucideIcon } from 'lucide-react'
 import { profileColorText } from './profile-colors.js'
 import type { MiniHeaderProps } from './types.js'
+import { resolveAssetUrl } from '@loodi/assets'
 
 const HEADER_H = 52
 const MENU_ICONS: Record<string, LucideIcon> = {
@@ -12,7 +13,7 @@ const MENU_ICONS: Record<string, LucideIcon> = {
   settings: Settings,
 }
 
-export function MiniHeader({ onSettings, onUser, userInitial, userAvatarColor, appName, scrollProgress = 0, showBack = false, onBack, menuItems, onMenuItemSelect, hideActions = false, behindOverlay = false }: MiniHeaderProps) {
+export function MiniHeader({ onSettings, onUser, userInitial, userAvatarColor, appName, scrollProgress = 0, showBack = false, onBack, menuItems, onMenuItemSelect, hideActions = false, behindOverlay = false, assetBaseUrl }: MiniHeaderProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -47,13 +48,13 @@ export function MiniHeader({ onSettings, onUser, userInitial, userAvatarColor, a
             </button>
           ) : (
             <>
-              <img src="/logo.svg" alt="Logo Loodi" className="loodi-mini-header__logo loodi-mini-header__logo--light" />
-              <img src="/logo-dark.svg" alt="" className="loodi-mini-header__logo loodi-mini-header__logo--dark" />
+              <img src={resolveAssetUrl('brand/logo', { baseUrl: assetBaseUrl })} alt="Logo Loodi" className="loodi-mini-header__logo loodi-mini-header__logo--light" />
+              <img src={resolveAssetUrl('brand/logo-dark', { baseUrl: assetBaseUrl })} alt="" className="loodi-mini-header__logo loodi-mini-header__logo--dark" />
             </>
           )}
         </div>
-        <img src="/loodi-wordmark.svg" alt="Loodi" className="loodi-mini-header__wordmark loodi-mini-header__wordmark--light" />
-        <img src="/loodi-wordmark-dark.svg" alt="" className="loodi-mini-header__wordmark loodi-mini-header__wordmark--dark" />
+        <img src={resolveAssetUrl('brand/loodi-wordmark', { baseUrl: assetBaseUrl })} alt="Loodi" className="loodi-mini-header__wordmark loodi-mini-header__wordmark--light" />
+        <img src={resolveAssetUrl('brand/loodi-wordmark-dark', { baseUrl: assetBaseUrl })} alt="" className="loodi-mini-header__wordmark loodi-mini-header__wordmark--dark" />
         {appName && <span className="loodi-mini-header__app-name loodi-mini-header__app-tile loodi-mini-header__app-tile--compact loodi-mini-header__app-tile--tilted">{appName}</span>}
       </div>
 

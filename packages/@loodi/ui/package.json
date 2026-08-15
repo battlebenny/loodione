@@ -1,6 +1,6 @@
 {
   "name": "@loodi/ui",
-  "version": "0.8.8",
+  "version": "0.9.0",
   "description": "Presentation-only React design system for the Loodi ecosystem.",
   "type": "module",
   "main": "./dist/index.js",
@@ -63,6 +63,9 @@
   "publishConfig": {
     "access": "public"
   },
+  "dependencies": {
+    "@loodi/assets": "^0.1.0"
+  },
   "sideEffects": [
     "./dist/styles.css",
     "./dist/tokens.css",
@@ -76,6 +79,7 @@
     "./dist/auth-bottom-sheet.css"
   ],
   "scripts": {
+    "prebuild": "npm run build -w @loodi/assets",
     "generate:tokens": "node scripts/generate-tokens.mjs",
     "build:css": "node scripts/build-css.mjs",
     "build": "npm run generate:tokens && vite build && tsc -b --force && npm run build:css",

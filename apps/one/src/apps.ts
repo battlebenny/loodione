@@ -10,6 +10,8 @@ export interface AppEntry {
   id: string
   name: string
   icon: string
+  iconLightUrl?: string
+  iconDarkUrl?: string
   url: string | null
   color: string
 }
@@ -138,7 +140,10 @@ function parseRemoteRegistry(value: unknown): AppEntry[] | null {
       || typeof record.name !== 'string' || record.name.trim() === ''
       || typeof record.icon !== 'string' || record.icon.trim() === ''
       || typeof record.color !== 'string' || record.color.trim() === ''
-      || (record.url !== null && typeof record.url !== 'string')) return null
+      || (record.url !== null && typeof record.url !== 'string')
+      || (record.iconLightUrl !== undefined && (typeof record.iconLightUrl !== 'string' || record.iconLightUrl.trim() === ''))
+      || (record.iconDarkUrl !== undefined && (typeof record.iconDarkUrl !== 'string' || record.iconDarkUrl.trim() === ''))
+      || ((record.iconLightUrl === undefined) !== (record.iconDarkUrl === undefined))) return null
 
     if (typeof record.url === 'string') {
       const url = new URL(record.url)
@@ -150,6 +155,9 @@ function parseRemoteRegistry(value: unknown): AppEntry[] | null {
       id: record.id,
       name: record.name,
       icon: record.icon,
+      ...(typeof record.iconLightUrl === 'string' && typeof record.iconDarkUrl === 'string'
+        ? { iconLightUrl: record.iconLightUrl, iconDarkUrl: record.iconDarkUrl }
+        : {}),
       url: record.url as string | null,
       color: record.color,
     })

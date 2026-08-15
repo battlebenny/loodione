@@ -109,7 +109,8 @@ export interface BridgeEvents {
   'loodi:tabtap': { tabId: string }
   'loodi:navigate': { path: string; direction?: string }
   'loodi:config': { moduleColor: string; cssVars: Record<string, string> }
-  'loodi:badgecount': { count: number }
+  /** Target tab is optional only for legacy one-tab module navigations. */
+  'loodi:badgecount': { count: number; tabId?: string }
   'loodi:error': { code: string; recoverable?: boolean }
   'loodi:overlaychange': { visible: boolean }
   'loodi:scroll': { scrollY: number }
