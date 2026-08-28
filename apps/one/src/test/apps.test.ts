@@ -20,11 +20,11 @@ import {
 } from '../apps'
 
 const NOW = Date.UTC(2026, 6, 18)
-const COLLEC_URL = 'https://loodi.vercel.app'
+const COLLEC_URL = 'https://loodicollec.vercel.app'
 
 const acceptedManifest = {
   apps: [
-    { id: 'loodi', name: 'collec', icon: '📚', url: COLLEC_URL, color: '#ca4a16' },
+    { id: 'loodi-collec', name: 'collec', icon: '📚', url: COLLEC_URL, color: '#ca4a16' },
     { id: 'loodi-mate', name: 'Mate', icon: '🤖', url: null, color: '#2E8B57' },
   ],
 }
@@ -68,11 +68,16 @@ describe('module configuration', () => {
     expect(getAppsForEnvironment('ios-device').find((app) => app.id === 'loodi-friends')?.url).toBe('https://192.168.0.109:4008')
   })
 
-  it('uses the accessible module palette for Mag and Sessions in every registry', () => {
+  it('registers Planner with its accessible palette in every registry', () => {
     for (const mode of ['development', 'android-device', 'ios-device', 'recette', 'production']) {
       const apps = getAppsForEnvironment(mode)
       expect(apps.find((app) => app.id === 'loodi-mag')?.color).toBe('#3570A8')
-      expect(apps.find((app) => app.id === 'loodi-sessions')?.color).toBe('#007C91')
+      expect(apps.find((app) => app.id === 'loodi-planner')).toMatchObject({
+        name: 'Planner',
+        icon: '/icons/loodi-planner.svg',
+        color: '#007C91',
+      })
+      expect(apps.find((app) => app.id === 'loodi-sessions')).toBeUndefined()
     }
   })
 
@@ -81,7 +86,9 @@ describe('module configuration', () => {
       name: 'Friends',
       url: 'https://loodifriends.vercel.app',
     })
-    expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi-friends')).toBeUndefined()
+    expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi-friends')).toMatchObject({
+      url: 'https://loodifriends.vercel.app',
+    })
   })
 
   it('allowlists the Friends origin in every local development environment', () => {
@@ -121,19 +128,19 @@ describe('module configuration', () => {
 
     expect(localUrls).toMatchObject({
       'loodi-dev': 'https://dummy.loodi.test:4000',
-      loodi: 'https://collec.loodi.test:4002',
+      'loodi-collec': 'https://collec.loodi.test:4002',
       'loodi-mate': 'https://mate.loodi.test:4003',
       'loodi-mag': 'https://mag.loodi.test:4004',
       'loodi-places': 'https://places.loodi.test:4005',
       'loodi-fest': 'https://fest.loodi.test:4006',
-      'loodi-sessions': 'https://sessions.loodi.test:4007',
+      'loodi-planner': 'https://planner.loodi.test:4007',
     })
     expect(getAppsForEnvironment('android-emulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://10.0.2.2:4000')
-    expect(getAppsForEnvironment('android-device').find((app) => app.id === 'loodi')?.url).toBe('https://192.168.0.109:4002')
+    expect(getAppsForEnvironment('android-device').find((app) => app.id === 'loodi-collec')?.url).toBe('https://192.168.0.109:4002')
     expect(getAppsForEnvironment('ios-simulator').find((app) => app.id === 'loodi-dev')?.url).toBe('https://localhost:4000')
-    expect(getAppsForEnvironment('ios-device').find((app) => app.id === 'loodi')?.url).toBe('https://192.168.0.109:4002')
-    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi')?.url).toBe(COLLEC_URL)
-    expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi')?.url).toBe(COLLEC_URL)
+    expect(getAppsForEnvironment('ios-device').find((app) => app.id === 'loodi-collec')?.url).toBe('https://192.168.0.109:4002')
+    expect(getAppsForEnvironment('recette').find((app) => app.id === 'loodi-collec')?.url).toBe(COLLEC_URL)
+    expect(getAppsForEnvironment('production').find((app) => app.id === 'loodi-collec')?.url).toBe(COLLEC_URL)
   })
 
   it('exposes an explicit bridge origin allowlist for every environment', () => {
@@ -151,23 +158,23 @@ describe('module configuration', () => {
     ])
     expect(getBridgeAllowedOrigins('ios-device')).toContain('https://192.168.0.109:4002')
     expect(getBridgeAllowedOrigins('recette')).toEqual([COLLEC_URL, 'https://loodifriends.vercel.app'])
-    expect(getBridgeAllowedOrigins('production')).toEqual([COLLEC_URL])
+    expect(getBridgeAllowedOrigins('production')).toEqual([COLLEC_URL, 'https://loodifriends.vercel.app'])
     expect(Object.values(BRIDGE_ALLOWED_ORIGINS).flat()).not.toContain('*')
   })
 
   it('keeps the physical-device build compiled and hides local override support', () => {
     localStorage.setItem('loodi:localModuleUrls', JSON.stringify({
-      loodi: 'https://10.0.2.2:4002',
+      'loodi-collec': 'https://10.0.2.2:4002',
     }))
 
     expect(loadLocalModuleUrls('android-device')).toEqual({})
-    expect(saveLocalModuleUrls({ loodi: 'https://10.0.2.2:4002' }, 'android-device')).toEqual({})
+    expect(saveLocalModuleUrls({ 'loodi-collec': 'https://10.0.2.2:4002' }, 'android-device')).toEqual({})
     expect(localStorage.getItem('loodi:localModuleUrls')).toContain('10.0.2.2:4002')
     expect(getRuntimeApps(undefined, 'android-device')).toEqual(getAppsForEnvironment('android-device'))
     expect(isLocalBuildForMode('android-device')).toBe(false)
     expect(isRemoteRegistryEnabled('android-device')).toBe(false)
     expect(loadLocalModuleUrls('ios-device')).toEqual({})
-    expect(saveLocalModuleUrls({ loodi: 'https://10.0.2.2:4002' }, 'ios-device')).toEqual({})
+    expect(saveLocalModuleUrls({ 'loodi-collec': 'https://10.0.2.2:4002' }, 'ios-device')).toEqual({})
     expect(getRuntimeApps(undefined, 'ios-device')).toEqual(getAppsForEnvironment('ios-device'))
     expect(isLocalBuildForMode('ios-device')).toBe(false)
     expect(isRemoteRegistryEnabled('ios-device')).toBe(false)
@@ -177,12 +184,23 @@ describe('module configuration', () => {
     const apps = getAppsForEnvironment('development')
 
     const resolved = applyLocalUrlOverrides(apps, {
-      loodi: 'https://192.168.1.42:4173',
+      'loodi-collec': 'https://192.168.1.42:4173',
       'loodi-mate': 'not a URL',
     })
 
-    expect(resolved.find((app) => app.id === 'loodi')?.url).toBe('https://192.168.1.42:4173')
+    expect(resolved.find((app) => app.id === 'loodi-collec')?.url).toBe('https://192.168.1.42:4173')
     expect(resolved.find((app) => app.id === 'loodi-mate')?.url).toBe('https://mate.loodi.test:4003')
+  })
+
+  it('migrates a local Collec URL override stored with the former module id', () => {
+    localStorage.setItem('loodi:localModuleUrls', JSON.stringify({
+      loodi: 'https://192.168.1.42:4173',
+    }))
+
+    expect(loadLocalModuleUrls('development')).toEqual({
+      'loodi-collec': 'https://192.168.1.42:4173',
+    })
+    expect(localStorage.getItem('loodi:localModuleUrls')).not.toContain('"loodi"')
   })
 
   it('starts from the compiled registry when no remote cache exists', () => {
@@ -240,8 +258,19 @@ describe('module configuration', () => {
     expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
   })
 
+  it('discards a cached registry that still uses the former Collec id', () => {
+    localStorage.setItem(REGISTRY_CACHE_KEY, JSON.stringify({
+      version: 1,
+      fetchedAt: NOW,
+      apps: acceptedManifest.apps.map((app) => app.id === 'loodi-collec' ? { ...app, id: 'loodi' } : app),
+    }))
+
+    expect(getRuntimeApps({}, 'production', NOW)).toEqual(getAppsForEnvironment('production'))
+    expect(localStorage.getItem(REGISTRY_CACHE_KEY)).toBeNull()
+  })
+
   it('does not cache an invalid manifest and retains the compiled fallback', async () => {
-    const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({ apps: [{ id: 'loodi' }] }))
+    const fetchManifest = vi.fn().mockResolvedValue(successfulResponse({ apps: [{ id: 'loodi-collec' }] }))
 
     await expect(refreshRemoteRegistry(fetchManifest, NOW)).resolves.toBe(false)
 
@@ -289,14 +318,14 @@ describe('module configuration', () => {
 
     expect(getBridgeAllowedOriginsForApps(getRuntimeApps({}, 'production', NOW + 1))).toEqual([
       'https://loodi-mag.vercel.app',
-      'https://loodi.vercel.app',
+      'https://loodicollec.vercel.app',
     ])
   })
 
   it('keeps local module URLs exclusive to development builds even when a remote cache exists', async () => {
     await refreshRemoteRegistry(vi.fn().mockResolvedValue(successfulResponse(acceptedManifest)), NOW)
 
-    expect(getRuntimeApps({}, 'development', NOW + 1).find((app) => app.id === 'loodi')?.url)
+    expect(getRuntimeApps({}, 'development', NOW + 1).find((app) => app.id === 'loodi-collec')?.url)
       .toBe('https://collec.loodi.test:4002')
   })
 })

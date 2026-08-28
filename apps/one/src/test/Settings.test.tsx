@@ -320,7 +320,7 @@ describe('Settings', () => {
       <Settings
         onClose={vi.fn()}
         apps={[
-          { id: 'loodi', name: 'collec', icon: '/icons/loodi.svg', color: '#ca4a16', url: 'https://loodi.vercel.app' },
+          { id: 'loodi-collec', name: 'collec', icon: '/icons/loodi.svg', color: '#ca4a16', url: 'https://loodicollec.vercel.app' },
         ]}
         favoriteAppId={null}
         onFavoriteChange={vi.fn()}
@@ -339,11 +339,11 @@ describe('Settings', () => {
         onClose={vi.fn()}
         apps={[
           {
-            id: 'loodi',
+            id: 'loodi-collec',
             name: 'collec',
             icon: 'https://battlebenny.github.io/loodione/icons/loodi.svg',
             color: '#ca4a16',
-            url: 'https://loodi.vercel.app',
+            url: 'https://loodicollec.vercel.app',
           },
         ]}
         favoriteAppId={null}
@@ -365,8 +365,8 @@ describe('Settings', () => {
         apps={[]}
         favoriteAppId={null}
         onFavoriteChange={vi.fn()}
-        developmentApps={[{ id: 'loodi', name: 'Loodi', icon: '🎲', color: '#ca4a16', url: null }]}
-        localModuleUrls={{ loodi: 'https://192.168.1.42:4173' }}
+        developmentApps={[{ id: 'loodi-collec', name: 'Loodi', icon: '🎲', color: '#ca4a16', url: null }]}
+        localModuleUrls={{ 'loodi-collec': 'https://192.168.1.42:4173' }}
         onLocalModuleUrlsChange={vi.fn()}
       />,
     );

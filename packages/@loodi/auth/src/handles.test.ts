@@ -20,5 +20,7 @@ describe('handle policy', () => {
     expect(DEFAULT_RESERVED_HANDLES).toContain('loodimate')
     expect(DEFAULT_RESERVED_HANDLES).toContain('loodi_mate')
     expect(DEFAULT_RESERVED_HANDLES).toContain('loodi-mate')
+    expect(DEFAULT_RESERVED_HANDLES).toContain('loodiplanner')
+    expect(DEFAULT_RESERVED_HANDLES).not.toContain('loodisessions')
   })
 })

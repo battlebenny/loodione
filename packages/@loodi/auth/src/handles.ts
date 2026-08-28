@@ -6,7 +6,7 @@ export const RESERVED_MODULE_NAMES = [
   'mag',
   'places',
   'fest',
-  'sessions',
+  'planner',
   'friends',
 ] as const
 

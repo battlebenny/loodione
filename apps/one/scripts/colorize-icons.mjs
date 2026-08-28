@@ -14,13 +14,13 @@ const YELLOW = '#F5C842';
 const RIGHT_FACE = 'matrix(0.429 -0.216 0 0.48 60.6 61.3)';
 
 const MODULES = [
-  { id: 'loodi', icon: 'collec.svg', color: '#ca4a16' },
-  { id: 'loodi-mate', icon: 'mate.svg', color: '#2E8B57' },
-  { id: 'loodi-mag', icon: 'mag.svg', color: '#3570A8' },
-  { id: 'loodi-places', icon: 'places.svg', color: '#9B59B6' },
-  { id: 'loodi-fest', icon: 'fest.svg', color: '#E67E22' },
-  { id: 'loodi-sessions', icon: 'sessions.svg', color: '#007C91' },
-  { id: 'loodi-friends', icon: 'friends.svg', color: '#D84A77' },
+  { outputSlug: 'loodi', icon: 'collec.svg', color: '#ca4a16' },
+  { outputSlug: 'loodi-mate', icon: 'mate.svg', color: '#2E8B57' },
+  { outputSlug: 'loodi-mag', icon: 'mag.svg', color: '#3570A8' },
+  { outputSlug: 'loodi-places', icon: 'places.svg', color: '#9B59B6' },
+  { outputSlug: 'loodi-fest', icon: 'fest.svg', color: '#E67E22' },
+  { outputSlug: 'loodi-planner', icon: 'sessions.svg', color: '#007C91' },
+  { outputSlug: 'loodi-friends', icon: 'friends.svg', color: '#D84A77' },
 ];
 
 function colorize(svg, bodyColor, rightFaceColor) {
@@ -32,15 +32,15 @@ function colorize(svg, bodyColor, rightFaceColor) {
 
 mkdirSync(OUT, { recursive: true });
 mkdirSync(PAGES_OUT, { recursive: true });
-for (const { id, icon, color } of MODULES) {
+for (const { outputSlug, icon, color } of MODULES) {
   const src = readFileSync(join(DESIGN_ICONS, icon), 'utf8');
   const light = colorize(src, color, color);
   const dark = colorize(src, color, color);
   for (const destination of [OUT, PAGES_OUT]) {
-    writeFileSync(join(destination, `${id}.svg`), light);
-    writeFileSync(join(destination, `${id}-dark.svg`), dark);
+    writeFileSync(join(destination, `${outputSlug}.svg`), light);
+    writeFileSync(join(destination, `${outputSlug}-dark.svg`), dark);
   }
-  console.log(`${id}.svg + ${id}-dark.svg ← ${icon} (face droite ${color})`);
+  console.log(`${outputSlug}.svg + ${outputSlug}-dark.svg ← ${icon} (face droite ${color})`);
 }
 
 const die = readFileSync(join(DESIGN_ICONS, 'loodi.svg'), 'utf8');

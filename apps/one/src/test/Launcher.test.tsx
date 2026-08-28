@@ -7,11 +7,11 @@ import { Launcher } from '@loodi/ui/launcher';
 describe('Launcher', () => {
   const apps = [
     {
-      id: 'loodi',
+      id: 'loodi-collec',
       name: 'collec',
       icon: '/icons/loodi.svg',
       color: '#ca4a16',
-      url: 'https://loodi.vercel.app',
+      url: 'https://loodicollec.vercel.app',
       badgeCount: 0,
       active: false,
     },

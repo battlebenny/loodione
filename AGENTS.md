@@ -9,7 +9,7 @@ L'ancien shell vanilla JS dans `www/` a été migré vers React/Vite/Tailwind da
 ### Vault Obsidian
 
 - **Racine du vault** : `~/Library/CloudStorage/SynologyDrive-battle_benny/Obsidian/battle_benny/Projets/`
-- **Un dossier de docs par projet Loodi** : `Loodi/`, `Loodi-one/`, `Loodi-mate/`, `Loodi-mag/`, `Loodi-places/`, `Loodi-fest/`, `Loodi-session/`, `Loodi-asso/`…
+- **Un dossier de docs par projet Loodi** : `Loodi/`, `Loodi-one/`, `Loodi-mate/`, `Loodi-mag/`, `Loodi-places/`, `Loodi-fest/`, `Loodi-planner/`, `Loodi-asso/`…
 - **`loodi-one/docs/` est un symlink** vers `…/Projets/Loodi-one/Docs/`. Éditer `docs/` **=** éditer le fichier Obsidian (synchro automatique, pas d'outil dédié requis).
 
 ### Accès aux docs des autres projets Loodi
@@ -63,13 +63,14 @@ Le `webDir` Capacitor pointe vers `apps/one/dist/`.
 
 | ID | URL | Statut |
 |----|-----|--------|
-| `loodi` | `https://loodi.vercel.app` | ✅ Actif |
+| `loodi-collec` | `https://loodicollec.vercel.app` | ✅ Actif |
 | `loodi-dev` | `http://localhost:8080/dev/dummy.html` | ✅ Dev |
 | `loodi-mate` | — | 📝 À configurer |
 | `loodi-mag` | — | 📝 À configurer |
 | `loodi-places` | — | 📝 À configurer |
 | `loodi-fest` | — | 📝 À configurer |
-| `loodi-sessions` | — | 📝 À configurer |
+| `loodi-planner` | — | 📝 À configurer |
+| `loodi-friends` | `https://loodifriends.vercel.app` | ✅ Actif |
 
 ## Architecture
 

@@ -35,7 +35,7 @@ describe('BridgeServer badges', () => {
     const iframe = document.createElement('iframe')
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
@@ -46,8 +46,8 @@ describe('BridgeServer badges', () => {
       data: { type: 'loodi:event', event: 'loodi:badgecount', detail: { count: 0 } },
     }))
 
-    expect(cb.onBadgeCount).toHaveBeenNthCalledWith(1, 'loodi', 2, 'loans')
-    expect(cb.onBadgeCount).toHaveBeenNthCalledWith(2, 'loodi', 0, undefined)
+    expect(cb.onBadgeCount).toHaveBeenNthCalledWith(1, 'loodi-collec', 2, 'loans')
+    expect(cb.onBadgeCount).toHaveBeenNthCalledWith(2, 'loodi-collec', 0, undefined)
     bridge.destroy()
   })
 })
@@ -59,15 +59,15 @@ describe('BridgeServer navigation gestures', () => {
     const postMessage = vi.fn()
     const child = { postMessage } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
-    await expect(bridge.requestNavigation('loodi', 'back', 'gesture')).resolves.toBe(false)
+    await expect(bridge.requestNavigation('loodi-collec', 'back', 'gesture')).resolves.toBe(false)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
       data: { type: 'loodi:call', method: 'setNavigationGestureCapability', args: [true], id: 1 },
     }))
-    const navigation = bridge.requestNavigation('loodi', 'back', 'system')
+    const navigation = bridge.requestNavigation('loodi-collec', 'back', 'system')
     const request = postMessage.mock.calls.at(-1)?.[0]
     expect(request).toMatchObject({
       type: 'loodi:event',
@@ -234,7 +234,7 @@ describe('BridgeServer header actions', () => {
     const iframe = document.createElement('iframe')
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     const actions = [{ id: 'new-game', label: 'Nouveau jeu' }]
     window.dispatchEvent(new MessageEvent('message', {
@@ -242,7 +242,7 @@ describe('BridgeServer header actions', () => {
       data: { type: 'loodi:call', method: 'setHeaderActions', args: [actions], id: 1 },
     }))
 
-    expect(cb.onHeaderActionsChange).toHaveBeenCalledWith('loodi', actions)
+    expect(cb.onHeaderActionsChange).toHaveBeenCalledWith('loodi-collec', actions)
     bridge.destroy()
   })
 
@@ -251,9 +251,9 @@ describe('BridgeServer header actions', () => {
     const iframe = document.createElement('iframe')
     const postMessage = vi.fn()
     Object.defineProperty(iframe, 'contentWindow', { value: { postMessage } })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
-    bridge.sendHeaderAction('loodi', 'delete-game')
+    bridge.sendHeaderAction('loodi-collec', 'delete-game')
 
     expect(postMessage).toHaveBeenCalledWith({
       type: 'loodi:event',
@@ -271,15 +271,15 @@ describe('BridgeServer header options', () => {
     const iframe = document.createElement('iframe')
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
       data: { type: 'loodi:call', method: 'setHeaderOptions', args: [{ canGoBack: true }], id: 1 },
     }))
 
-    expect(cb.onHeaderOptionsChange).toHaveBeenCalledWith('loodi', { hideActions: false, canGoBack: true })
-    expect(bridge.getModuleInfo('loodi')?.headerOptions).toEqual({ hideActions: false, canGoBack: true })
+    expect(cb.onHeaderOptionsChange).toHaveBeenCalledWith('loodi-collec', { hideActions: false, canGoBack: true })
+    expect(bridge.getModuleInfo('loodi-collec')?.headerOptions).toEqual({ hideActions: false, canGoBack: true })
     bridge.destroy()
   })
 
@@ -308,14 +308,14 @@ describe('BridgeServer overlays', () => {
     const iframe = document.createElement('iframe')
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
       data: { type: 'loodi:overlaychange', visible: true },
     }))
 
-    expect(cb.onOverlayChange).toHaveBeenCalledWith('loodi', true)
+    expect(cb.onOverlayChange).toHaveBeenCalledWith('loodi-collec', true)
     bridge.destroy()
   })
 })
@@ -327,7 +327,7 @@ describe('BridgeServer module navigation contract', () => {
     const iframe = document.createElement('iframe')
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
@@ -338,8 +338,8 @@ describe('BridgeServer module navigation contract', () => {
       data: { type: 'loodi:navigate', path: '/scanner' },
     }))
 
-    expect(cb.onReady).toHaveBeenCalledWith('loodi')
-    expect(cb.onNavigate).toHaveBeenCalledWith('loodi', '/scanner')
+    expect(cb.onReady).toHaveBeenCalledWith('loodi-collec')
+    expect(cb.onNavigate).toHaveBeenCalledWith('loodi-collec', '/scanner')
     bridge.destroy()
   })
 
@@ -349,7 +349,7 @@ describe('BridgeServer module navigation contract', () => {
     const iframe = document.createElement('iframe')
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
     const collecTabs = [
       { id: 'home', icon: 'home', label: 'Accueil' },
       { id: 'catalog', icon: 'search', label: 'Collection' },
@@ -366,8 +366,8 @@ describe('BridgeServer module navigation contract', () => {
       data: { type: 'loodi:call', method: 'setBottomNav', args: [collecTabs], id: 2 },
     }))
 
-    expect(cb.onTabsChange).toHaveBeenNthCalledWith(1, 'loodi', [])
-    expect(cb.onTabsChange).toHaveBeenNthCalledWith(2, 'loodi', collecTabs)
+    expect(cb.onTabsChange).toHaveBeenNthCalledWith(1, 'loodi-collec', [])
+    expect(cb.onTabsChange).toHaveBeenNthCalledWith(2, 'loodi-collec', collecTabs)
     expect(cb.onTabsChange).toHaveBeenCalledTimes(2)
     bridge.destroy()
   })
@@ -387,7 +387,7 @@ describe('BridgeServer optional strict transport validation', () => {
     const postMessage = vi.fn()
     const child = { postMessage } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
@@ -404,11 +404,11 @@ describe('BridgeServer optional strict transport validation', () => {
       origin: 'https://192.168.0.109:4002',
       data: { type: 'loodi:event', event: 'loodi:scroll', detail: { scrollY: 120 } },
     }))
-    bridge.sendThemeChange('loodi', 'dark')
+    bridge.sendThemeChange('loodi-collec', 'dark')
 
-    expect(cb.onReady).toHaveBeenCalledWith('loodi')
-    expect(cb.onTabsChange).toHaveBeenCalledWith('loodi', [{ id: 'home', icon: 'home', label: 'Accueil' }])
-    expect(cb.onScroll).toHaveBeenCalledWith('loodi', 120)
+    expect(cb.onReady).toHaveBeenCalledWith('loodi-collec')
+    expect(cb.onTabsChange).toHaveBeenCalledWith('loodi-collec', [{ id: 'home', icon: 'home', label: 'Accueil' }])
+    expect(cb.onScroll).toHaveBeenCalledWith('loodi-collec', 120)
     expect(postMessage).toHaveBeenLastCalledWith({
       type: 'loodi:event',
       event: 'loodi:themechange',
@@ -430,7 +430,7 @@ describe('BridgeServer optional strict transport validation', () => {
     const postMessage = vi.fn()
     const child = { postMessage } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
@@ -452,9 +452,9 @@ describe('BridgeServer optional strict transport validation', () => {
       origin: 'https://collec.loodi.test',
       data: { type: 'loodi:ready' },
     }))
-    bridge.sendBack('loodi')
+    bridge.sendBack('loodi-collec')
 
-    expect(cb.onReady).toHaveBeenCalledExactlyOnceWith('loodi')
+    expect(cb.onReady).toHaveBeenCalledExactlyOnceWith('loodi-collec')
     expect(cb.onNavigate).not.toHaveBeenCalled()
     expect(postMessage).toHaveBeenCalledWith({
       type: 'loodi:event',
@@ -476,7 +476,7 @@ describe('BridgeServer optional strict transport validation', () => {
     iframe.src = 'https://collec.loodi.test:4002/catalog'
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
@@ -500,7 +500,7 @@ describe('BridgeServer optional strict transport validation', () => {
     iframe.src = 'https://collec.loodi.test:4002/catalog'
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
@@ -530,12 +530,12 @@ describe('BridgeServer optional strict transport validation', () => {
     iframe.src = 'https://collec.loodi.test:4002/catalog'
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
 
-    bridge.sendThemeChange('loodi', 'dark')
-    bridge.sendTabTap('loodi', 'catalog')
-    bridge.sendHeaderAction('loodi', 'new-game')
-    bridge.sendBack('loodi')
+    bridge.sendThemeChange('loodi-collec', 'dark')
+    bridge.sendTabTap('loodi-collec', 'catalog')
+    bridge.sendHeaderAction('loodi-collec', 'new-game')
+    bridge.sendBack('loodi-collec')
     window.dispatchEvent(new MessageEvent('message', {
       source: child,
       origin: 'https://collec.loodi.test:4002',
@@ -583,7 +583,7 @@ describe('BridgeServer optional strict transport validation', () => {
     iframe.src = 'https://collec.loodi.test:4002/catalog'
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
-    bridge.registerModule('loodi', iframe)
+    bridge.registerModule('loodi-collec', iframe)
     const collecTabs = [
       { id: 'home', icon: 'home', label: 'Accueil' },
       { id: 'catalog', icon: 'search', label: 'Collection' },
@@ -612,10 +612,10 @@ describe('BridgeServer optional strict transport validation', () => {
       data: { type: 'loodi:call', method: 'setBottomNav', args: [collecTabs], id: 5 },
     }))
 
-    expect(cb.onReady).toHaveBeenCalledExactlyOnceWith('loodi')
-    expect(cb.onNavigate).toHaveBeenCalledExactlyOnceWith('loodi', '/scanner')
-    expect(cb.onTabsChange).toHaveBeenNthCalledWith(1, 'loodi', [])
-    expect(cb.onTabsChange).toHaveBeenNthCalledWith(2, 'loodi', collecTabs)
+    expect(cb.onReady).toHaveBeenCalledExactlyOnceWith('loodi-collec')
+    expect(cb.onNavigate).toHaveBeenCalledExactlyOnceWith('loodi-collec', '/scanner')
+    expect(cb.onTabsChange).toHaveBeenNthCalledWith(1, 'loodi-collec', [])
+    expect(cb.onTabsChange).toHaveBeenNthCalledWith(2, 'loodi-collec', collecTabs)
     bridge.destroy()
   })
 })

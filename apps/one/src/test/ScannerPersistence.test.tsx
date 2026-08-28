@@ -16,7 +16,7 @@ function dispatchFromCollec(source: WindowProxy, data: object) {
 
 describe('Collec scanner persistence', () => {
   beforeEach(() => {
-    const storage = new Map([['loodi:lastApp', 'loodi']])
+    const storage = new Map([['loodi:lastApp', 'loodi-collec']])
     vi.stubGlobal('localStorage', {
       getItem: vi.fn((key: string) => storage.get(key) ?? null),
       setItem: vi.fn((key: string, value: string) => { storage.set(key, value) }),
@@ -41,18 +41,18 @@ describe('Collec scanner persistence', () => {
   it('does not treat a delayed bridge handshake as a reason to recreate Collec', () => {
     vi.useFakeTimers()
     const { container } = render(<App />)
-    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi"]')!
+    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi-collec"]')!
     const initialSrc = frame.src
 
     act(() => { vi.advanceTimersByTime(2_000) })
 
-    expect(container.querySelector('iframe[data-app="loodi"]')).toBe(frame)
+    expect(container.querySelector('iframe[data-app="loodi-collec"]')).toBe(frame)
     expect(frame.src).toBe(initialSrc)
   })
 
   it('keeps the Collec runtime while scanning, changing camera state and returning from manual entry', () => {
     const { container } = render(<App />)
-    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi"]')!
+    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi-collec"]')!
     const source = frame.contentWindow!
     const initialSrc = frame.src
     const initialUrl = new URL(initialSrc)
@@ -79,7 +79,7 @@ describe('Collec scanner persistence', () => {
     })
 
     expect(within(container).getByRole('navigation')).toHaveClass('loodi-bottom-nav--hidden')
-    expect(container.querySelector('iframe[data-app="loodi"]')).toBe(frame)
+    expect(container.querySelector('iframe[data-app="loodi-collec"]')).toBe(frame)
 
     act(() => {
       dispatchFromCollec(source, {
@@ -103,7 +103,7 @@ describe('Collec scanner persistence', () => {
       window.dispatchEvent(new Event('resize'))
     })
 
-    expect(container.querySelector('iframe[data-app="loodi"]')).toBe(frame)
+    expect(container.querySelector('iframe[data-app="loodi-collec"]')).toBe(frame)
     expect(frame.src).toBe(initialSrc)
     expect(frame).toHaveAttribute('allow', 'camera')
     expect(within(container).getByRole('navigation')).not.toHaveClass('loodi-bottom-nav--hidden')

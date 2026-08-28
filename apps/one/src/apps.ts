@@ -183,7 +183,7 @@ export function loadRemoteRegistryCache(now = Date.now()): AppEntry[] | null {
       return null
     }
     const apps = parseRemoteRegistry({ apps: value.apps })
-    if (!apps) {
+    if (!apps || apps.some((app) => app.id === 'loodi')) {
       removeRemoteRegistryCache()
       return null
     }
@@ -232,7 +232,15 @@ export function loadLocalModuleUrls(mode = import.meta.env.MODE): LocalModuleUrl
   try {
     const value: unknown = JSON.parse(localStorage.getItem(LOCAL_MODULE_URLS_KEY) ?? '{}')
     if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
-    return Object.fromEntries(Object.entries(value).filter(([, url]) => isModuleUrl(url)))
+    const entries = Object.entries(value)
+    const legacyCollecUrl = entries.find(([id]) => id === 'loodi')?.[1]
+    const migratedEntries = entries.filter(([id]) => id !== 'loodi')
+    if (isModuleUrl(legacyCollecUrl) && !migratedEntries.some(([id]) => id === 'loodi-collec')) {
+      migratedEntries.push(['loodi-collec', legacyCollecUrl])
+    }
+    const validUrls = Object.fromEntries(migratedEntries.filter(([, url]) => isModuleUrl(url)))
+    if (legacyCollecUrl !== undefined) localStorage.setItem(LOCAL_MODULE_URLS_KEY, JSON.stringify(validUrls))
+    return validUrls
   } catch {
     return {}
   }
