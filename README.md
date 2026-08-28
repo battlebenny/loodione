@@ -129,7 +129,7 @@ Les modules ont des URL stables sous `*.loodi.test`, avec des ports stricts :
 | Mag | `https://mag.loodi.test:4004` |
 | Places | `https://places.loodi.test:4005` |
 | Fest | `https://fest.loodi.test:4006` |
-| Sessions | `https://sessions.loodi.test:4007` |
+| Planner | `https://planner.loodi.test:4007` |
 
 Le dummy se lance avec `npm run dev:dummy`. Chaque PWA adopte le même principe dans son `vite.config.ts` : hostname explicite, port dédié, `strictPort: true` et certificat mkcert partagé.
 

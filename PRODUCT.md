@@ -8,11 +8,11 @@ product
 
 **Passionnés de jeux de société** — collectionneurs, joueurs en session, organisateurs d'événements communautaires. Ils utilisent Loodi dans plusieurs contextes : chez eux pour gérer leur collection, en boutique ou bar à jeux pour trouver une partie, en festival pour repérer des stands et tournois.
 
-Le besoin principal : **un hub unique** qui remplace une mosaïque d'apps, sites, et documents. Ils veulent accéder à leur collection, à leurs sessions, aux événements à proximité — sans changer d'application.
+Le besoin principal : **un hub unique** qui remplace une mosaïque d'apps, sites, et documents. Ils veulent accéder à leur collection, à leur planning, aux événements à proximité — sans changer d'application.
 
 ## Product Purpose
 
-Loodi est le conteneur unifié de l'écosystème Loodi. Une seule app native sur le store, qui fournit aux modules PWA (Loodi, Mate, Mag, Places, Fest, Sessions) des services partagés : auth, navigation, thème et bridge de communication. Le POC les charge dans des iframes ; le MVP de production les isole dans des WebViews natives persistantes. L'utilisateur n'a jamais besoin de télécharger une autre app — chaque nouveau module arrive via une mise à jour serveur.
+Loodi est le conteneur unifié de l'écosystème Loodi. Une seule app native sur le store, qui fournit aux modules PWA (Loodi, Mate, Mag, Places, Fest, Planner) des services partagés : auth, navigation, thème et bridge de communication. Le POC les charge dans des iframes ; le MVP de production les isole dans des WebViews natives persistantes. L'utilisateur n'a jamais besoin de télécharger une autre app — chaque nouveau module arrive via une mise à jour serveur.
 
 ## Brand Personality
 

@@ -41,8 +41,21 @@ export interface ShellState {
   history: string[]
 }
 
+export const COLLEC_APP_ID = 'loodi-collec'
+
+export function migrateLegacyAppId(id: string | null): string | null {
+  return id === 'loodi' ? COLLEC_APP_ID : id
+}
+
 function loadAppId(key: string, fallback: string): string {
-  try { return localStorage.getItem(key) ?? fallback } catch { return fallback }
+  try {
+    const storedId = localStorage.getItem(key)
+    const migratedId = migrateLegacyAppId(storedId)
+    if (migratedId !== storedId && migratedId) {
+      localStorage.setItem(key, COLLEC_APP_ID)
+    }
+    return migratedId ?? fallback
+  } catch { return fallback }
 }
 
 function saveAppId(key: string, id: string) {
@@ -72,9 +85,9 @@ export function getInitialAppId(
   lastAppId: string | null | undefined,
 ): string {
   const availableIds = new Set(apps.filter((app) => app.url).map((app) => app.id))
-  return [favoriteAppId, lastAppId, 'loodi'].find((id): id is string => Boolean(id && availableIds.has(id)))
+  return [favoriteAppId, lastAppId, COLLEC_APP_ID].find((id): id is string => Boolean(id && availableIds.has(id)))
     ?? apps.find((app) => app.url)?.id
-    ?? 'loodi'
+    ?? COLLEC_APP_ID
 }
 
 export function getModuleTabs(tabsByApp: ReadonlyMap<string, Tab[]>, appId: string): Tab[] {
@@ -102,7 +115,7 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
   const [readyAppIds, setReadyAppIds] = useState<ReadonlySet<string>>(() => new Set())
   const [state, setState] = useState<ShellState>(() => {
     const fav = loadAppId(LS_FAV, '')
-    const last = loadAppId(LS_LAST, 'loodi')
+    const last = loadAppId(LS_LAST, COLLEC_APP_ID)
     const apps = getRuntimeApps()
     return {
       activeAppId: getInitialAppId(apps, fav, last),
@@ -370,7 +383,7 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
 
   const getApp = useCallback((id: string) => state.apps.find((a) => a.id === id) ?? null, [state.apps])
 
-  const lastUsedAppId = useRef(loadAppId(LS_LAST, 'loodi'))
+  const lastUsedAppId = useRef(loadAppId(LS_LAST, COLLEC_APP_ID))
 
   const activateApp = useCallback((id: string) => {
     const app = getApp(id)
@@ -386,7 +399,7 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
       activeTab: getModuleTabs(tabsByApp.current, app.id)[0]?.id,
       launcherOpen: false,
       settingsOpen: false,
-      history: id === 'loodi' ? [] : [...s.history, id],
+      history: id === COLLEC_APP_ID ? [] : [...s.history, id],
     }))
   }, [getApp])
 
@@ -435,13 +448,13 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
   const goBack = useCallback(() => {
     setState((s) => {
       if (s.settingsOpen) return { ...s, settingsOpen: false }
-      if (s.activeAppId === 'loodi') return s
+      if (s.activeAppId === COLLEC_APP_ID) return s
       return {
         ...s,
-        activeAppId: 'loodi',
-        tabs: getModuleTabs(tabsByApp.current, 'loodi'),
-        headerActions: headerActionsByApp.current.get('loodi') ?? [],
-        headerOptions: getModuleHeaderOptions(headerOptionsByApp.current, 'loodi'),
+        activeAppId: COLLEC_APP_ID,
+        tabs: getModuleTabs(tabsByApp.current, COLLEC_APP_ID),
+        headerActions: headerActionsByApp.current.get(COLLEC_APP_ID) ?? [],
+        headerOptions: getModuleHeaderOptions(headerOptionsByApp.current, COLLEC_APP_ID),
         activeTab: undefined,
         history: [],
       }

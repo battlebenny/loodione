@@ -52,7 +52,7 @@ Chaque serveur local utilise une URL fixe `https://<module>.loodi.test:<port>`. 
 | Mag | `https://mag.loodi.test:4004` |
 | Places | `https://places.loodi.test:4005` |
 | Fest | `https://fest.loodi.test:4006` |
-| Sessions | `https://sessions.loodi.test:4007` |
+| Planner | `https://planner.loodi.test:4007` |
 | Friends | `https://friends.loodi.test:4008` |
 
 Le premier module de test est lancé avec `npm run dev:dummy`. Ajouter les noms utilisés dans ce tableau à `/etc/hosts`, puis installer la CA mkcert et générer un certificat local couvrant `*.loodi.test` et `10.0.2.2` avant le premier lancement.

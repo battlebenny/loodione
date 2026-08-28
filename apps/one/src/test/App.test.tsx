@@ -158,11 +158,11 @@ describe('module frame', () => {
   })
 
   it('keeps the Collec background full-screen while its content receives shell clearances', () => {
-    shellActiveApp.id = 'loodi'
-    shellApps.value = [{ id: 'loodi', name: 'collec', icon: '📚', color: '#ca4a16', url: 'https://collec.loodi.test:4002' }]
+    shellActiveApp.id = 'loodi-collec'
+    shellApps.value = [{ id: 'loodi-collec', name: 'collec', icon: '📚', color: '#ca4a16', url: 'https://collec.loodi.test:4002' }]
 
     const { container } = render(<App />)
-    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi"]')!
+    const frame = container.querySelector<HTMLIFrameElement>('iframe[data-app="loodi-collec"]')!
 
     const url = new URL(frame.src)
 
@@ -214,7 +214,7 @@ describe('module frame', () => {
   })
 
   it('hides the shell navigation when a module declares no tabs', () => {
-    shellActiveApp.id = 'loodi'
+    shellActiveApp.id = 'loodi-collec'
     const { container } = render(<App />)
 
     expect(within(container).getByRole('navigation')).toHaveClass('loodi-bottom-nav--hidden')
@@ -297,7 +297,7 @@ describe('module frame', () => {
   })
 
   it('shows a module back button only when canGoBack is enabled and delegates its click', () => {
-    shellActiveApp.id = 'loodi'
+    shellActiveApp.id = 'loodi-collec'
     shellHeaderOptions.canGoBack = true
     const { container, rerender } = render(<App />)
     const backButton = within(container).getByRole('button', { name: 'Retour' })

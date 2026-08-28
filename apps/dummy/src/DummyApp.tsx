@@ -305,7 +305,7 @@ export function DummyApp({ mode = isEmbedded() ? 'embedded' : 'standalone', brid
                 <button type="button" onClick={() => runMethod('getAuthSession')}>getAuthSession</button>
                 <button type="button" onClick={() => runMethod('getNetworkStatus')}>getNetworkStatus</button>
                 <button type="button" onClick={() => runMethod('getCollection')}>getCollection</button>
-                <button type="button" onClick={() => runMethod('openApp', 'loodi')}>openApp loodi</button>
+                <button type="button" onClick={() => runMethod('openApp', 'loodi-collec')}>openApp loodi-collec</button>
                 <button type="button" onClick={() => runMethod('closeApp')}>closeApp</button>
                 <button type="button" onClick={() => runMethod('showAppSwitcher')}>showAppSwitcher</button>
                 <button type="button" onClick={() => runMethod('requestPermission', 'camera')}>requestPermission</button>

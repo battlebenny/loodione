@@ -30,7 +30,7 @@ Les origines de modules acceptées proviennent des registres compilés sur les b
 
 | Cible | Origine de One | Allowlist des modules |
 | --- | --- | --- |
-| Navigateur Mac | `https://one.loodi.test:4001` | `https://collec.loodi.test:4002`, `https://mate.loodi.test:4003`, `https://mag.loodi.test:4004`, `https://places.loodi.test:4005`, `https://fest.loodi.test:4006`, `https://sessions.loodi.test:4007`, `https://dummy.loodi.test:4000` |
+| Navigateur Mac | `https://one.loodi.test:4001` | `https://collec.loodi.test:4002`, `https://mate.loodi.test:4003`, `https://mag.loodi.test:4004`, `https://places.loodi.test:4005`, `https://fest.loodi.test:4006`, `https://planner.loodi.test:4007`, `https://dummy.loodi.test:4000` |
 | Émulateur Android | `https://app` | `https://10.0.2.2:4002`, `https://10.0.2.2:4000` |
 | Android physique | `https://app` | `https://*.loodi.test:4000–4007` |
 | Simulateur iOS | `capacitor://app` | `https://localhost:4002`, `https://localhost:4000` |
@@ -109,7 +109,7 @@ Les serveurs PWA utilisent les ports suivants :
 | Mag | 4004 | `https://mag.loodi.test:4004` |
 | Places | 4005 | `https://places.loodi.test:4005` |
 | Fest | 4006 | `https://fest.loodi.test:4006` |
-| Sessions | 4007 | `https://sessions.loodi.test:4007` |
+| Planner | 4007 | `https://planner.loodi.test:4007` |
 
 Pour vérifier qu’un serveur écoute :
 

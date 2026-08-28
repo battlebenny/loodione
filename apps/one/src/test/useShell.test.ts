@@ -1,6 +1,6 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { getActiveTabForPath, getInitialAppId, getModuleHeaderOptions, getModuleTabs, headerScrollProgress, registerRenderedModules, useShell } from '../useShell'
+import { getActiveTabForPath, getInitialAppId, getModuleHeaderOptions, getModuleTabs, headerScrollProgress, migrateLegacyAppId, registerRenderedModules, useShell } from '../useShell'
 
 describe('headerScrollProgress', () => {
   it('reaches full opacity after one MiniHeader height for every module', () => {
@@ -17,55 +17,61 @@ describe('registerRenderedModules', () => {
     const registerModule = vi.fn()
     const container = document.createElement('div')
     const loodi = document.createElement('iframe')
-    loodi.dataset.app = 'loodi'
+    loodi.dataset.app = 'loodi-collec'
     const mate = document.createElement('iframe')
     mate.dataset.app = 'loodi-mate'
     container.append(loodi, mate)
 
     registerRenderedModules({ registerModule }, container)
 
-    expect(registerModule).toHaveBeenCalledWith('loodi', loodi)
+    expect(registerModule).toHaveBeenCalledWith('loodi-collec', loodi)
     expect(registerModule).toHaveBeenCalledWith('loodi-mate', mate)
   })
 })
 
 describe('getInitialAppId', () => {
+  it('migrates the former Collec module id', () => {
+    expect(migrateLegacyAppId('loodi')).toBe('loodi-collec')
+    expect(migrateLegacyAppId('loodi-mate')).toBe('loodi-mate')
+    expect(migrateLegacyAppId(null)).toBeNull()
+  })
+
   it('ignores a persisted module that is absent or unavailable in the current build', () => {
     const apps = [
-      { id: 'loodi', name: 'Loodi', icon: '🎲', url: 'https://loodi.vercel.app', color: '#ca4a16' },
+      { id: 'loodi-collec', name: 'Loodi', icon: '🎲', url: 'https://loodicollec.vercel.app', color: '#ca4a16' },
       { id: 'loodi-mate', name: 'Mate', icon: '🃏', url: null, color: '#2E8B57' },
     ]
 
-    expect(getInitialAppId(apps, 'loodi-dev', 'loodi-dev')).toBe('loodi')
+    expect(getInitialAppId(apps, 'loodi-dev', 'loodi-dev')).toBe('loodi-collec')
   })
 })
 
 describe('getModuleTabs', () => {
   it('restores the tabs received from an inactive module when it becomes active', () => {
     const tabs = [{ id: 'catalog', icon: 'search', label: 'Collection' }]
-    const tabsByApp = new Map([['loodi', tabs]])
+    const tabsByApp = new Map([['loodi-collec', tabs]])
 
-    expect(getModuleTabs(tabsByApp, 'loodi')).toEqual(tabs)
+    expect(getModuleTabs(tabsByApp, 'loodi-collec')).toEqual(tabs)
   })
 
   it('returns no tabs until a module has sent its navigation', () => {
-    expect(getModuleTabs(new Map(), 'loodi')).toEqual([])
+    expect(getModuleTabs(new Map(), 'loodi-collec')).toEqual([])
   })
 })
 
 describe('getModuleHeaderOptions', () => {
   it('restores the header options declared by the application being activated', () => {
     const optionsByApp = new Map([
-      ['loodi', { hideActions: true, canGoBack: true }],
+      ['loodi-collec', { hideActions: true, canGoBack: true }],
       ['loodi-mate', { hideActions: false, canGoBack: false }],
     ])
 
-    expect(getModuleHeaderOptions(optionsByApp, 'loodi')).toEqual({ hideActions: true, canGoBack: true })
+    expect(getModuleHeaderOptions(optionsByApp, 'loodi-collec')).toEqual({ hideActions: true, canGoBack: true })
     expect(getModuleHeaderOptions(optionsByApp, 'loodi-mate')).toEqual({ hideActions: false, canGoBack: false })
   })
 
   it('shows header actions by default for an application with no options', () => {
-    expect(getModuleHeaderOptions(new Map(), 'loodi')).toEqual({ hideActions: false, canGoBack: false })
+    expect(getModuleHeaderOptions(new Map(), 'loodi-collec')).toEqual({ hideActions: false, canGoBack: false })
   })
 })
 
@@ -186,7 +192,7 @@ describe('strict bridge runtime', () => {
 
   it('uses the registered iframe origin for ready and theme messages', () => {
     vi.stubGlobal('localStorage', {
-      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi-collec' : null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     })
@@ -197,14 +203,14 @@ describe('strict bridge runtime', () => {
     })))
     const { result } = renderHook(() => useShell())
     const iframe = document.createElement('iframe')
-    iframe.dataset.app = 'loodi'
+    iframe.dataset.app = 'loodi-collec'
     iframe.src = 'https://collec.loodi.test:4002/catalog'
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
     document.body.append(iframe)
 
     act(() => {
-      result.current.registerIframe('loodi', iframe)
+      result.current.registerIframe('loodi-collec', iframe)
       window.dispatchEvent(new MessageEvent('message', {
         source: child,
         origin: 'https://dummy.loodi.test:4000',
@@ -212,7 +218,7 @@ describe('strict bridge runtime', () => {
       }))
     })
 
-    expect(result.current.readyAppIds).not.toContain('loodi')
+    expect(result.current.readyAppIds).not.toContain('loodi-collec')
 
     act(() => {
       window.dispatchEvent(new MessageEvent('message', {
@@ -223,7 +229,7 @@ describe('strict bridge runtime', () => {
       result.current.setThemeMode('dark')
     })
 
-    expect(result.current.readyAppIds).toContain('loodi')
+    expect(result.current.readyAppIds).toContain('loodi-collec')
     expect(child.postMessage).toHaveBeenCalledWith({
       type: 'loodi:event',
       event: 'loodi:themechange',
@@ -241,7 +247,7 @@ describe('strict bridge runtime', () => {
 
   it('opens the active module settings when it declares the capability', () => {
     vi.stubGlobal('localStorage', {
-      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi-collec' : null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     })
@@ -252,13 +258,13 @@ describe('strict bridge runtime', () => {
     })))
     const { result } = renderHook(() => useShell())
     const iframe = document.createElement('iframe')
-    iframe.dataset.app = 'loodi'
+    iframe.dataset.app = 'loodi-collec'
     iframe.src = 'https://collec.loodi.test:4002/catalog'
     const child = { postMessage: vi.fn() } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
 
     act(() => {
-      result.current.registerIframe('loodi', iframe)
+      result.current.registerIframe('loodi-collec', iframe)
       window.dispatchEvent(new MessageEvent('message', {
         source: child,
         origin: 'https://collec.loodi.test:4002',
@@ -277,7 +283,7 @@ describe('strict bridge runtime', () => {
 
   it('falls back to One settings when the active module has no embedded settings capability', () => {
     vi.stubGlobal('localStorage', {
-      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi-collec' : null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     })
@@ -301,7 +307,7 @@ describe('module navigation badges', () => {
 
   it('updates only the targeted tab, clears it at zero, and retains it while the module is inactive', () => {
     vi.stubGlobal('localStorage', {
-      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi-collec' : null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     })
@@ -317,7 +323,7 @@ describe('module navigation badges', () => {
     Object.defineProperty(iframe, 'contentWindow', { value: child })
 
     act(() => {
-      result.current.registerIframe('loodi', iframe)
+      result.current.registerIframe('loodi-collec', iframe)
       window.dispatchEvent(new MessageEvent('message', {
         source: child,
         origin: 'https://collec.loodi.test:4002',
@@ -350,7 +356,7 @@ describe('module navigation badges', () => {
 
     act(() => {
       result.current.activateApp('loodi-mate')
-      result.current.activateApp('loodi')
+      result.current.activateApp('loodi-collec')
     })
     expect(result.current.state.tabs.find((tab) => tab.id === 'loans')?.badgeCount).toBe(2)
 
@@ -376,7 +382,7 @@ describe('global settings navigation', () => {
 
   function renderShell() {
     vi.stubGlobal('localStorage', {
-      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi' : null),
+      getItem: vi.fn((key: string) => key === 'loodi:lastApp' ? 'loodi-collec' : null),
       setItem: vi.fn(),
       removeItem: vi.fn(),
     })
@@ -395,7 +401,7 @@ describe('global settings navigation', () => {
     const child = { postMessage } as unknown as WindowProxy
     Object.defineProperty(iframe, 'contentWindow', { value: child })
     act(() => {
-      result.current.registerIframe('loodi', iframe)
+      result.current.registerIframe('loodi-collec', iframe)
       window.dispatchEvent(new MessageEvent('message', {
         source: child,
         origin: 'https://collec.loodi.test:4002',

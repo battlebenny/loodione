@@ -1,8 +1,9 @@
 [
-  { "id": "loodi", "name": "collec", "icon": "/icons/loodi.svg", "url": "https://loodi.vercel.app", "color": "#ca4a16" },
+  { "id": "loodi-collec", "name": "collec", "icon": "/icons/loodi.svg", "url": "https://loodicollec.vercel.app", "color": "#ca4a16" },
   { "id": "loodi-mate", "name": "Mate", "icon": "/icons/loodi-mate.svg", "url": null, "color": "#2E8B57" },
   { "id": "loodi-mag", "name": "Mag", "icon": "/icons/loodi-mag.svg", "url": null, "color": "#3570A8" },
   { "id": "loodi-places", "name": "Places", "icon": "/icons/loodi-places.svg", "url": null, "color": "#9B59B6" },
   { "id": "loodi-fest", "name": "Fest", "icon": "/icons/loodi-fest.svg", "url": null, "color": "#E67E22" },
-  { "id": "loodi-sessions", "name": "Sessions", "icon": "/icons/loodi-sessions.svg", "url": null, "color": "#007C91" }
+  { "id": "loodi-planner", "name": "Planner", "icon": "/icons/loodi-planner.svg", "url": null, "color": "#007C91" },
+  { "id": "loodi-friends", "name": "Friends", "icon": "/icons/loodi-friends.svg", "url": "https://loodifriends.vercel.app", "color": "#D84A77" }
 ]

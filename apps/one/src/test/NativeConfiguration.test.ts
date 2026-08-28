@@ -23,7 +23,7 @@ describe('native configuration', () => {
   it('uses the build-time network host template on physical devices', () => {
     const apps = JSON.parse(readFileSync(resolve(process.cwd(), 'src/config/apps.android-device.json'), 'utf8'));
 
-    expect(apps.find((app: { id: string }) => app.id === 'loodi')).toMatchObject({
+    expect(apps.find((app: { id: string }) => app.id === 'loodi-collec')).toMatchObject({
       url: 'https://{{DEVICE_HOST}}:4002',
     });
     expect(apps.find((app: { id: string }) => app.id === 'loodi-dev')).toMatchObject({
@@ -65,8 +65,17 @@ describe('native configuration', () => {
     const registry = JSON.parse(readFileSync(resolve(projectRoot, 'public/config.json'), 'utf8'));
 
     expect(registry).toEqual(
-      expect.arrayContaining([expect.objectContaining({ id: 'loodi', url: 'https://loodi.vercel.app' })]),
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'loodi-collec', url: 'https://loodicollec.vercel.app' }),
+        expect.objectContaining({ id: 'loodi-friends', url: 'https://loodifriends.vercel.app' }),
+        expect.objectContaining({
+          id: 'loodi-planner',
+          name: 'Planner',
+          icon: 'https://battlebenny.github.io/loodione/icons/loodi-planner.svg',
+        }),
+      ]),
     );
+    expect(registry.some((app: { id: string }) => app.id === 'loodi-sessions')).toBe(false);
     expect(
       registry.every((app: { icon: string }) => app.icon.startsWith('https://battlebenny.github.io/loodione/icons/')),
     ).toBe(true);
