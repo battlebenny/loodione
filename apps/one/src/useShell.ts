@@ -175,6 +175,9 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
   const tabsByApp = useRef<Map<string, Tab[]>>(new Map())
   const headerActionsByApp = useRef<Map<string, HeaderAction[]>>(new Map())
   const headerOptionsByApp = useRef<Map<string, HeaderOptions>>(new Map())
+  // The module bridge owns this route snapshot. One only consumes it if it
+  // must replace that module after a verified deployment update.
+  const modulePaths = useRef<Map<string, string>>(new Map())
   const bridgeAllowedOrigins = getBridgeAllowedOriginsForApps(state.apps)
   const settingsOpenTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -258,6 +261,7 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
         setState((s) => s.activeAppId === appId ? { ...s, headerOptions } : s)
       },
       onNavigate: (appId, path) => {
+        modulePaths.current.set(appId, path)
         setOpenOverlayAppIds((ids) => {
           if (!ids.has(appId)) return ids
           const next = new Set(ids)
@@ -542,6 +546,7 @@ export function useShell(authSession: AuthSession | null = null, onRequestShowAu
     localModuleUrls,
     setLocalModuleUrls,
     readyAppIds,
+    modulePaths,
     sendHeaderAction,
     sendBack,
     sendTabTap,
