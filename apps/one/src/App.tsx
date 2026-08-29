@@ -5,6 +5,7 @@ import { Launcher, type LauncherApp } from '@loodi/ui/launcher'
 import { useShell } from './useShell'
 import { useAuth } from '@loodi/auth'
 import { Settings } from './Settings'
+import { refreshPersistentModuleIframe } from './moduleUpdates'
 import { useState, useCallback, useEffect, useLayoutEffect, useRef } from 'react'
 
 const HEADER_HEIGHT = 52
@@ -45,9 +46,14 @@ export function nativeSafeAreaReady(
   return !nativeShell || (injected && (!waitForNonZeroInset || topInset > 0))
 }
 
-function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number) {
-  const separator = url.includes('?') ? '&' : '?'
-  return `${url}${separator}loodi-shell=1&headerHeight=${headerHeight}&bottomNavHeight=${bottomNavHeight}`
+function moduleUrl(url: string, headerHeight: number, bottomNavHeight: number, revision?: string, path?: string) {
+  const moduleUrl = path ? new URL(path, url).toString() : url
+  const separator = moduleUrl.includes('?') ? '&' : '?'
+  const shellUrl = `${moduleUrl}${separator}loodi-shell=1&headerHeight=${headerHeight}&bottomNavHeight=${bottomNavHeight}`
+  if (!revision) return shellUrl
+  const versioned = new URL(shellUrl)
+  versioned.searchParams.set('loodi-revision', revision)
+  return versioned.toString()
 }
 
 export function readMagicLinkCallback(hash: string): 'success' | 'expired' | null {
@@ -69,7 +75,7 @@ function App() {
   const auth = useAuth()
   const [authOpen, setAuthOpen] = useState(false)
   const showAuth = useCallback(() => setAuthOpen(true), [])
-  const { state, toggleLauncher, activateApp, toggleSettings, showLoodiAccount, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, setActiveTab, sendHeaderAction, sendBack, sendTabTap } = useShell(auth.session, showAuth)
+  const { state, toggleLauncher, activateApp, toggleSettings, showLoodiAccount, registerIframe, goBack, overlayActive, scrollProgress, lastUsedAppId, favoriteAppId, setFavoriteAppId, isLocalBuild, localModuleUrls, setLocalModuleUrls, setActiveTab, sendHeaderAction, sendBack, sendTabTap, modulePaths } = useShell(auth.session, showAuth)
   const [accountOverlayOpen, setAccountOverlayOpen] = useState(false)
   const [accountScrollProgress, setAccountScrollProgress] = useState(0)
   const [accountSuccessMessage, setAccountSuccessMessage] = useState<string | undefined>()
@@ -143,12 +149,19 @@ function App() {
     )
   })
   const iframeRefCallbacks = useRef(new Map<string, (el: HTMLIFrameElement | null) => void>())
-  const iframeSources = useRef(new Map<string, { url: string; src: string }>())
+  const iframeSources = useRef(new Map<string, { url: string; revision?: string; src: string }>())
+  const moduleIframes = useRef(new Map<string, HTMLIFrameElement>())
+  const moduleRevisions = useRef(new Map<string, string>())
+  const [appliedModuleRevisions, setAppliedModuleRevisions] = useState<Record<string, string>>({})
 
   const getIframeRef = useCallback((appId: string) => {
     let ref = iframeRefCallbacks.current.get(appId)
     if (!ref) {
-      ref = (el) => registerIframe(appId, el)
+      ref = (el) => {
+        if (el) moduleIframes.current.set(appId, el)
+        else moduleIframes.current.delete(appId)
+        registerIframe(appId, el)
+      }
       iframeRefCallbacks.current.set(appId, ref)
     }
     return ref
@@ -183,13 +196,42 @@ function App() {
   // happen when Android/iOS presents a camera permission sheet, so they must
   // only update the shell layout—not rewrite iframe.src and reload the PWA.
   const getIframeSource = useCallback((appId: string, url: string) => {
+    const revision = appliedModuleRevisions[appId]
     const current = iframeSources.current.get(appId)
-    if (current?.url === url) return current.src
+    if (current?.url === url && current.revision === revision) return current.src
 
-    const src = moduleUrl(url, headerHeight, bottomNavHeight)
-    iframeSources.current.set(appId, { url, src })
+    const src = moduleUrl(url, headerHeight, bottomNavHeight, revision, revision ? modulePaths.current.get(appId) : undefined)
+    iframeSources.current.set(appId, { url, revision, src })
     return src
-  }, [headerHeight, bottomNavHeight])
+  }, [appliedModuleRevisions, headerHeight, bottomNavHeight])
+
+  const revalidateActiveModule = useCallback(async () => {
+    const app = state.apps.find((candidate) => candidate.id === state.activeAppId)
+    const iframe = app?.url ? moduleIframes.current.get(app.id) : undefined
+    if (!app || !iframe) return
+
+    const reloadUrl = moduleUrl(app.url!, headerHeight, bottomNavHeight, undefined, modulePaths.current.get(app.id))
+    const result = await refreshPersistentModuleIframe(iframe, moduleRevisions.current.get(app.id), undefined, reloadUrl)
+    if (!result.revision) return
+    moduleRevisions.current.set(app.id, result.revision)
+    if (result.reloaded) {
+      setAppliedModuleRevisions((revisions) => revisions[app.id] === result.revision
+        ? revisions
+        : { ...revisions, [app.id]: result.revision! })
+    }
+  }, [bottomNavHeight, headerHeight, modulePaths, state.activeAppId, state.apps])
+
+  // A persistent Android WebView/iframe can otherwise keep an old deployed
+  // bundle indefinitely. The manifest is checked only while online; failures
+  // deliberately leave the currently usable frame untouched.
+  useEffect(() => { void revalidateActiveModule() }, [revalidateActiveModule])
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void revalidateActiveModule()
+    }
+    document.addEventListener('visibilitychange', onVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', onVisibilityChange)
+  }, [revalidateActiveModule])
 
   const handleActivateApp = useCallback((appId: string) => {
     toggleLauncher()

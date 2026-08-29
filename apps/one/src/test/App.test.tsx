@@ -79,6 +79,7 @@ vi.mock('../useShell', () => ({
     localModuleUrls: {},
     setLocalModuleUrls: vi.fn(),
     readyAppIds: new Set<string>(),
+    modulePaths: { current: new Map<string, string>() },
     setActiveTab,
     sendHeaderAction,
     sendBack,
